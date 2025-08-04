@@ -10,11 +10,15 @@
     "preview": "vite preview",
     "docs": "node update-docs.js",
     "docs:all": "node update-docs.js all",
-    "docs:main": "node update-docs.js main"
+    "docs:main": "node update-docs.js main",
+    "db:init": "tsx src/services/database/init.ts",
+    "db:reset": "dropdb marketing_app_dev && createdb marketing_app_dev && npm run db:init"
   },
   "dependencies": {
     "@types/node": "^24.1.0",
+    "@types/pg": "^8.15.5",
     "lucide-react": "^0.534.0",
+    "pg": "^8.16.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "typescript": "^5.9.2",
@@ -32,6 +36,7 @@
     "globals": "^16.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.20.3",
     "vite": "^7.0.4"
   }
 }
