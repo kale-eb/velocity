@@ -1,0 +1,90 @@
+{
+  "id": "ad_002",
+  "url": "https://tiktok.com/@techreviewer/video/sample2",
+  "summary": "Fast-paced tech product showcase featuring the latest smartphone with quick cuts, dynamic camera movements, and energetic pacing",
+  "visualStyle": "professional studio lighting, rapid cuts, macro shots, dynamic camera movements, sleek tech aesthetic",
+  "audioStyle": "upbeat electronic music, fast-paced narration, sound effects for transitions",
+  "duration": 28,
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "type": "hook",
+      "startTime": 0,
+      "endTime": 3,
+      "visual": {
+        "description": "Extreme close-up of phone screen lighting up with logo animation",
+        "cameraAngle": "macro lens, 45-degree angle, sharp focus on screen",
+        "lighting": "controlled studio lighting with RGB accent lights",
+        "movement": "quick zoom-in followed by subtle rotation",
+        "textOverlay": "The phone that changes everything 📱",
+        "background": "dark gradient backdrop with colored light streaks"
+      },
+      "audio": {
+        "transcript": "This is the phone everyone's been waiting for",
+        "tone": "confident, energetic, building anticipation",
+        "backgroundMusic": "electronic beat drop, high energy",
+        "volume": "high"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "type": "body",
+      "startTime": 3,
+      "endTime": 12,
+      "visual": {
+        "description": "Rapid montage of phone features with split-screen comparisons",
+        "cameraAngle": "multiple angles: overhead, side profile, 360-degree rotation",
+        "lighting": "dynamic RGB lighting that changes with each feature",
+        "movement": "quick cuts every 1-2 seconds, smooth rotating shots",
+        "textOverlay": "120Hz Display • 50MP Camera • 5000mAh Battery",
+        "background": "seamless white studio setup with geometric light patterns"
+      },
+      "audio": {
+        "transcript": "Check this out - 120 hertz display that's buttery smooth, a camera that captures every detail, and all day battery life that actually lasts all day",
+        "tone": "fast-paced, enthusiastic, technical but accessible",
+        "backgroundMusic": "driving electronic beat with bass drops",
+        "volume": "medium-high"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "type": "body",
+      "startTime": 12,
+      "endTime": 20,
+      "visual": {
+        "description": "Real-world usage demonstration with quick lifestyle shots",
+        "cameraAngle": "handheld following action, over-shoulder shots, POV angles",
+        "lighting": "mixed natural and artificial, high contrast scenarios",
+        "movement": "dynamic tracking shots, quick whip pans between scenes",
+        "textOverlay": "Gaming • Photography • Productivity",
+        "background": "various locations: office, park, gaming setup, coffee shop"
+      },
+      "audio": {
+        "transcript": "Whether you're gaming, creating content, or just getting things done, this phone handles it all without breaking a sweat",
+        "tone": "practical, relatable, maintaining energy",
+        "backgroundMusic": "upbeat instrumental with tech sound effects",
+        "volume": "medium"
+      }
+    },
+    {
+      "id": "chunk_004",
+      "type": "cta",
+      "startTime": 20,
+      "endTime": 28,
+      "visual": {
+        "description": "Phone floating in space with price and availability info",
+        "cameraAngle": "centered hero shot with subtle 360-degree rotation",
+        "lighting": "dramatic rim lighting with lens flares",
+        "movement": "slow rotation with gentle floating animation",
+        "textOverlay": "Starting at $699 • Available Now • Link in Bio",
+        "background": "dark void with particle effects and light rays"
+      },
+      "audio": {
+        "transcript": "Starting at just six ninety nine, available right now. Link's in my bio and use code TECH20 for twenty dollars off your first order. Trust me, you won't regret this upgrade",
+        "tone": "urgent but friendly, clear call-to-action delivery",
+        "backgroundMusic": "triumphant electronic crescendo",
+        "volume": "high"
+      }
+    }
+  ]
+}

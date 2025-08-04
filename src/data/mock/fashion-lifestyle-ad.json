@@ -1,0 +1,90 @@
+{
+  "id": "ad_003",
+  "url": "https://instagram.com/@luxefashion/reel/sample3",
+  "summary": "Cinematic luxury fashion lifestyle ad featuring elegant styling, golden hour lighting, and aspirational brand storytelling",
+  "visualStyle": "cinematic aspect ratio, professional color grading, golden hour lighting, smooth camera movements, luxury aesthetic",
+  "audioStyle": "atmospheric background music, whispered/intimate narration, ambient sound design",
+  "duration": 35,
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "type": "hook",
+      "startTime": 0,
+      "endTime": 5,
+      "visual": {
+        "description": "Silhouette of model walking through sunlit window with dramatic shadows",
+        "cameraAngle": "wide shot transitioning to medium, low angle for drama",
+        "lighting": "golden hour window light creating dramatic silhouette and rim lighting",
+        "movement": "slow tracking shot following model, gentle camera float",
+        "textOverlay": "Define your moment ✨",
+        "background": "minimalist luxury apartment with floor-to-ceiling windows"
+      },
+      "audio": {
+        "transcript": "There's a moment when everything just clicks, when you know you've found your style",
+        "tone": "intimate whisper, aspirational, dreamy",
+        "backgroundMusic": "ambient piano with string swells",
+        "volume": "medium-low"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "type": "body",
+      "startTime": 5,
+      "endTime": 18,
+      "visual": {
+        "description": "Close-up beauty shots and fabric details with luxury product showcase",
+        "cameraAngle": "macro lens for fabric textures, intimate portrait angles",
+        "lighting": "soft, diffused natural light with subtle fill lighting",
+        "movement": "slow dolly shots, gentle focus pulls, smooth gimbal work",
+        "textOverlay": "Cashmere • Silk • Italian Leather",
+        "background": "neutral tones, marble surfaces, soft textiles"
+      },
+      "audio": {
+        "transcript": "Our new collection brings together the finest materials from around the world. Pure cashmere from Scotland, silk from Italy, each piece crafted with attention to every detail",
+        "tone": "sophisticated, knowledgeable, building desire",
+        "backgroundMusic": "orchestral strings building gently",
+        "volume": "medium"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "type": "body",
+      "startTime": 18,
+      "endTime": 28,
+      "visual": {
+        "description": "Lifestyle montage of model in different luxurious settings",
+        "cameraAngle": "cinematic wide shots, elegant medium shots, artistic compositions",
+        "lighting": "golden hour exterior, warm interior lighting, professional color grade",
+        "movement": "slow motion walking shots, gentle camera movements, artistic transitions",
+        "textOverlay": "City • Evening • Weekend",
+        "background": "luxury hotel lobby, rooftop terrace, art gallery, private car"
+      },
+      "audio": {
+        "transcript": "From boardroom to weekend brunch, from gallery openings to quiet moments at home. These pieces move with your life, elevating every experience",
+        "tone": "lifestyle focused, aspirational, emotionally connected",
+        "backgroundMusic": "building orchestral arrangement with subtle electronic elements",
+        "volume": "medium-high"
+      }
+    },
+    {
+      "id": "chunk_004",
+      "type": "cta",
+      "startTime": 28,
+      "endTime": 35,
+      "visual": {
+        "description": "Brand logo and model in final elegant pose with soft focus product display",
+        "cameraAngle": "medium hero shot with shallow depth of field",
+        "lighting": "soft, flattering portrait lighting with subtle rim light",
+        "movement": "slow push-in on model, gentle breathing movement",
+        "textOverlay": "Shop the Collection • Limited Edition • Link in Bio",
+        "background": "luxury boutique setting with soft focus product displays"
+      },
+      "audio": {
+        "transcript": "Discover your defining moment. Shop our limited edition collection now, exclusively available online and in select boutiques. Link in bio",
+        "tone": "confident invitation, exclusive, sophisticated call-to-action",
+        "backgroundMusic": "orchestral crescendo resolving to elegant outro",
+        "volume": "medium-high"
+      }
+    }
+  ]
+}

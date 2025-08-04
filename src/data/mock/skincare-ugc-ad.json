@@ -1,0 +1,90 @@
+{
+  "id": "ad_001",
+  "url": "https://tiktok.com/@skincareguru/video/sample1",
+  "summary": "UGC-style skincare routine ad featuring authentic testimonial about clearing acne with 3-step routine",
+  "visualStyle": "handheld camera, natural bathroom lighting, authentic user-generated content aesthetic",
+  "audioStyle": "conversational tone, excited delivery, minimal background music",
+  "duration": 32,
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "type": "hook",
+      "startTime": 0,
+      "endTime": 4,
+      "visual": {
+        "description": "Close-up of person's face showing before/after skin transformation",
+        "cameraAngle": "front-facing phone camera, slightly tilted",
+        "lighting": "natural bathroom lighting, slightly overexposed",
+        "movement": "handheld shake, person leaning closer to camera",
+        "textOverlay": "POV: your skin finally cleared up ✨",
+        "background": "white bathroom tiles, minimal clutter"
+      },
+      "audio": {
+        "transcript": "Okay guys, I have to tell you about this skincare routine that completely changed my life",
+        "tone": "excited, authentic, slightly breathless",
+        "backgroundMusic": "none",
+        "volume": "medium-high"
+      }
+    },
+    {
+      "id": "chunk_002", 
+      "type": "body",
+      "startTime": 4,
+      "endTime": 18,
+      "visual": {
+        "description": "Product showcase with hands demonstrating application",
+        "cameraAngle": "overhead shot of bathroom counter, then handheld close-ups",
+        "lighting": "natural lighting with phone flashlight for product details",
+        "movement": "smooth pans across products, hands applying each step",
+        "textOverlay": "STEP 1: Gentle cleanser, STEP 2: BHA toner, STEP 3: Moisturizer",
+        "background": "clean bathroom counter with products arranged"
+      },
+      "audio": {
+        "transcript": "So it's literally just three steps. First, I use this gentle cleanser that doesn't strip my skin. Then this BHA toner that's been a game changer for my pores. And finally, this lightweight moisturizer that doesn't break me out.",
+        "tone": "informative but conversational, building excitement",
+        "backgroundMusic": "soft instrumental, very low volume",
+        "volume": "medium"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "type": "body", 
+      "startTime": 18,
+      "endTime": 26,
+      "visual": {
+        "description": "Split screen showing skin progress over time",
+        "cameraAngle": "same front-facing angle for consistency",
+        "lighting": "consistent natural lighting across timeframes",
+        "movement": "quick cuts between different time periods",
+        "textOverlay": "Week 1 vs Week 4 vs Week 8",
+        "background": "same bathroom location for authenticity"
+      },
+      "audio": {
+        "transcript": "I'm not even kidding when I say my skin has never looked better. Look at this transformation over just two months!",
+        "tone": "amazed, grateful, building to climax",
+        "backgroundMusic": "instrumental building slightly",
+        "volume": "medium-high"
+      }
+    },
+    {
+      "id": "chunk_004",
+      "type": "cta",
+      "startTime": 26,
+      "endTime": 32,
+      "visual": {
+        "description": "Person pointing at camera with products visible in background",
+        "cameraAngle": "medium shot, direct eye contact with camera",
+        "lighting": "bright, flattering natural light",
+        "movement": "pointing gesture, slight zoom in for emphasis",
+        "textOverlay": "Link in bio! Use code CLEAR20 for 20% off",
+        "background": "clean, organized bathroom setup"
+      },
+      "audio": {
+        "transcript": "I'll link everything in my bio and if you use my code CLEAR20, you'll get twenty percent off your first order. Trust me, your skin will thank you!",
+        "tone": "direct, friendly call-to-action, confident",
+        "backgroundMusic": "upbeat outro music",
+        "volume": "high"
+      }
+    }
+  ]
+}
