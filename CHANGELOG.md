@@ -16,6 +16,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mock analyze-ad endpoint integration
 - AI chat integration (Vercel AI SDK)
 
+## [0.3.1] - 2024-08-05 - Documentation & GitHub Integration
+
+### Added
+- **Database Documentation**
+  - Comprehensive database structure explanation with schema details
+  - Database service layer documentation (`src/services/database/CLAUDE.md`)
+  - Updated services documentation with implemented PostgreSQL features
+  - Enhanced store documentation reflecting database integration
+
+### Enhanced
+- **CLAUDE.md Files Updated**
+  - Services documentation now includes implemented database service layer
+  - Store documentation reflects PostgreSQL integration and type safety
+  - Database-specific documentation with migration strategies and performance details
+
+### Infrastructure
+- **GitHub Repository Setup**
+  - Remote repository configuration for version control
+  - Professional commit history with detailed technical documentation
+  - Preparation for collaborative development workflow
+
+### Documentation Improvements
+- Detailed database schema architecture explanation
+- Type-safe service layer documentation
+- Migration path documentation (Local PostgreSQL → Supabase)
+- Performance optimization strategies and indexing details
+
 ## [0.3.0] - 2024-08-04 - Phase 0 Complete: TypeScript Migration & Database Infrastructure
 
 ### 🎉 Major Milestone: Phase 0 Foundation Complete
