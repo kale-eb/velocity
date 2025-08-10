@@ -5,9 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    port: 5173, // Always use port 5173 for frontend
+    strictPort: true, // Fail if port 5173 is not available instead of using next port
     proxy: {
       '/api': {
-        target: 'http://localhost:5174',
+        target: 'http://localhost:5174', // Backend runs on 5174
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {

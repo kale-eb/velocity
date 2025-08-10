@@ -164,6 +164,10 @@ export class WorkspaceStorage {
     return storage.load('WORKSPACE_CONNECTIONS', []);
   }
 
+  static clearConnections(): boolean {
+    return storage.remove('WORKSPACE_CONNECTIONS');
+  }
+
   static saveViewport(viewport: any): boolean {
     return storage.save('WORKSPACE_VIEWPORT', viewport);
   }
@@ -189,9 +193,10 @@ export class WorkspaceStorage {
 
   // Save complete workspace state
   static saveWorkspace(nodes: any[], connections: any[], viewport: any, uiState: any): boolean {
+    // For MVP static view, skip saving connections to avoid quota errors
     const success = [
       this.saveNodes(nodes),
-      this.saveConnections(connections),
+      // this.saveConnections(connections), // skipped for MVP
       this.saveViewport(viewport),
       this.saveUIState(uiState)
     ].every(Boolean);
@@ -249,13 +254,31 @@ export class ScriptStorage {
   }
 
   static loadGeneratedScripts(): Record<string, any> {
-    return storage.load('GENERATED_SCRIPTS', {});
+    const scripts = storage.load('GENERATED_SCRIPTS', {});
+    console.log('📂 ScriptStorage.loadGeneratedScripts result:', {
+      scriptCount: Object.keys(scripts).length,
+      scriptKeys: Object.keys(scripts),
+      currentScript: scripts.current_script ? {
+        chunks: scripts.current_script.chunks?.length || 0,
+        title: scripts.current_script.title
+      } : null
+    });
+    return scripts;
   }
 
   static saveScript(scriptId: string, script: any): boolean {
+    console.log('💾 ScriptStorage.saveScript called:', {
+      scriptId,
+      hasScript: !!script,
+      chunks: script?.chunks?.length || 0
+    });
+    
     const existing = this.loadGeneratedScripts();
     const updated = { ...existing, [scriptId]: script };
-    return this.saveGeneratedScripts(updated);
+    const success = this.saveGeneratedScripts(updated);
+    
+    console.log('💾 ScriptStorage.saveScript result:', success);
+    return success;
   }
 }
 

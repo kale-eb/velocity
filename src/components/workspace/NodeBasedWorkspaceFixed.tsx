@@ -84,7 +84,7 @@ interface NodeBasedWorkspaceProps {
   onConnectionsChange?: (connections: any[]) => void;
   nodes?: any[];
   connections?: any[];
-  onAddNode?: (type: string, data?: any) => void;
+  onAddNode?: (type: string, data?: any) => string | null;
   onUpdateNode?: (id: string, updates: any) => void;
   onDeleteNode?: (id: string) => void;
   onReorganizeNodes?: () => void;

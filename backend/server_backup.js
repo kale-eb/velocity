@@ -11,10 +11,7 @@ const { OpenAI } = require('openai');
 const prompts = JSON.parse(fs.readFileSync(path.join(__dirname, 'prompts.json'), 'utf8'));
 
 const app = express();
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 
 // Configure multer for file uploads
@@ -25,7 +22,6 @@ const upload = multer({
 
 const HAS_KEY = !!process.env.OPENAI_API_KEY;
 const MODEL = process.env.OPENAI_MODEL_CHAT || 'gpt-5';
-const CHAT_MODEL = process.env.OPENAI_MODEL_CHAT_ACTIONS || 'gpt-5-mini'; // Use GPT-5 Mini for chat
 const PY_BACKEND = process.env.BACKEND_URL || 'http://localhost:8000';
 
 let openai = null;
@@ -96,6 +92,567 @@ function applyActionsServer(script, actions) {
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, mock: !HAS_KEY });
+});
+
+// Streaming chat endpoint
+app.post('/api/chatActions/stream', async (req, res) => {
+  console.log('🔴 Streaming endpoint called!');
+  
+  try {
+    // Set proper SSE headers
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control, Content-Type',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+    });
+
+    const { prompt, script, context, inputs, adAnalyses, chat_history, agent, max_steps } = req.body || {};
+    
+    // Log all the data we received
+    console.log('📊 Streaming Request Data:', {
+      prompt_length: (prompt || '').length,
+      script_chunks: (script?.chunks || []).length,
+      context_keys: context ? Object.keys(context) : [],
+      inputs_keys: inputs ? Object.keys(inputs) : [],
+      adAnalyses_count: adAnalyses ? Object.keys(adAnalyses).length : 0,
+      chat_history_length: Array.isArray(chat_history) ? chat_history.length : 0,
+      agent: agent,
+      max_steps: max_steps
+    });
+    
+    console.log('💭 User Prompt:', `"${(prompt || '').substring(0, 100)}${(prompt || '').length > 100 ? '...' : ''}"`);
+    
+    if (script?.chunks?.length > 0) {
+      console.log('📜 Script Data:', {
+        chunk_count: script.chunks.length,
+        first_chunk_preview: script.chunks[0] ? {
+          id: script.chunks[0].id,
+          type: script.chunks[0].type,
+          script_text_length: script.chunks[0].script_text?.length || 0,
+          script_preview: script.chunks[0].script_text?.substring(0, 50) + '...'
+        } : 'none'
+      });
+    }
+    
+    if (context?.selectedNodes?.length > 0) {
+      console.log('🎯 Selected Context:', {
+        nodes: context.selectedNodes.length,
+        productSpecs: context.productSpecs ? `${context.productSpecs.length} chars` : 'none',
+        extraInstructions: context.extraInstructions ? `${context.extraInstructions.length} chars` : 'none',
+        selectedAds: context.selectedAds ? context.selectedAds.length : 0
+      });
+    }
+    
+    // Helper to send SSE data
+    const sendSSE = (data) => {
+      const message = `data: ${JSON.stringify(data)}\n\n`;
+      console.log('📤 Sending SSE:', message.trim());
+      res.write(message);
+    };
+
+    // Send initial thinking state
+    sendSSE({ type: 'thinking', content: 'Connecting to AI...' });
+    
+    if (!HAS_KEY) {
+      // Mock behavior for development without API key
+      sendSSE({ type: 'content', content: 'I understand your request about the script. ' });
+      await new Promise(resolve => setTimeout(resolve, 500));
+      sendSSE({ type: 'content', content: 'In production, this would use OpenAI streaming.' });
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      sendSSE({
+        type: 'done',
+        explanation: 'Mock response - OpenAI API key needed for real streaming.',
+        actions: []
+      });
+      return;
+    }
+    
+    // Use the same system prompt and tools as the regular chat endpoint
+    const sys = prompts.chatActions.system;
+    const tools = Object.values(prompts.tools).map(tool => ({
+      type: 'function',
+      function: tool
+    }));
+    
+    // Don't send the script directly - let the AI use tools to read it
+    const baseMessages = [
+      { role: 'system', content: sys },
+      ...(Array.isArray(chat_history) ? chat_history.slice(-8) : []),
+      { role: 'user', content: prompt }  // Just send the user's message
+    ];
+    
+    sendSSE({ type: 'thinking', content: 'AI is analyzing your request...' });
+    
+    // Use agentic loop pattern for autonomous tool calling and reasoning
+    console.log('🤖 Starting agentic loop...');
+    
+    let agentMessages = [...baseMessages];
+    let finalActions = [];
+    let stepCount = 0;
+    const maxSteps = 10; // Prevent infinite loops
+    
+    while (stepCount < maxSteps) {
+      stepCount++;
+      console.log(`🔄 Agent step ${stepCount}/${maxSteps}`);
+      
+      // Call OpenAI with current message history
+      const stream = await openai.chat.completions.create({
+        model: MODEL,
+        messages: agentMessages,
+        tools,
+        tool_choice: 'auto',
+        reasoning_effort: 'medium',
+        stream: true
+      });
+
+      let stepContent = '';
+      let stepToolCalls = [];
+      
+      // Stream this step's response
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta;
+        
+        if (delta?.content) {
+          stepContent += delta.content;
+          sendSSE({ 
+            type: 'content', 
+            content: delta.content 
+          });
+        }
+        
+        if (delta?.tool_calls) {
+          // Handle tool calls
+          for (const toolCall of delta.tool_calls) {
+            if (toolCall.index !== undefined) {
+              if (!stepToolCalls[toolCall.index]) {
+                stepToolCalls[toolCall.index] = {
+                  id: toolCall.id,
+                  type: toolCall.type,
+                  function: { name: '', arguments: '' }
+                };
+                
+                // Stream tool call initiation
+                if (toolCall.function?.name) {
+                  sendSSE({ 
+                    type: 'tool_status', 
+                    content: `🔄 ${getToolStartMessage(toolCall.function.name)}` 
+                  });
+                }
+              }
+              
+              if (toolCall.function?.name) {
+                stepToolCalls[toolCall.index].function.name += toolCall.function.name;
+              }
+              if (toolCall.function?.arguments) {
+                stepToolCalls[toolCall.index].function.arguments += toolCall.function.arguments;
+              }
+            }
+          }
+        }
+      }
+      
+      // Add assistant message to conversation
+      const assistantMessage = { 
+        role: 'assistant', 
+        content: stepContent || ''
+      };
+      
+      // If we have tool calls, execute them
+      if (stepToolCalls.length > 0) {
+        // Add tool calls to assistant message
+        assistantMessage.tool_calls = stepToolCalls.map(tc => ({
+          id: tc.id,
+          type: tc.type || 'function',
+          function: tc.function
+        }));
+        
+        agentMessages.push(assistantMessage);
+        
+        // Execute each tool call
+        for (const tc of stepToolCalls) {
+          const result = await executeAgentTool(tc, {
+            script, inputs, adAnalyses, sendSSE, finalActions
+          });
+          
+          // Add tool result to conversation
+          agentMessages.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            name: tc.function?.name,
+            content: JSON.stringify(result)
+          });
+        }
+        
+        // Continue loop - agent will reason about tool results
+        continue;
+      } else {
+        // No tool calls - agent is done reasoning, add final message
+        agentMessages.push(assistantMessage);
+        fullContent = stepContent;
+        break;
+      }
+    }
+    
+    // Helper function to get tool start messages
+    function getToolStartMessage(toolName) {
+      const startMessages = {
+        get_current_script: 'Reading your script...',
+        get_product_specs: 'Getting product specifications...',
+        get_extra_instructions: 'Getting user instructions...',
+        get_ad_jsons: 'Analyzing reference ads...',
+        update_todo_pad: 'Updating task list...',
+        rewrite_chunk: 'Preparing script edit...',
+        add_chunk: 'Adding new chunk...',
+        remove_chunk: 'Removing chunk...',
+        move_chunk: 'Moving chunk...',
+        rewrite_chunks_batch: 'Batch editing chunks...'
+      };
+      return startMessages[toolName] || `Executing ${toolName}...`;
+    }
+    
+    // Execute tool calls for the agentic loop
+    async function executeAgentTool(toolCall, context) {
+      const { script, inputs, adAnalyses, sendSSE, finalActions } = context;
+      const fn = toolCall.function?.name;
+      const args = JSON.parse(toolCall.function?.arguments || '{}');
+      
+      console.log(`🔧 Executing tool: ${fn}`, args);
+      
+      if (fn === 'get_current_script') {
+        const scriptData = script || { chunks: [] };
+        console.log(`   ↳ Returning script with ${scriptData.chunks?.length || 0} chunks`);
+        sendSSE({ type: 'tool_status', content: '✅ Read current script' });
+        return scriptData;
+        
+      } else if (fn === 'get_product_specs') {
+        const contentLength = (inputs?.product_specs || '').length;
+        console.log(`   ↳ Returning ${contentLength} characters of product specs`);
+        sendSSE({ type: 'tool_status', content: '✅ Retrieved product specifications' });
+        return { text: inputs?.product_specs || '' };
+        
+      } else if (fn === 'get_extra_instructions') {
+        const contentLength = (inputs?.extra_instructions || '').length;
+        console.log(`   ↳ Returning ${contentLength} characters of instructions`);
+        sendSSE({ type: 'tool_status', content: '✅ Retrieved user instructions' });
+        return { text: inputs?.extra_instructions || '' };
+        
+      } else if (fn === 'get_ad_jsons') {
+        const urls = Array.isArray(args.urls) ? args.urls : [];
+        const payload = urls.map(u => ({ url: u, analysis: adAnalyses[u] || null }));
+        const availableAnalyses = payload.filter(p => p.analysis).length;
+        console.log(`   ↳ Returning ${availableAnalyses}/${urls.length} ad analyses`);
+        sendSSE({ type: 'tool_status', content: '✅ Analyzed reference ads' });
+        return { items: payload };
+        
+      } else if (fn === 'update_todo_pad') {
+        const todos = args.todos || [];
+        const todoSummary = todos.map(t => `${t.status === 'completed' ? '✅' : t.status === 'rejected' ? '❌' : t.status === 'in_progress' ? '🔄' : '⏳'} ${t.task}`).join(', ');
+        console.log(`   ↳ Updated todo pad: ${todoSummary}`);
+        sendSSE({ type: 'tool_status', content: `📝 Updated task list: ${todoSummary}` });
+        return { success: true, todos_updated: todos.length };
+        
+      } else if (['rewrite_chunk', 'add_chunk', 'remove_chunk', 'move_chunk', 'rewrite_chunks_batch'].includes(fn)) {
+        // These are action tools - convert to actions for the frontend
+        sendSSE({ type: 'tool_status', content: getToolCallMessage(fn, true) });
+        
+        let action;
+        if (fn === 'rewrite_chunk') {
+          action = { type: 'rewrite', targetId: args.targetId };
+          if (args.script_text !== undefined) action.script_text = args.script_text;
+          if (args.camera_instruction !== undefined) action.camera_instruction = args.camera_instruction;
+        } else if (fn === 'add_chunk') {
+          action = { type: 'add', position: args.position, targetId: args.targetId, chunk: args.chunk };
+        } else if (fn === 'remove_chunk') {
+          action = { type: 'remove', targetId: args.targetId };
+        } else if (fn === 'move_chunk') {
+          action = { type: 'move', targetId: args.targetId, position: args.position, refId: args.refId };
+        }
+        
+        if (action) {
+          finalActions.push(action);
+          console.log(`   ↳ Created action: ${action.type}`);
+        }
+        
+        return { success: true, acknowledged: true };
+        
+      } else {
+        console.warn(`   ❌ Unknown tool: ${fn}`);
+        return { error: 'UNKNOWN_TOOL' };
+      }
+    }
+
+    // Helper function to get user-friendly tool call messages
+    function getToolCallMessage(toolName, isComplete = false) {
+      if (isComplete) {
+        const completedMessages = {
+          'get_product_specs': '✅ Read product specifications',
+          'get_extra_instructions': '✅ Read additional instructions',
+          'get_ad_jsons': '✅ Analyzed reference advertisements',
+          'rewrite_chunk': '✅ Prepared script edit suggestions',
+          'add_chunk': '✅ Prepared new section suggestions',
+          'remove_chunk': '✅ Prepared removal suggestions',
+          'move_chunk': '✅ Prepared reorganization suggestions',
+          'rewrite_chunks_batch': '✅ Prepared multiple edit suggestions',
+          'add_chunks_batch': '✅ Prepared multiple section suggestions',
+          'remove_chunks_batch': '✅ Prepared multiple removal suggestions',
+          'move_chunks_batch': '✅ Prepared multiple reorganization suggestions'
+        };
+        return completedMessages[toolName] || `✅ Completed ${toolName}`;
+      } else {
+        const workingMessages = {
+          'get_product_specs': '📄 Reading product specifications...',
+          'get_extra_instructions': '📋 Reading additional instructions...',
+          'get_ad_jsons': '🎬 Analyzing reference advertisements...',
+          'rewrite_chunk': '✏️ Generating script edits...',
+          'add_chunk': '➕ Creating new script section...',
+          'remove_chunk': '🗑️ Removing script section...',
+          'move_chunk': '↔️ Reorganizing script structure...',
+          'rewrite_chunks_batch': '✏️ Generating multiple script edits...',
+          'add_chunks_batch': '➕ Creating multiple script sections...',
+          'remove_chunks_batch': '🗑️ Removing multiple script sections...',
+          'move_chunks_batch': '↔️ Reorganizing script sections...'
+        };
+        return workingMessages[toolName] || `🔧 Processing ${toolName}...`;
+      }
+    }
+    
+    console.log(`🎯 Agent completed after ${stepCount} steps`);
+    console.log(`💡 Final content length: ${fullContent.length} characters`);
+    console.log(`⚡ Actions generated: ${finalActions.length}`);
+    
+    sendSSE({
+      type: 'done',
+      explanation: fullContent || "I've analyzed your request. Let me know if you'd like me to make any changes.",
+      actions: finalActions
+    });
+    
+    console.log('✅ Agentic streaming response completed');
+      
+      for (const tc of toolCalls) {
+        const fn = tc.function?.name;
+        const args = JSON.parse(tc.function?.arguments || '{}');
+        console.log(`🔧 Executing tool: ${fn}`, args);
+        
+        if (fn === 'get_current_script') {
+          hasDataRetrievalTools = true;
+          sendSSE({ type: 'tool_status', content: '🔄 Reading your script...' });
+          const scriptData = script || { chunks: [] };
+          console.log(`   ↳ Returning script with ${scriptData.chunks?.length || 0} chunks`);
+          sendSSE({ type: 'tool_status', content: '✅ Read current script' });
+          followups.push({ 
+            role: 'tool', 
+            tool_call_id: tc.id, 
+            name: fn, 
+            content: JSON.stringify(scriptData) 
+          });
+          
+        } else if (fn === 'get_product_specs') {
+          hasDataRetrievalTools = true;
+          sendSSE({ type: 'tool_status', content: '🔄 Getting product specifications...' });
+          const contentLength = (inputs?.product_specs || '').length;
+          console.log(`   ↳ Returning ${contentLength} characters of product specs`);
+          sendSSE({ type: 'tool_status', content: getToolCallMessage(fn, true) });
+          followups.push({ 
+            role: 'tool', 
+            tool_call_id: tc.id, 
+            name: fn, 
+            content: JSON.stringify({ text: inputs?.product_specs || '' }) 
+          });
+          
+        } else if (fn === 'get_extra_instructions') {
+          hasDataRetrievalTools = true;
+          sendSSE({ type: 'tool_status', content: '🔄 Getting user instructions...' });
+          const contentLength = (inputs?.extra_instructions || '').length;
+          console.log(`   ↳ Returning ${contentLength} characters of instructions`);
+          sendSSE({ type: 'tool_status', content: getToolCallMessage(fn, true) });
+          followups.push({ 
+            role: 'tool', 
+            tool_call_id: tc.id, 
+            name: fn, 
+            content: JSON.stringify({ text: inputs?.extra_instructions || '' }) 
+          });
+          
+        } else if (fn === 'get_ad_jsons') {
+          hasDataRetrievalTools = true;
+          sendSSE({ type: 'tool_status', content: '🔄 Analyzing reference ads...' });
+          const urls = Array.isArray(args.urls) ? args.urls : [];
+          const payload = urls.map(u => ({ url: u, analysis: adAnalyses[u] || null }));
+          const availableAnalyses = payload.filter(p => p.analysis).length;
+          console.log(`   ↳ Returning ${availableAnalyses}/${urls.length} ad analyses`);
+          sendSSE({ type: 'tool_status', content: getToolCallMessage(fn, true) });
+          followups.push({ 
+            role: 'tool', 
+            tool_call_id: tc.id, 
+            name: fn, 
+            content: JSON.stringify({ items: payload }) 
+          });
+          
+        } else if (fn === 'update_todo_pad') {
+          // Handle todo pad updates
+          const todos = args.todos || [];
+          const todoSummary = todos.map(t => `${t.status === 'completed' ? '✅' : t.status === 'rejected' ? '❌' : t.status === 'in_progress' ? '🔄' : '⏳'} ${t.task}`).join(', ');
+          console.log(`   ↳ Updated todo pad: ${todoSummary}`);
+          sendSSE({ type: 'tool_status', content: `📝 Updated task list: ${todoSummary}` });
+          followups.push({ 
+            role: 'tool', 
+            tool_call_id: tc.id, 
+            name: fn, 
+            content: JSON.stringify({ success: true, todos_updated: todos.length }) 
+          });
+          
+        } else if (['rewrite_chunk', 'add_chunk', 'remove_chunk', 'move_chunk', 'rewrite_chunks_batch'].includes(fn)) {
+          hasActionTools = true;
+          // These are action tools - we don't execute them but convert to actions
+          sendSSE({ type: 'tool_status', content: `🔄 Preparing ${fn.replace('_', ' ')} action...` });
+          sendSSE({ type: 'tool_status', content: getToolCallMessage(fn, true) });
+          followups.push({ 
+            role: 'tool', 
+            tool_call_id: tc.id, 
+            name: fn, 
+            content: JSON.stringify({ success: true, acknowledged: true }) 
+          });
+          
+        } else {
+          console.warn(`   ❌ Unknown tool: ${fn}`);
+          followups.push({ 
+            role: 'tool', 
+            tool_call_id: tc.id, 
+            name: fn, 
+            content: JSON.stringify({ error: 'UNKNOWN_TOOL' }) 
+          });
+        }
+      }
+      
+      // Always make a follow-up call after tool execution to get the final response
+      if (hasDataRetrievalTools || hasActionTools) {
+        sendSSE({ type: 'thinking', content: '🤔 Analyzing all information...' });
+        
+        try {
+          // Add a specific instruction for the follow-up to ensure the AI provides concrete suggestions
+          const followUpMessages = [...baseMessages, ...followups];
+          
+          // Add an instruction to provide specific suggestions based on the tools data
+          followUpMessages.push({
+            role: 'user',
+            content: 'Now that you have all the information from the tools, please provide specific, actionable suggestions to address my request. Be concrete and helpful.'
+          });
+          
+          const followUpResponse = await openai.chat.completions.create({
+            model: MODEL,
+            messages: followUpMessages,
+            tools,
+            tool_choice: 'auto',
+            reasoning_effort: 'medium',
+            stream: true
+          });
+          
+          // Stream the follow-up response
+          let followUpContent = '';
+          let followUpToolCalls = [];
+          let hasFollowUpContent = false;
+          
+          for await (const chunk of followUpResponse) {
+            const delta = chunk.choices[0]?.delta;
+            
+            if (delta?.content) {
+              followUpContent += delta.content;
+              hasFollowUpContent = true;
+              sendSSE({ 
+                type: 'content', 
+                content: delta.content 
+              });
+            }
+            
+            // Handle any additional tool calls from follow-up (action tools)
+            if (delta?.tool_calls) {
+              for (const toolCall of delta.tool_calls) {
+                if (toolCall.index !== undefined) {
+                  if (!followUpToolCalls[toolCall.index]) {
+                    followUpToolCalls[toolCall.index] = {
+                      id: toolCall.id,
+                      type: toolCall.type,
+                      function: { name: '', arguments: '' }
+                    };
+                  }
+                  
+                  if (toolCall.function?.name) {
+                    followUpToolCalls[toolCall.index].function.name += toolCall.function.name;
+                  }
+                  if (toolCall.function?.arguments) {
+                    followUpToolCalls[toolCall.index].function.arguments += toolCall.function.arguments;
+                  }
+                }
+              }
+            }
+          }
+          
+          // Process follow-up tool calls (these should be action tools)
+          for (const tc of followUpToolCalls) {
+            const fn = tc.function?.name;
+            if (['rewrite_chunk', 'add_chunk', 'remove_chunk', 'move_chunk'].includes(fn)) {
+              try {
+                const args = JSON.parse(tc.function?.arguments || '{}');
+                sendSSE({ type: 'tool_status', content: `🔄 Creating ${fn.replace('_', ' ')} action...` });
+                sendSSE({ type: 'tool_status', content: getToolCallMessage(fn, true) });
+                
+                let action;
+                if (fn === 'rewrite_chunk') {
+                  action = { type: 'rewrite', targetId: args.targetId };
+                  if (args.script_text !== undefined) action.script_text = args.script_text;
+                  if (args.camera_instruction !== undefined) action.camera_instruction = args.camera_instruction;
+                } else if (fn === 'add_chunk') {
+                  action = { type: 'add', position: args.position, targetId: args.targetId, chunk: args.chunk };
+                } else if (fn === 'remove_chunk') {
+                  action = { type: 'remove', targetId: args.targetId };
+                } else if (fn === 'move_chunk') {
+                  action = { type: 'move', targetId: args.targetId, position: args.position, refId: args.refId };
+                }
+                
+                if (action) {
+                  finalActions.push(action);
+                  console.log(`   ↳ Created action from follow-up: ${action.type}`);
+                }
+              } catch (e) {
+                console.warn('Error parsing follow-up tool call:', e);
+              }
+            }
+          }
+          
+          // Only update fullContent if we got actual content from the follow-up
+          if (hasFollowUpContent) {
+            fullContent = followUpContent;
+          } else if (!fullContent) {
+            // If no content was streamed at all, set a fallback message
+            fullContent = "I've analyzed your script. Let me know what specific changes you'd like me to make.";
+          }
+        } catch (e) {
+          console.warn('Follow-up call failed:', e);
+        }
+      }
+    }
+    
+    sendSSE({
+      type: 'done',
+      explanation: fullContent,
+      actions: finalActions
+    });
+    
+    console.log('✅ Streaming response completed');
+    res.end();
+    
+  } catch (error) {
+    console.error('❌ Streaming error:', error);
+    try {
+      res.write(`data: ${JSON.stringify({ type: 'error', content: 'Sorry, something went wrong. Please try again.' })}\n\n`);
+    } catch (writeError) {
+      console.error('Error writing error response:', writeError);
+    }
+    res.end();
+  }
 });
 
 // Test endpoint to verify proxy is working
@@ -308,7 +865,9 @@ app.post('/api/generateScript', async (req, res) => {
   }
 });
 
-// Chat actions
+
+
+// Chat actions (non-streaming - keeping for compatibility)
 app.post('/api/chatActions', async (req, res) => {
   try {
     const { prompt, script, context, chat_history, inputs: requestInputs, adAnalyses } = req.body || {};
@@ -319,7 +878,7 @@ app.post('/api/chatActions', async (req, res) => {
       script_chunks: (script?.chunks || []).length,
       context_keys: context ? Object.keys(context) : [],
       chat_history_msgs: Array.isArray(chat_history) ? chat_history.length : 0,
-      model: CHAT_MODEL
+      model: MODEL
     });
     console.log('💭 User Prompt:', `"${(prompt || '').substring(0, 200)}${(prompt || '').length > 200 ? '...' : ''}"`);
     
@@ -358,10 +917,11 @@ app.post('/api/chatActions', async (req, res) => {
     
     const sys = prompts.chatActions.system;
     
+    // Don't send the script directly - let the AI use tools to read it
     const baseMessages = [
       { role: 'system', content: sys },
       ...(Array.isArray(chat_history) ? chat_history.slice(-8) : []),
-      { role: 'user', content: JSON.stringify({ prompt, context, script }) }
+      { role: 'user', content: prompt }  // Just send the user's message
     ];
 
     // Add same tools as script generation
@@ -371,15 +931,15 @@ app.post('/api/chatActions', async (req, res) => {
     }));
 
     async function callChatToolsLoop(msgs, maxIterations = 5, currentIteration = 0) {
-      console.log(`🤖 [CHAT API CALL] Making request to ${CHAT_MODEL}... (iteration ${currentIteration + 1})`);
+      console.log(`🤖 [CHAT API CALL] Making request to ${MODEL}... (iteration ${currentIteration + 1})`);
       console.log(`📨 Message count: ${msgs.length}`);
       
       const r = await openai.chat.completions.create({
-        model: CHAT_MODEL,
+        model: MODEL,
         messages: msgs,
         tools,
         tool_choice: 'auto',
-        reasoning_effort: 'medium'  // Enable reasoning for chat actions (GPT-5 Mini)
+        reasoning_effort: 'medium'  // Enable reasoning for chat actions (GPT-5)
       });
 
       console.log('✅ [CHAT API RESPONSE] Received response');
@@ -622,360 +1182,20 @@ app.post('/api/getAnalysis', async (req, res) => {
     const analysisData = JSON.parse(fs.readFileSync(analysisPath, 'utf8'));
     console.log(`[getAnalysis] Found analysis with ${analysisData.chunks?.length || 0} chunks`);
     
-    res.json({ analysis: analysisData });
+    res.json(analysisData);
   } catch (e) {
     console.error(`[getAnalysis] Error:`, e);
     res.status(500).json({ error: 'SERVER_ERROR', details: String(e) });
   }
 });
 
-// Streaming Chat Endpoint with Agentic Behavior
-app.post('/api/chat/stream', async (req, res) => {
-  try {
-    const { prompt, workspaceNodes = [], script, chatHistory = [] } = req.body || {};
-    
-    console.log('\n🚀 [STREAMING CHAT] Starting agentic conversation...');
-    console.log('📊 Request Summary:', {
-      prompt_length: (prompt || '').length,
-      workspace_nodes: workspaceNodes.length,
-      script_chunks: script?.chunks?.length || 0,
-      chat_history: chatHistory.length,
-      model: CHAT_MODEL
-    });
-    
-    if (!prompt) {
-      return res.status(400).json({ error: 'BAD_INPUT', message: 'prompt required' });
-    }
-    
-    // Setup SSE headers
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Cache-Control');
-    
-    if (!HAS_KEY) {
-      res.write(`data: ${JSON.stringify({type: "thinking", content: "Mock mode: Analyzing your request..."})}\n\n`);
-      res.write(`data: ${JSON.stringify({type: "tool_status", content: "🔧 Reading script content"})}\n\n`);
-      res.write(`data: ${JSON.stringify({type: "content", content: "I would help you improve your script, but I'm in mock mode. Please add your OpenAI API key to enable real functionality."})}\n\n`);
-      res.write(`data: ${JSON.stringify({type: "done"})}\n\n`);
-      return res.end();
-    }
-    
-    // Content access tools for workspace nodes
-    const tools = [
-      {
-        type: 'function',
-        function: {
-          name: 'get_workspace_content',
-          description: 'Access content from workspace nodes (product specs, ads, instructions)',
-          parameters: {
-            type: 'object',
-            properties: {
-              node_types: {
-                type: 'array',
-                items: { type: 'string', enum: ['productSpec', 'ad', 'instructions'] },
-                description: 'Types of nodes to retrieve content from'
-              }
-            },
-            required: ['node_types']
-          }
-        }
-      },
-      {
-        type: 'function', 
-        function: {
-          name: 'get_script_content',
-          description: 'Read the current script chunks and their content',
-          parameters: {
-            type: 'object',
-            properties: {},
-            required: []
-          }
-        }
-      },
-      {
-        type: 'function',
-        function: {
-          name: 'suggest_script_changes',
-          description: 'Propose specific changes to script chunks with reasoning',
-          parameters: {
-            type: 'object',
-            properties: {
-              explanation: { type: 'string', description: 'Explanation of the changes being made' },
-              actions: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    type: { type: 'string', enum: ['rewrite', 'add', 'remove', 'move'], description: 'Type of action' },
-                    targetId: { type: 'string', description: 'ID of chunk to target' },
-                    script_text: { type: 'string', description: 'New script text for rewrite actions' },
-                    camera_instruction: { type: 'string', description: 'New camera instruction for rewrite actions' },
-                    position: { type: 'string', enum: ['before', 'after'], description: 'Position for add/move actions' },
-                    refId: { type: 'string', description: 'Reference chunk ID for move actions' },
-                    chunk: {
-                      type: 'object',
-                      properties: {
-                        id: { type: 'string' },
-                        type: { type: 'string', enum: ['HOOK', 'PRODUCT', 'CTA'] },
-                        script_text: { type: 'string' },
-                        camera_instruction: { type: 'string' }
-                      },
-                      description: 'New chunk data for add actions'
-                    }
-                  },
-                  required: ['type', 'targetId']
-                }
-              }
-            },
-            required: ['explanation', 'actions']
-          }
-        }
-      }
-    ];
-    
-    // System prompt for agentic chat assistant
-    const systemPrompt = `You are a creative video marketing script assistant with access to workspace content. You help users refine and improve short-form video ad scripts.
-
-CRITICAL SCRIPT STRUCTURE RULES:
-- Each chunk represents ONE VISUAL SHOT with ONE camera instruction
-- Never combine multiple shots or camera angles into a single chunk
-- If you need multiple shots, create multiple chunks - this is preferred and expected
-- Each chunk should have focused, single-shot camera instruction (e.g., "Close-up on hands opening product" not "Close-up then wide shot then detail")
-- Break up scripts into as many chunks as needed to accommodate different visual shots
-- Common chunk types: HOOK (attention-grabbing opener), PRODUCT (showing product), CTA (call-to-action)
-
-IMPORTANT BEHAVIOR:
-- Always use tools to access current workspace content before making suggestions
-- Show your thinking process as you analyze the user's request
-- Provide specific, actionable suggestions with clear reasoning
-- When suggesting script changes, always explain why each change improves the script
-- Be helpful and creative while maintaining the script's marketing effectiveness
-- Feel free to add new chunks to break up scenes into distinct visual shots
-
-AVAILABLE CONTEXT:
-- Workspace nodes contain product specs, ad references, and instructions
-- Current script has chunks with script_text and camera_instruction
-- User may ask for multiple changes in one request - handle them systematically
-
-Your goal is to be a helpful creative partner who understands that video is a visual medium where each chunk = one shot.`;
-    
-    // Build conversation messages
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...chatHistory.slice(-6), // Keep recent history
-      { role: 'user', content: prompt }
-    ];
-    
-    console.log('🤖 Starting agentic conversation loop...');
-    
-    // Agentic conversation loop - continue until agent determines it's done
-    let conversationMessages = [...messages];
-    let iterationCount = 0;
-    const maxIterations = 5; // Reduced safety limit
-    
-    while (iterationCount < maxIterations) {
-      iterationCount++;
-      console.log(`\n🔄 Agentic iteration ${iterationCount}...`);
-      
-      // No fake thinking simulation - just show spinner UI
-      
-      try {
-        const stream = await openai.chat.completions.create({
-          model: CHAT_MODEL,
-          messages: conversationMessages,
-          tools,
-          tool_choice: 'auto',
-          stream: true,
-          temperature: 1,
-          reasoning_effort: 'medium', // Internal reasoning (not streamed)
-          stream_options: { include_usage: true }
-        });
-        
-        let assistantMessage = { role: 'assistant', content: '', tool_calls: [] };
-        let announcedTools = new Set(); // Track announced tools to prevent duplicates
-        
-        // Process streaming response
-        for await (const chunk of stream) {
-          const delta = chunk.choices?.[0]?.delta;
-          
-          // OpenAI reasoning tokens are consumed internally but not streamed
-          // UI shows spinner while processing, no fake thinking simulation
-          
-          // Stream content as it comes
-          if (delta?.content) {
-            assistantMessage.content += delta.content;
-            res.write(`data: ${JSON.stringify({
-              type: "content", 
-              content: delta.content
-            })}\n\n`);
-          }
-          
-          // Handle tool calls
-          if (delta?.tool_calls) {
-            for (const toolCall of delta.tool_calls) {
-              if (toolCall.index !== undefined) {
-                // Initialize tool call if needed
-                if (!assistantMessage.tool_calls[toolCall.index]) {
-                  assistantMessage.tool_calls[toolCall.index] = {
-                    id: toolCall.id || '',
-                    type: 'function',
-                    function: { name: '', arguments: '' }
-                  };
-                }
-                
-                const tc = assistantMessage.tool_calls[toolCall.index];
-                
-                // Build tool name incrementally
-                if (toolCall.function?.name) {
-                  tc.function.name += toolCall.function.name;
-                }
-                
-                // Build arguments incrementally
-                if (toolCall.function?.arguments) {
-                  tc.function.arguments += toolCall.function.arguments;
-                }
-                
-                // Set ID if provided
-                if (toolCall.id) {
-                  tc.id = toolCall.id;
-                }
-                
-                // Announce tool when name is complete and not already announced
-                if (tc.function.name && !announcedTools.has(tc.function.name)) {
-                  announcedTools.add(tc.function.name);
-                  
-                  const displayName = tc.function.name === 'get_workspace_content' ? 'Reading workspace content' : 
-                                     tc.function.name === 'get_script_content' ? 'Analyzing current script' :
-                                     tc.function.name === 'suggest_script_changes' ? 'Preparing script suggestions' : tc.function.name;
-                  
-                  res.write(`data: ${JSON.stringify({
-                    type: "tool_status", 
-                    content: `🔧 ${displayName}`
-                  })}\n\n`);
-                  
-                  // No fake thinking messages - just show tool status
-                }
-              }
-            }
-          }
-        }
-        
-        // Handle tool calls
-        if (assistantMessage.tool_calls.length > 0) {
-          console.log(`🔧 Processing ${assistantMessage.tool_calls.length} tool calls`);
-          conversationMessages.push(assistantMessage);
-          
-          for (const toolCall of assistantMessage.tool_calls) {
-            const toolName = toolCall.function.name;
-            const toolArgs = JSON.parse(toolCall.function.arguments || '{}');
-            
-            console.log(`  🛠️ Executing tool: ${toolName}`);
-            // Don't send tool status here - already sent during streaming
-            
-            let toolResult = '';
-            
-            if (toolName === 'get_workspace_content') {
-              const nodeTypes = toolArgs.node_types || [];
-              const relevantNodes = workspaceNodes.filter(node => nodeTypes.includes(node.type));
-              const content = relevantNodes.map(node => ({
-                type: node.type,
-                id: node.id,
-                data: node.data
-              }));
-              toolResult = JSON.stringify({ nodes: content });
-              
-            } else if (toolName === 'get_script_content') {
-              toolResult = JSON.stringify({
-                script: script || null,
-                chunks: script?.chunks || []
-              });
-              
-            } else if (toolName === 'suggest_script_changes') {
-              // Extract actions and explanation from the tool arguments
-              const actions = toolArgs.actions || [];
-              const explanation = toolArgs.explanation || 'Here are the suggested changes:';
-              
-              console.log(`     ↳ Suggesting ${actions.length} script changes`);
-              actions.forEach((action, idx) => {
-                console.log(`       ${idx + 1}. ${action.type} ${action.targetId}`)
-              });
-              
-              toolResult = JSON.stringify({
-                status: 'suggestions_prepared',
-                explanation: explanation,
-                actions: actions
-              });
-              
-              // Stream the final suggestions to the user
-              res.write(`data: ${JSON.stringify({
-                type: "suggestions",
-                content: {
-                  explanation: explanation,
-                  actions: actions
-                }
-              })}\n\n`);
-            }
-            
-            conversationMessages.push({
-              role: 'tool',
-              tool_call_id: toolCall.id,
-              name: toolName,
-              content: toolResult
-            });
-          }
-          
-          // Check if we made script suggestions - if so, we're done
-          const hasSuggestions = assistantMessage.tool_calls.some(tc => tc.function.name === 'suggest_script_changes');
-          if (hasSuggestions) {
-            console.log('✅ Agent completed task with script suggestions');
-            break; // Exit the while loop completely
-          }
-          
-          // If no suggestions, continue the agentic loop
-          continue;
-        }
-        
-        // If we have final content without tool calls, we're done
-        if (assistantMessage.content && assistantMessage.tool_calls.length === 0) {
-          console.log('✅ Agent completed task with final response');
-          break;
-        }
-        
-        // If no content and no tool calls, something's wrong - break
-        if (!assistantMessage.content && assistantMessage.tool_calls.length === 0) {
-          console.log('⚠️ No content or tool calls - ending conversation');
-          break;
-        }
-        
-      } catch (error) {
-        console.error(`❌ Error in iteration ${iterationCount}:`, error);
-        res.write(`data: ${JSON.stringify({
-          type: "error", 
-          content: `Error: ${error.message}`
-        })}\n\n`);
-        break;
-      }
-    }
-    
-    if (iterationCount >= maxIterations) {
-      console.log(`⚠️ Reached maximum iterations (${maxIterations}) - stopping for safety`);
-    }
-    
-    console.log('✅ Agentic conversation complete');
-    res.write(`data: ${JSON.stringify({type: "done"})}\n\n`);
-    res.end();
-    
-  } catch (error) {
-    console.error('[streaming chat] error:', error);
-    res.write(`data: ${JSON.stringify({
-      type: "error", 
-      content: `Server error: ${error.message}`
-    })}\n\n`);
-    res.end();
-  }
+// Simple test endpoint
+app.get('/api/test-streaming', (req, res) => {
+  res.json({ message: 'Test endpoint works', streaming: true });
 });
 
 const PORT = process.env.EXPRESS_PORT || 5174;
-app.listen(PORT, () => console.log(`Marketing App server on :${PORT} (mock=${!HAS_KEY})`));
+app.listen(PORT, () => {
+  console.log(`Marketing App server on :${PORT} (mock=${!HAS_KEY})`);
+  console.log('🚀 Streaming endpoint added at /api/chatActions/stream');
+});

@@ -13,10 +13,12 @@ export default function ChatAssistant({
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [aborter, setAborter] = useState(null);
-  const [autoContinue, setAutoContinue] = useState(false);
   const [actionStates, setActionStates] = useState({}); // Track accept/reject state for each message
+  const [currentStream, setCurrentStream] = useState(null);
+  // Removed thinking dropdown - just show spinner while processing
   const textareaRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const inputContainerRef = useRef(null);
 
   const isDisabled = disabled || loading;
 
@@ -87,9 +89,15 @@ export default function ChatAssistant({
 
     // Show user message immediately
     const userMessage = { role: 'user', content: prompt, timestamp: Date.now() };
-    const thinkingMessage = { role: 'assistant', content: '', thinking: true, timestamp: Date.now() };
+    const streamingMessage = { 
+      role: 'assistant', 
+      content: '', 
+      streaming: true, 
+      toolStatuses: [],
+      timestamp: Date.now() 
+    };
     
-    setMessages(prev => [...prev, userMessage, thinkingMessage]);
+    setMessages(prev => [...prev, userMessage, streamingMessage]);
     
     const controller = new AbortController();
     setAborter(controller);
@@ -98,46 +106,18 @@ export default function ChatAssistant({
     autoResize();
 
     try {
+      // Prepare workspace nodes data
+      const workspaceNodes = context.selectedNodes || [];
       
-      // Prepare inputs for tools
-      const inputs = {
-        product_specs: context.productSpecs || '',
-        extra_instructions: context.extraInstructions || '',
-        ad_refs: context.selectedAds || []
-      };
-
-      // Enhanced prompt with explicit context when nodes are selected
-      let enhancedPrompt = prompt;
-      if (context.selectedNodes && context.selectedNodes.length > 0) {
-        const contextInfo = [];
-        if (context.productSpecs) {
-          contextInfo.push(`PRODUCT SPECS (user selected): ${context.productSpecs}`);
-        }
-        if (context.extraInstructions) {
-          contextInfo.push(`INSTRUCTIONS (user selected): ${context.extraInstructions}`);
-        }
-        if (context.selectedAds && context.selectedAds.length > 0) {
-          contextInfo.push(`REFERENCE ADS (user selected): ${context.selectedAds.join(', ')}`);
-        }
-        
-        if (contextInfo.length > 0) {
-          enhancedPrompt = `${prompt}\n\n--- USER EXPLICITLY SELECTED CONTEXT ---\n${contextInfo.join('\n\n')}`;
-        }
-      }
-
-      // Call our Express API
-      const response = await fetch('/api/chatActions', {
+      // Call streaming endpoint
+      const response = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: enhancedPrompt,
+          prompt: prompt,
+          workspaceNodes: workspaceNodes,
           script: script,
-          context: context,
-          inputs: inputs,
-          adAnalyses: context.selectedAdAnalyses || {},
-          chat_history: toChatHistory(),
-          agent: autoContinue,
-          max_steps: 3
+          chatHistory: toChatHistory()
         }),
         signal: controller.signal
       });
@@ -146,46 +126,136 @@ export default function ChatAssistant({
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const result = await response.json();
-      const actions = result.actions || [];
-      const explanation = result.explanation || 'Here are the changes I propose:';
-
-      const assistantMessage = {
-        role: 'assistant',
-        content: explanation,
-        actions: actions,
-        reasoning: summarizeActions(actions),
-        timestamp: Date.now()
-      };
-
-      // Replace the thinking message with the actual response
-      setMessages(prev => {
-        const withoutThinking = prev.slice(0, -1); // Remove thinking message
-        return [...withoutThinking, assistantMessage];
-      });
-      onPropose(actions);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let finalActions = [];
+      
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) {
+            console.log('Stream complete');
+            break;
+          }
+          
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // Keep incomplete line in buffer
+          
+          for (const line of lines) {
+            if (line.trim() === '') continue;
+            if (!line.startsWith('data: ')) continue;
+            
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              // Remove thinking processing - not using fake simulation
+              
+              if (data.type === 'content') {
+                // Append content to streaming message
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastMessage = updated[updated.length - 1];
+                  if (lastMessage.streaming) {
+                    lastMessage.content += data.content;
+                  }
+                  return updated;
+                });
+                
+              } else if (data.type === 'tool_status') {
+                // Add permanent tool status line
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastMessage = updated[updated.length - 1];
+                  if (lastMessage.streaming) {
+                    if (!lastMessage.toolStatuses) {
+                      lastMessage.toolStatuses = [];
+                    }
+                    lastMessage.toolStatuses.push(data.content);
+                  }
+                  return updated;
+                });
+                
+              } else if (data.type === 'suggestions') {
+                // Handle suggestions with proper action format
+                finalActions = data.content.actions || [];
+                const explanation = data.content.explanation || 'Here are the suggested changes:';
+                
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastMessage = updated[updated.length - 1];
+                  if (lastMessage.streaming) {
+                    lastMessage.content = explanation; // Replace content with explanation
+                    lastMessage.actions = finalActions;
+                  }
+                  return updated;
+                });
+                
+              } else if (data.type === 'error') {
+                console.error('Stream error:', data.content);
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastMessage = updated[updated.length - 1];
+                  if (lastMessage.streaming) {
+                    lastMessage.content = data.content;
+                    lastMessage.error = true;
+                  }
+                  return updated;
+                });
+                
+              } else if (data.type === 'done') {
+                console.log('Stream done');
+                // Finalize the streaming message
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastMessage = updated[updated.length - 1];
+                  if (lastMessage.streaming) {
+                    lastMessage.streaming = false;
+                    if (!lastMessage.content.trim()) {
+                      lastMessage.content = 'I\'ve analyzed your request and prepared some suggestions.';
+                    }
+                  }
+                  return updated;
+                });
+                
+                if (finalActions.length > 0) {
+                  onPropose(finalActions);
+                }
+                break;
+              }
+            } catch (parseError) {
+              console.warn('Failed to parse SSE data:', line, parseError);
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
 
     } catch (error) {
       if (error.name !== 'AbortError') {
-        console.error('Chat error:', error);
+        console.error('Chat streaming error:', error);
         const errorMessage = {
           role: 'assistant',
           content: 'Sorry, I encountered an error. Please try again.',
           error: true,
           timestamp: Date.now()
         };
-        // Replace the thinking message with error message
+        // Replace the streaming message with error message
         setMessages(prev => {
-          const withoutThinking = prev.slice(0, -1); // Remove thinking message
-          return [...withoutThinking, errorMessage];
+          const withoutStreaming = prev.slice(0, -1);
+          return [...withoutStreaming, errorMessage];
         });
       } else {
-        // If aborted, remove the thinking message
+        // If aborted, remove the streaming message
         setMessages(prev => prev.slice(0, -1));
       }
     } finally {
       setLoading(false);
       setAborter(null);
+      setCurrentStream(null);
     }
   }
 
@@ -364,25 +434,64 @@ export default function ChatAssistant({
               lineHeight: 1.4,
               whiteSpace: 'pre-wrap'
             }}>
-              {message.thinking ? (
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 8,
-                  color: 'var(--color-text-secondary)'
-                }}>
-                  <div style={{
-                    width: 16,
-                    height: 16,
-                    border: '2px solid transparent',
-                    borderTop: '2px solid currentColor',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }} />
-                  <span style={{ fontSize: 13, fontStyle: 'italic' }}>Thinking...</span>
+              {message.streaming ? (
+                <div>
+                  {/* Tool statuses */}
+                  {message.toolStatuses && message.toolStatuses.map((status, idx) => (
+                    <div key={idx} style={{
+                      fontSize: 12,
+                      color: 'var(--color-success-primary)',
+                      marginBottom: 4,
+                      fontWeight: 500
+                    }}>
+                      {status}
+                    </div>
+                  ))}
+                  
+                  {/* Content */}
+                  <div style={{ whiteSpace: 'pre-wrap' }}>
+                    {message.content}
+                  </div>
+                  
+                  {/* Simple thinking spinner */}
+                  {!message.content && (!message.toolStatuses || message.toolStatuses.length === 0) && (
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 8,
+                      color: 'var(--color-text-secondary)'
+                    }}>
+                      <div style={{
+                        width: 16,
+                        height: 16,
+                        border: '2px solid transparent',
+                        borderTop: '2px solid currentColor',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }} />
+                      <span style={{ fontSize: 13, fontStyle: 'italic' }}>Thinking...</span>
+                    </div>
+                  )}
                 </div>
               ) : (
-                message.content
+                <div>
+                  {/* Show final tool statuses */}
+                  {message.toolStatuses && message.toolStatuses.map((status, idx) => (
+                    <div key={idx} style={{
+                      fontSize: 12,
+                      color: 'var(--color-success-primary)',
+                      marginBottom: 4,
+                      fontWeight: 500
+                    }}>
+                      {status}
+                    </div>
+                  ))}
+                  
+                  {/* Final content */}
+                  <div style={{ whiteSpace: 'pre-wrap' }}>
+                    {message.content}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -529,15 +638,33 @@ export default function ChatAssistant({
         borderTop: '1px solid var(--color-border-secondary)',
         backgroundColor: 'var(--color-bg-secondary)'
       }}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'flex-end', 
-          gap: 8,
-          backgroundColor: 'var(--color-bg-primary)',
-          border: '1px solid var(--color-border-secondary)',
-          borderRadius: 8,
-          padding: '8px 12px'
-        }}>
+        <div 
+          ref={inputContainerRef}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'flex-end', 
+            gap: 8,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            border: '2px solid #8b5cf6',
+            borderRadius: 16,
+            padding: '12px 16px',
+            boxShadow: '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)',
+            backdropFilter: 'blur(8px)',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            if (!isDisabled) {
+              e.currentTarget.style.borderColor = '#7c3aed';
+              e.currentTarget.style.boxShadow = '0 0 25px rgba(124, 58, 237, 0.8), inset 0 0 15px rgba(124, 58, 237, 0.2)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isDisabled && document.activeElement !== textareaRef.current) {
+              e.currentTarget.style.borderColor = '#8b5cf6';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)';
+            }
+          }}
+        >
           <textarea
             ref={textareaRef}
             value={prompt}
@@ -546,6 +673,18 @@ export default function ChatAssistant({
               autoResize();
             }}
             onKeyDown={handleKeyDown}
+            onFocus={() => {
+              if (inputContainerRef.current) {
+                inputContainerRef.current.style.borderColor = '#7c3aed';
+                inputContainerRef.current.style.boxShadow = '0 0 30px rgba(124, 58, 237, 1), inset 0 0 20px rgba(124, 58, 237, 0.3)';
+              }
+            }}
+            onBlur={() => {
+              if (inputContainerRef.current) {
+                inputContainerRef.current.style.borderColor = '#8b5cf6';
+                inputContainerRef.current.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)';
+              }
+            }}
             placeholder={disabled ? 'Generate a script first to enable the assistant.' : loading ? 'AI is thinking...' : 'Type a command (Shift+Enter for newline)'}
             disabled={disabled || loading}
             rows={1}
@@ -557,7 +696,8 @@ export default function ChatAssistant({
               fontSize: 14,
               lineHeight: 1.4,
               backgroundColor: 'transparent',
-              fontFamily: 'inherit'
+              fontFamily: 'inherit',
+              color: 'white'
             }}
           />
           
@@ -605,30 +745,6 @@ export default function ChatAssistant({
           )}
         </div>
 
-        {/* Options */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          marginTop: 8 
-        }}>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            fontSize: 12,
-            color: 'var(--color-text-secondary)',
-            cursor: 'pointer'
-          }}>
-            <input
-              type="checkbox"
-              checked={autoContinue}
-              onChange={(e) => setAutoContinue(e.target.checked)}
-              style={{ margin: 0 }}
-            />
-            Auto-continue (agent mode)
-          </label>
-        </div>
       </div>
     </div>
   );

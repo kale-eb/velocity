@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -16,7 +16,8 @@ import {
   Trash2,
   Check,
   ExternalLink,
-  Play
+  Play,
+  Shield
 } from 'lucide-react';
 import type { Theme } from '../../types';
 import ChatAssistant from '../script/chat/ChatAssistant';
@@ -38,7 +39,7 @@ interface Script {
 interface EnhancedStaticScriptViewProps {
   nodes?: any[];
   colorScheme: Theme;
-  onAddNode?: (type: string, data?: any) => void;
+  onAddNode?: (type: string, data?: any) => string | null;
   onUpdateNode?: (id: string, updates: any) => void;
   onDeleteNode?: (id: string) => void;
   chatExpanded: boolean;
@@ -86,6 +87,15 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
 
   const isDarkMode = colorScheme === 'dark';
   const isExperimental = colorScheme === 'experimental';
+
+  // Log when script prop changes
+  useEffect(() => {
+    console.log('📜 EnhancedStaticScriptView: currentScript prop changed:', {
+      hasScript: !!currentScript,
+      chunks: currentScript?.chunks?.length || 0,
+      title: currentScript?.title || 'No title'
+    });
+  }, [currentScript]);
 
   // Filter nodes by type
   const productSpecs = nodes.filter(node => node.type === 'productSpec');
@@ -166,13 +176,21 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
   };
 
   const saveScript = (nextScript: Script) => {
+    console.log('📜 saveScript called with:', {
+      chunks: nextScript?.chunks?.length || 0,
+      title: nextScript?.title || 'No title',
+      hasOnScriptUpdate: !!onScriptUpdate
+    });
+    
     if (script) {
       setUndoStack(prev => [...prev.slice(-19), script]); // Keep last 20
       setRedoStack([]);
     }
     if (onScriptUpdate) {
+      console.log('📜 Calling onScriptUpdate...');
       onScriptUpdate(nextScript);
     }
+    console.log('📜 Script save completed');
   };
 
   const undo = () => {
@@ -402,6 +420,50 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
     try {
       setAnalyzingAds(prev => new Set(prev).add(nodeId));
       
+      // First check if we already have this URL analyzed locally
+      const existingAnalysis = adAnalyses[nodeId];
+      if (existingAnalysis && existingAnalysis.url === url) {
+        console.log('✅ Using local cached ad analysis for', url);
+        setSelectedSources(prev => new Set(prev).add(nodeId));
+        return; // Return the existing analysis, skip all processing
+      }
+
+      // Check if ANY other node has analyzed this same URL
+      const existingUrlAnalysis = Object.values(adAnalyses).find(analysis => analysis.url === url);
+      if (existingUrlAnalysis) {
+        console.log('✅ Found existing analysis for same URL, reusing for', url);
+        if (onAdAnalyzed) {
+          onAdAnalyzed(nodeId, { ...existingUrlAnalysis, cached: true });
+        }
+        setSelectedSources(prev => new Set(prev).add(nodeId));
+        return; // Reuse analysis from different node
+      }
+
+      // Check if backend has cached analysis for this URL
+      try {
+        const cacheResponse = await fetch('/api/getAnalysis', {
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        if (cacheResponse.ok) {
+          const cachedResult = await cacheResponse.json();
+          if (cachedResult.analysis) {
+            console.log('✅ Using backend cached analysis for', url);
+            if (onAdAnalyzed) {
+              onAdAnalyzed(nodeId, { ...cachedResult.analysis, url, cached: true });
+            }
+            setSelectedSources(prev => new Set(prev).add(nodeId));
+            return; // Return cached analysis, skip processing
+          }
+        }
+      } catch (cacheError) {
+        console.log('Cache check failed, proceeding with fresh analysis');
+      }
+
+      // No cached version found, analyze fresh
+      console.log('🔄 Processing new ad analysis for', url);
       const response = await fetch('/api/analyzeAd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -413,7 +475,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
       const result = await response.json();
       // Save analysis through parent callback
       if (onAdAnalyzed) {
-        onAdAnalyzed(nodeId, result.analysis || result);
+        onAdAnalyzed(nodeId, { ...(result.analysis || result), url, cached: false });
       }
       
       // Auto-select the ad after analysis
@@ -683,12 +745,16 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
       }}
     >
       {/* Left Sidebar - Content Sources */}
-      <div className={`w-80 transition-all duration-300 border-r flex-shrink-0 ${
+      <div className={`w-80 transition-all duration-300 border-r flex-shrink-0 flex flex-col ${
         isDarkMode ? 'bg-black border-purple-500/20' : 
         isExperimental ? 'bg-black border-yellow-400/30' : 
         'bg-gray-50 border-gray-200'
       }`}>
-        <div className="p-4">
+        <div className={`flex-1 overflow-y-auto p-4 ${
+          isDarkMode ? 'dark-scrollbar' :
+          isExperimental ? 'experimental-scrollbar' :
+          'custom-scrollbar'
+        }`}>
           <div className="flex items-center justify-between mb-4">
             <h2 className={`font-semibold ${
               isDarkMode ? 'text-purple-100' : 
@@ -1103,8 +1169,8 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                         'bg-gray-300 text-gray-500 cursor-not-allowed'
                                   }`}
                                 >
-                                  <Sparkles size={10} />
-                                  {isAnalyzing ? 'Analyzing...' : 'Analyze Ad'}
+                                  {adAnalyses[ad.id]?.cached ? <Shield size={10} /> : <Sparkles size={10} />}
+                                  {isAnalyzing ? 'Analyzing...' : adAnalyses[ad.id]?.cached ? 'Cached' : 'Analyze Ad'}
                                 </button>
                                 
                                 {ad.data?.url && (
@@ -1335,7 +1401,11 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
         </div>
 
         {/* Script Content */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className={`flex-1 p-6 overflow-y-auto bg-black ${
+          isDarkMode ? 'dark-scrollbar' :
+          isExperimental ? 'experimental-scrollbar' :
+          'custom-scrollbar'
+        }`}>
           {!script || script.chunks.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
@@ -1363,10 +1433,14 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
           ) : (
             <div className="space-y-4">
               {script.chunks.map((chunk, index) => (
-                <div key={chunk.id} className={`border rounded-lg p-4 ${
-                  isDarkMode ? 'bg-black border-purple-500/20' :
-                  isExperimental ? 'bg-black border-yellow-400/30' :
-                  'bg-white border-gray-200'
+                <div key={chunk.id} className={`border-2 rounded-lg p-4 ${
+                  isDarkMode ? 'bg-black border-purple-400 shadow-lg shadow-purple-500/40' :
+                  isExperimental ? 'bg-black border-yellow-400 shadow-lg shadow-yellow-400/40' :
+                  'bg-black border-blue-400 shadow-lg shadow-blue-400/40'
+                }`} style={{
+                  boxShadow: isDarkMode ? '0 0 20px rgba(147, 51, 234, 0.4), 0 0 40px rgba(147, 51, 234, 0.2)' :
+                    isExperimental ? '0 0 20px rgba(251, 191, 36, 0.4), 0 0 40px rgba(251, 191, 36, 0.2)' :
+                    '0 0 20px rgba(96, 165, 250, 0.4), 0 0 40px rgba(96, 165, 250, 0.2)'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">

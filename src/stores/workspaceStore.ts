@@ -11,7 +11,13 @@ import {
 
 interface WorkspaceStore extends WorkspaceState {
   // Actions
-  addNode: (type: NodeType, position: Point) => string | null
+  addNode: (
+    type: NodeType,
+    position: Point,
+    data?: any,
+    id?: string,
+    options?: { skipAutoConnect?: boolean; isRestoring?: boolean }
+  ) => string | null
   updateNode: (id: string, updates: Partial<WorkspaceNode>) => void
   deleteNode: (id: string) => void
   selectNode: (id: string | null) => void
@@ -53,6 +59,8 @@ const generateConnectionId = (sourceId: string, targetId: string): string => {
   return `connection_${sourceId}_${targetId}`
 }
 
+const isGeneratorType = (type: NodeType): boolean => type === 'script' || type === 'scriptGenerator'
+
 export const useWorkspaceStore = create<WorkspaceStore>()(
   persist(
     (set, get) => ({
@@ -90,37 +98,49 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
 
       // Actions
-      addNode: (type: NodeType, position: Point) => {
+      addNode: (type: NodeType, position: Point, data?: any, providedId?: string, options?: { skipAutoConnect?: boolean; isRestoring?: boolean }) => {
         const state = get()
+
+        const isRestoring = Boolean(options?.isRestoring || providedId)
+        const skipAutoConnect = Boolean(options?.skipAutoConnect || isRestoring)
         
-        // Check node limits
+        // Enforce limits
         if (type === 'productSpec') {
           const productSpecCount = state.nodes.filter(n => n.type === 'productSpec').length
           if (productSpecCount >= 1) {
             console.log('Maximum 1 product spec allowed')
-            return null // Only allow 1 product spec
+            return null
           }
         } else if (type === 'ad') {
           const adCount = state.nodes.filter(n => n.type === 'ad').length
           if (adCount >= 6) {
             console.log('Maximum 6 ads allowed')
-            return null // Max 6 ads
+            return null
           }
         } else if (type === 'instructions') {
           const instructionCount = state.nodes.filter(n => n.type === 'instructions').length
           if (instructionCount >= 4) {
             console.log('Maximum 4 instructions allowed')
-            return null // Max 4 instructions
+            return null
           }
-        } else if (type === 'script') {
-          const scriptGenCount = state.nodes.filter(n => n.type === 'script').length
-          if (scriptGenCount >= 1) {
+        } else if (isGeneratorType(type)) {
+          // Only allow ONE generator across both legacy/new types
+          const generatorCount = state.nodes.filter(n => isGeneratorType(n.type)).length
+          if (generatorCount >= 1) {
             console.log('Maximum 1 script generator allowed')
-            return null // Only allow 1 script generator
+            return null
+          }
+        }
+
+        // If restoring and id exists already, skip duplicate add
+        if (isRestoring && providedId) {
+          const existingById = state.nodes.find(n => n.id === providedId)
+          if (existingById) {
+            return existingById.id
           }
         }
         
-        const id = generateNodeId(type)
+        const id = providedId || generateNodeId(type)
         
         // Create node with default data based on type
         let newNode: WorkspaceNode
@@ -133,9 +153,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               position,
               isSelected: false,
               isDragging: false,
-              data: {
-                documents: []
-              }
+              data: data ?? { documents: [] }
             } as WorkspaceNode
             break
             
@@ -146,7 +164,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               position,
               isSelected: false,
               isDragging: false,
-              data: {
+              data: data ?? {
                 title: 'New Ad',
                 url: '',
                 status: 'draft'
@@ -161,9 +179,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               position,
               isSelected: false,
               isDragging: false,
-              data: {
-                content: ''
-              }
+              data: data ?? { content: '' }
             } as WorkspaceNode
             break
             
@@ -174,9 +190,28 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               position,
               isSelected: false,
               isDragging: false,
-              data: {
+              data: data ?? {
                 messages: [{role: 'assistant', content: 'Add your content and right-click to add more nodes!'}],
                 isActive: false
+              }
+            } as WorkspaceNode
+            break
+
+          case 'scriptGenerator':
+            newNode = {
+              id,
+              type: 'scriptGenerator',
+              position,
+              isSelected: false,
+              isDragging: false,
+              // Keep minimal shape; UI may enrich this later
+              data: data ?? {
+                inputs: {
+                  product_specs: '',
+                  ad_refs: [],
+                  extra_instructions: ''
+                },
+                expanded: true
               }
             } as WorkspaceNode
             break
@@ -188,7 +223,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
               position,
               isSelected: false,
               isDragging: false,
-              data: {}
+              data: data ?? {}
             } as WorkspaceNode
         }
 
@@ -197,18 +232,18 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           selectedNodeId: newNode.id
         }))
         
-        // Auto-create connection to script generator if it exists and this isn't a script node
-        if (type !== 'script') {
-          const scriptGen = get().nodes.find(n => n.type === 'script')
-          console.log('Looking for script generator to connect to:', { scriptGen: !!scriptGen, newNodeId: newNode.id })
-          if (scriptGen) {
-            console.log('Creating connection from', newNode.id, 'to', scriptGen.id)
-            get().addConnection(newNode.id, scriptGen.id)
+        // Auto-create connection to script generator if it exists and this isn't a generator itself
+        if (!skipAutoConnect && !isGeneratorType(type)) {
+          const generatorNode = get().nodes.find(n => isGeneratorType(n.type))
+          console.log('Looking for script generator to connect to:', { generatorFound: !!generatorNode, newNodeId: newNode.id })
+          if (generatorNode) {
+            console.log('Creating connection from', newNode.id, 'to', generatorNode.id)
+            get().addConnection(newNode.id, generatorNode.id)
           } else {
             console.log('No script generator found to connect to')
           }
         } else {
-          console.log('Not creating connection - node is a script generator itself')
+          console.log('Not creating connection - node is a script generator itself or during restoration')
         }
         
         get().pushToHistory()
@@ -217,9 +252,9 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
       updateNode: (id: string, updates: Partial<WorkspaceNode>) => {
         set((state) => ({
-          nodes: state.nodes.map(node => 
+          nodes: (state.nodes.map(node => 
             node.id === id ? { ...node, ...updates } : node
-          )
+          ) as WorkspaceNode[])
         }))
       },
 
@@ -237,18 +272,18 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       selectNode: (id: string | null) => {
         set((state) => ({
           selectedNodeId: id,
-          nodes: state.nodes.map(node => ({
+          nodes: (state.nodes.map(node => ({
             ...node,
             isSelected: node.id === id
-          }))
+          })) as WorkspaceNode[])
         }))
       },
 
       moveNode: (id: string, position: Point) => {
         set((state) => ({
-          nodes: state.nodes.map(node => 
+          nodes: (state.nodes.map(node => 
             node.id === id ? { ...node, position } : node
-          )
+          ) as WorkspaceNode[])
         }))
       },
 
@@ -323,10 +358,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             startPosition,
             offset
           },
-          nodes: state.nodes.map(node => ({
+          nodes: (state.nodes.map(node => ({
             ...node,
             isDragging: node.id === nodeId
-          }))
+          })) as WorkspaceNode[])
         }))
       },
 
@@ -345,10 +380,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             startPosition: null,
             offset: null
           },
-          nodes: state.nodes.map(node => ({
+          nodes: (state.nodes.map(node => ({
             ...node,
             isDragging: false
-          }))
+          })) as WorkspaceNode[])
         }))
         get().pushToHistory()
       },
@@ -418,7 +453,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         // Find different node types
         const ads = state.nodes.filter(n => n.type === 'ad')
         const instructions = state.nodes.filter(n => n.type === 'instructions')
-        const scriptGen = state.nodes.find(n => n.type === 'script')
+        const scriptGen = state.nodes.find(n => isGeneratorType(n.type))
         const productSpecs = state.nodes.filter(n => n.type === 'productSpec')
 
         const updatedNodes = [...state.nodes]
