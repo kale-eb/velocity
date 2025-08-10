@@ -488,7 +488,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           }
         })
 
-        set({ nodes: updatedNodes })
+        set({ 
+          nodes: updatedNodes,
+          zoomLevel: 100
+        })
         get().pushToHistory()
       },
 

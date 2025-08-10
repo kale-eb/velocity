@@ -1,0 +1,202 @@
+{
+  "scriptGeneration": {
+    "system": [
+      "You are an ad script generator for short-form video.",
+      "You MUST use the given product specs and extra instructions. When available, use provided ad JSON analyses to guide tone, structure, and pacing.",
+      "Output JSON only with shape: { id, title, chunks: Chunk[] } where Chunk={ id, type:'HOOK'|'BODY'|'CTA', script_text, camera_instruction }. There can be more than one HOOK and CTA chunk, especially if there are multiple visual segments for that type of chunk.",
+      "Generate up to 20 chunks that use the reference ads as a guide for the tone, style, and structure of the script and camera directions.",
+      "One of the most important things to note is that each chunk is a different visual segment of the ad, meaning it's okay to split up a sentence of the script into multiple chunks if we cut to a new visual segment during that time.",
+      "You will provide very detailed camera directions for each chunk to produce the best quality video.",
+      "Prefer camera directions that match platform-native shots."
+    ],
+    "userNote": "In order to generate the best script, you will need to use the tools to get the product specs, extra instructions, and the reference ads to understand the style of the ad that the user wants."
+  },
+  "chatActions": {
+    "system": "You are a script editor assistant for short form social media videos. You can think step-by-step and use tools iteratively to accomplish complex edits.\n\n**CRITICAL UNDERSTANDING**: Each chunk represents ONE video clip that will be uploaded separately. The video editing system works as follows:\n- 1 chunk = 1 video file upload\n- Each chunk has exactly ONE camera instruction for ONE shot\n- To create more visual cuts, you MUST create more chunks, NOT add multiple shots to one camera instruction\n- Never put multiple shots, cuts, or transitions in a single camera instruction\n\n**AGENTIC WORKFLOW**: You can work iteratively:\n1. First, use information gathering tools (get_product_specs, get_ad_jsons, get_extra_instructions) to understand the context\n2. Think through your approach and explain your reasoning\n3. Then use script editing tools to execute the changes\n4. You can call tools multiple times if needed, but avoid calling conflicting script editing tools simultaneously\n\n**WHEN USER ASKS FOR MORE CUTS/VISUAL SEGMENTS**:\n1. First understand the current script structure\n2. Plan where to add cuts (think: which sentences/phrases can be split?)\n3. Use add_chunk or add_chunks_batch to create new chunks between existing ones\n4. Then use rewrite_chunk or rewrite_chunks_batch to redistribute script text across the new shorter chunks\n5. Give each new chunk a single, specific camera instruction for one shot\n6. DO NOT simulate multiple cuts in camera descriptions - create actual separate chunks instead\n\n**CHUNK STRUCTURE**:\n- script_text: The exact words spoken in this visual segment (can be part of a sentence)\n- camera_instruction: ONE specific shot description for ONE video clip (e.g., 'Close-up of hands holding product' NOT 'Shot A1, then cut to Shot A2, then...')\n\n**EXAMPLES OF CORRECT vs WRONG APPROACH**:\nWRONG: camera_instruction: 'Shot A1 (0:00-0:02): Medium shot, then Shot A2 (0:02-0:04): Close-up, then...'\nCORRECT: Create separate chunks with camera_instruction: 'Medium shot of presenter' and camera_instruction: 'Close-up of product'\n\n**TOOL USAGE STRATEGY**:\n- Information tools first: get_ad_jsons to understand pacing style\n- Script editing tools last: add chunks first, then redistribute text\n- Avoid calling multiple script editing tools that might conflict\n\nAlways prioritize creating more actual chunks over describing multiple shots in one chunk. Each chunk = one video file in the editing system."
+  },
+  "tools": {
+    "get_product_specs": {
+      "name": "get_product_specs",
+      "description": "Return product information about the product being advertised.",
+      "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    "get_extra_instructions": {
+      "name": "get_extra_instructions", 
+      "description": "Return the extra instructions string (tone/CTA/target).",
+      "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    "get_ad_jsons": {
+      "name": "get_ad_jsons",
+      "description": "Return a detailed analysis of the given ad reference. This is CRUCIAL in understanding the style of ad that the user wants.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "urls": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["urls"]
+      }
+    },
+    "rewrite_chunk": {
+      "name": "rewrite_chunk",
+      "description": "Edit the script text and/or camera instructions for a single chunk",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "targetId": { "type": "string", "description": "The ID of the chunk to edit" },
+          "script_text": { "type": "string", "description": "New script text (optional if only updating camera instructions)" },
+          "camera_instruction": { "type": "string", "description": "New camera instruction (optional if only updating script text)" }
+        },
+        "required": ["targetId"],
+        "additionalProperties": false
+      }
+    },
+    "add_chunk": {
+      "name": "add_chunk",
+      "description": "Add a new chunk before or after an existing chunk",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the new chunk" },
+          "targetId": { "type": "string", "description": "The ID of the existing chunk to position relative to" },
+          "chunk": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Unique ID for the new chunk" },
+              "type": { "type": "string", "enum": ["HOOK", "PRODUCT", "CTA"], "description": "Type of chunk" },
+              "script_text": { "type": "string", "description": "Script text for the new chunk" },
+              "camera_instruction": { "type": "string", "description": "Camera instruction for the new chunk" }
+            },
+            "required": ["id", "type", "script_text", "camera_instruction"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["position", "targetId", "chunk"],
+        "additionalProperties": false
+      }
+    },
+    "remove_chunk": {
+      "name": "remove_chunk", 
+      "description": "Delete a chunk from the script",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "targetId": { "type": "string", "description": "The ID of the chunk to remove" }
+        },
+        "required": ["targetId"],
+        "additionalProperties": false
+      }
+    },
+    "move_chunk": {
+      "name": "move_chunk",
+      "description": "Move a chunk to a different position in the script",
+      "parameters": {
+        "type": "object", 
+        "properties": {
+          "targetId": { "type": "string", "description": "The ID of the chunk to move" },
+          "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the moved chunk" },
+          "refId": { "type": "string", "description": "The ID of the chunk to position relative to" }
+        },
+        "required": ["targetId", "position", "refId"],
+        "additionalProperties": false
+      }
+    },
+    "rewrite_chunks_batch": {
+      "name": "rewrite_chunks_batch",
+      "description": "Edit multiple chunks at once for efficiency",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "edits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "targetId": { "type": "string", "description": "The ID of the chunk to edit" },
+                "script_text": { "type": "string", "description": "New script text (optional)" },
+                "camera_instruction": { "type": "string", "description": "New camera instruction (optional)" }
+              },
+              "required": ["targetId"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["edits"],
+        "additionalProperties": false
+      }
+    },
+    "add_chunks_batch": {
+      "name": "add_chunks_batch",
+      "description": "Add multiple chunks at once for efficiency",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the new chunk" },
+                "targetId": { "type": "string", "description": "The ID of the existing chunk to position relative to" },
+                "chunk": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "description": "Unique ID for the new chunk" },
+                    "type": { "type": "string", "enum": ["HOOK", "PRODUCT", "CTA"], "description": "Type of chunk" },
+                    "script_text": { "type": "string", "description": "Script text for the new chunk" },
+                    "camera_instruction": { "type": "string", "description": "Camera instruction for the new chunk" }
+                  },
+                  "required": ["id", "type", "script_text", "camera_instruction"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["position", "targetId", "chunk"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["items"],
+        "additionalProperties": false
+      }
+    },
+    "remove_chunks_batch": {
+      "name": "remove_chunks_batch",
+      "description": "Remove multiple chunks at once for efficiency",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "targetIds": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Array of chunk IDs to remove"
+          }
+        },
+        "required": ["targetIds"],
+        "additionalProperties": false
+      }
+    },
+    "move_chunks_batch": {
+      "name": "move_chunks_batch", 
+      "description": "Move multiple chunks at once for efficiency",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "moves": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "targetId": { "type": "string", "description": "The ID of the chunk to move" },
+                "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the moved chunk" },
+                "refId": { "type": "string", "description": "The ID of the chunk to position relative to" }
+              },
+              "required": ["targetId", "position", "refId"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["moves"],
+        "additionalProperties": false
+      }
+    }
+  }
+}

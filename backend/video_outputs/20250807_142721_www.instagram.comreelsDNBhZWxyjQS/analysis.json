@@ -1,0 +1,410 @@
+{
+  "id": "ad_DNBhZWxyjQS",
+  "url": "https://www.instagram.com/reels/DNBhZWxyjQS/",
+  "summary": "This ad showcases a content creator's favorite equipment for content creation, highlighting specific products and offering viewers a chance to win a giveaway box. The video blends product recommendations with motivational advice for aspiring creators.",
+  "visualStyle": "Bright, modern, and clean kitchen setting with natural and soft lighting. Camera work alternates between close-ups and wide shots, maintaining a casual, influencer-style aesthetic.",
+  "audioStyle": "Conversational, upbeat narration with clear enunciation. Background music is light and unobtrusive, supporting the friendly and motivational tone.",
+  "duration": 91.232625,
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "type": "hook",
+      "startTime": 0.0,
+      "endTime": 8.67,
+      "visual": {
+        "description": "A woman stands behind a marble kitchen counter, holding a green drink. She is wearing a white sleeveless top and a dark pleated skirt. The background features modern wooden cabinets, some plants, and kitchenware on open shelves.",
+        "cameraAngle": "Medium shot, straight-on angle, subject centered in frame.",
+        "lighting": "Bright, even natural lighting, no harsh shadows.",
+        "movement": "Slight hair movement, possibly from a recent motion or head turn.",
+        "textOverlay": "No text overlays visible.",
+        "background": "Modern kitchen with marble backsplash, wooden cabinetry, and decorative items."
+      },
+      "audio": {
+        "transcript": "I've been making content for over 10 years. Here is all the equipment I swear by. And don't worry, for 31 days of giveaways, I got these all for you!",
+        "tone": "Friendly, enthusiastic, confident.",
+        "backgroundMusic": "Upbeat, light background music.",
+        "volume": "Moderate, clear vocal prominence."
+      }
+    },
+    {
+      "id": "chunk_002",
+      "type": "body",
+      "startTime": 8.67,
+      "endTime": 11.5,
+      "visual": {
+        "description": "The woman is now smiling and holding a Canon camera box. Several tech product boxes, including a large Lumix S9 box, are arranged on the counter in front of her.",
+        "cameraAngle": "Medium shot, straight-on angle, subject centered.",
+        "lighting": "Consistent, bright natural lighting.",
+        "movement": "Minimal, mostly hand movement as she presents the box.",
+        "textOverlay": "No text overlays visible.",
+        "background": "Same modern kitchen setting as previous shot."
+      },
+      "audio": {
+        "transcript": "Starting off strong, the Canon G7X Mark II.",
+        "tone": "Excited, slightly dramatic for emphasis.",
+        "backgroundMusic": "Upbeat, continues from previous shot.",
+        "volume": "Moderate, clear."
+      }
+    },
+    {
+      "id": "chunk_003",
+      "type": "body",
+      "startTime": 11.5,
+      "endTime": 15.0,
+      "visual": {
+        "description": "The woman holds the Canon G7X Mark II box in one hand and makes a 'chef's kiss' gesture with the other, eyes closed in appreciation.",
+        "cameraAngle": "Medium shot, straight-on angle.",
+        "lighting": "Bright, even.",
+        "movement": "Expressive hand gesture and facial expression.",
+        "textOverlay": "No text overlays.",
+        "background": "Kitchen counter with camera gear boxes."
+      },
+      "audio": {
+        "transcript": "This bad boy has gone viral for the beautiful flash photos it takes, but I've personally",
+        "tone": "Playful, admiring.",
+        "backgroundMusic": "Upbeat, unchanged.",
+        "volume": "Moderate."
+      }
+    },
+    {
+      "id": "chunk_004",
+      "type": "body",
+      "startTime": 15.0,
+      "endTime": 18.0,
+      "visual": {
+        "description": "The woman holds up the Canon G7X Mark II camera itself, gesturing with her other hand as if explaining or demonstrating.",
+        "cameraAngle": "Medium shot, straight-on.",
+        "lighting": "Bright, even.",
+        "movement": "Hand gestures, slight body movement.",
+        "textOverlay": "No text overlays.",
+        "background": "Kitchen counter with camera gear boxes."
+      },
+      "audio": {
+        "transcript": "loved it for a strong 8 years because it is such a flattering camera for vlogging.",
+        "tone": "Nostalgic, sincere.",
+        "backgroundMusic": "Upbeat, consistent.",
+        "volume": "Moderate."
+      }
+    },
+    {
+      "id": "chunk_005",
+      "type": "body",
+      "startTime": 18.0,
+      "endTime": 18.33,
+      "visual": {
+        "description": "Close-up selfie-style shot. The woman leans in with puckered lips as if to kiss a large, fluffy orange-and-white cat in the foreground.",
+        "cameraAngle": "Close-up, slightly low angle, handheld.",
+        "lighting": "Slightly softer, indoor natural light.",
+        "movement": "Leaning in, playful gesture.",
+        "textOverlay": "No text overlays.",
+        "background": "Home interior, blurred background."
+      },
+      "audio": {
+        "transcript": "",
+        "tone": "conversational",
+        "backgroundMusic": "Upbeat, continues.",
+        "volume": "Moderate."
+      }
+    },
+    {
+      "id": "chunk_006",
+      "type": "body",
+      "startTime": 18.33,
+      "endTime": 21.33,
+      "visual": {
+        "description": "Similar close-up selfie shot. The woman and the cat are facing each other, both in focus. The woman maintains a puckered lips pose.",
+        "cameraAngle": "Close-up, handheld, slightly low angle.",
+        "lighting": "Soft, natural indoor light.",
+        "movement": "Minimal, holding pose.",
+        "textOverlay": "No text overlays.",
+        "background": "Home interior, blurred."
+      },
+      "audio": {
+        "transcript": "",
+        "tone": "conversational",
+        "backgroundMusic": "Upbeat, continues.",
+        "volume": "Moderate."
+      }
+    },
+    {
+      "id": "chunk_007",
+      "type": "body",
+      "startTime": 21.33,
+      "endTime": 23.83,
+      "visual": {
+        "description": "Selfie-style shot, woman is back in the kitchen, facing the camera, mid-sentence with an expressive, open-mouthed smile.",
+        "cameraAngle": "Close-up, handheld, slightly high angle.",
+        "lighting": "Bright, even.",
+        "movement": "Expressive facial and hand movement.",
+        "textOverlay": "No text overlays.",
+        "background": "Kitchen setting."
+      },
+      "audio": {
+        "transcript": "That camera may not be cheap, but my favorite tripod is.",
+        "tone": "Conversational, friendly.",
+        "backgroundMusic": "Upbeat, continues.",
+        "volume": "Moderate."
+      }
+    },
+    {
+      "id": "chunk_008",
+      "type": "body",
+      "startTime": 23.83,
+      "endTime": 25.8,
+      "visual": {
+        "description": "The woman is back behind the kitchen counter, holding a small tripod and gesturing as she speaks. The orange-and-white cat is visible on the counter, facing her.",
+        "cameraAngle": "Medium shot, straight-on.",
+        "lighting": "Bright, even.",
+        "movement": "Gesturing with tripod, cat in foreground.",
+        "textOverlay": "No text overlays.",
+        "background": "Kitchen with camera gear and cat."
+      },
+      "audio": {
+        "transcript": "",
+        "tone": "conversational",
+        "backgroundMusic": "Upbeat, continues.",
+        "volume": "Moderate."
+      }
+    },
+    {
+      "id": "chunk_001",
+      "type": "body",
+      "startTime": 35.5,
+      "endTime": 46.17,
+      "visual": {
+        "description": "The creator leans on a kitchen counter, smiling and engaging with the camera. A Canon camera on a tripod, boxed accessories, and a large orange-and-white cat are on the counter. The kitchen background features wood cabinetry, marble backsplash, and open shelves with plants and teapots.",
+        "cameraAngle": "Medium shot, straight-on angle, creator centered, cat in foreground.",
+        "lighting": "Bright, natural lighting, evenly illuminating the scene.",
+        "movement": "Minimal; creator is stationary, cat may move slightly.",
+        "textOverlay": "None.",
+        "background": "Modern kitchen with wood cabinets, marble backsplash, open shelving with plants and kitchenware."
+      },
+      "audio": {
+        "transcript": "What more could a girl need? When I want to use a DSLR, my go-to has been this sleeper pic from Panasonic.",
+        "tone": "Friendly, conversational, enthusiastic.",
+        "backgroundMusic": "Upbeat, light background music.",
+        "volume": "Moderate, clear voice over music."
+      }
+    },
+    {
+      "id": "chunk_002",
+      "type": "body",
+      "startTime": 46.17,
+      "endTime": 49.33,
+      "visual": {
+        "description": "Close-up of hands holding a pink Panasonic Lumix camera, showing off the camera body and lens cap.",
+        "cameraAngle": "Close-up, hands and camera fill the frame.",
+        "lighting": "Bright, even lighting highlighting the product.",
+        "movement": "Hands gently rotate the camera for display.",
+        "textOverlay": "None.",
+        "background": "Blurred kitchen background with wood cabinets and marble backsplash."
+      },
+      "audio": {
+        "transcript": "It's called the S9, it's high quality, full frame, and it comes in so many pretty colors.",
+        "tone": "Informative, excited.",
+        "backgroundMusic": "Upbeat, light background music.",
+        "volume": "Moderate, clear voice over music."
+      }
+    },
+    {
+      "id": "chunk_003",
+      "type": "body",
+      "startTime": 49.33,
+      "endTime": 54.67,
+      "visual": {
+        "description": "The creator stands behind the counter, holding a box and a device, while the cat walks across the counter in front of a large Lumix S9 box.",
+        "cameraAngle": "Medium shot, straight-on angle, creator and cat both visible.",
+        "lighting": "Consistent, bright natural lighting.",
+        "movement": "Creator gestures with hands, cat walks across counter.",
+        "textOverlay": "None.",
+        "background": "Modern kitchen with wood cabinets, marble backsplash, and open shelving."
+      },
+      "audio": {
+        "transcript": "As for filming on your phone, here are my must-have accessories. For crispy audio, the new Hollyland mics are incredible.",
+        "tone": "Helpful, enthusiastic.",
+        "backgroundMusic": "Upbeat, light background music.",
+        "volume": "Moderate, clear voice over music."
+      }
+    },
+    {
+      "id": "chunk_004",
+      "type": "body",
+      "startTime": 54.67,
+      "endTime": 58.0,
+      "visual": {
+        "description": "Close-up of hands holding an open black case containing small wireless microphones.",
+        "cameraAngle": "Close-up, product-focused.",
+        "lighting": "Bright, even lighting for product clarity.",
+        "movement": "Hands open and display the case.",
+        "textOverlay": "None.",
+        "background": "Blurred kitchen background."
+      },
+      "audio": {
+        "transcript": "They're the smallest mics I've ever seen, and you can really hear the difference.",
+        "tone": "Impressed, informative.",
+        "backgroundMusic": "Upbeat, light background music.",
+        "volume": "Moderate, clear voice over music."
+      }
+    },
+    {
+      "id": "chunk_005",
+      "type": "body",
+      "startTime": 58.0,
+      "endTime": 60.17,
+      "visual": {
+        "description": "The creator stands behind the counter, gesturing energetically. Text overlay reads 'without mic:'. Various camera equipment and boxes are on the counter.",
+        "cameraAngle": "Medium shot, straight-on angle, creator centered.",
+        "lighting": "Bright, even lighting.",
+        "movement": "Creator gestures with hands, animated expression.",
+        "textOverlay": "Text overlay: 'without mic:' at the top of the frame.",
+        "background": "Modern kitchen with wood cabinets, marble backsplash, and open shelving."
+      },
+      "audio": {
+        "transcript": "Hello!",
+        "tone": "Playful, demonstrative.",
+        "backgroundMusic": "Upbeat, light background music.",
+        "volume": "Moderate, possibly with a change to demonstrate mic difference."
+      }
+    },
+    {
+      "id": "chunk_006",
+      "type": "body",
+      "startTime": 60.17,
+      "endTime": 62.5,
+      "visual": {
+        "description": "The creator, holding a white box, is in motion, possibly dancing or demonstrating. The cat is in the sink, looking at the camera. More equipment boxes are visible on the counter.",
+        "cameraAngle": "Medium-wide shot, straight-on angle, creator partially out of frame.",
+        "lighting": "Bright, even lighting.",
+        "movement": "Creator moves energetically, cat is stationary in sink.",
+        "textOverlay": "None.",
+        "background": "Modern kitchen with wood cabinets, marble backsplash, and open shelving."
+      },
+      "audio": {
+        "transcript": "This is my go-to tripod for iPhones.",
+        "tone": "Enthusiastic, practical.",
+        "backgroundMusic": "Upbeat, light background music.",
+        "volume": "Moderate, clear voice over music."
+      }
+    },
+    {
+      "id": "chunk_007",
+      "type": "body",
+      "startTime": 62.5,
+      "endTime": 66.67,
+      "visual": {
+        "description": "The creator stands behind the counter, holding up a small white box, speaking directly to the camera. The cat is in the foreground, looking toward the camera.",
+        "cameraAngle": "Medium shot, straight-on angle, creator and cat both visible.",
+        "lighting": "Bright, even lighting.",
+        "movement": "Creator gestures with box, cat is stationary.",
+        "textOverlay": "None.",
+        "background": "Modern kitchen with wood cabinets, marble backsplash, and open shelving."
+      },
+      "audio": {
+        "transcript": "My favorite selfie light is actually not the new Moa. Sorry Alex Earl.",
+        "tone": "Conversational, slightly humorous.",
+        "backgroundMusic": "Upbeat, light background music.",
+        "volume": "Moderate, clear voice over music."
+      }
+    },
+    {
+      "id": "chunk_008",
+      "type": "body",
+      "startTime": 66.67,
+      "endTime": 68.7,
+      "visual": {
+        "description": "Close-up of a hand holding a rectangular LED selfie light, slightly blurred in the foreground. The cat sits on the counter, looking at the camera with a curious expression.",
+        "cameraAngle": "Close-up, product-focused, cat in background.",
+        "lighting": "Bright, even lighting.",
+        "movement": "Hand moves light slightly, cat remains still.",
+        "textOverlay": "None.",
+        "background": "Modern kitchen with wood cabinets, marble backsplash, and open shelving."
+      },
+      "audio": {
+        "transcript": "",
+        "tone": "conversational",
+        "backgroundMusic": "Upbeat, light background music.",
+        "volume": "Moderate."
+      }
+    },
+    {
+      "id": "chunk_001",
+      "type": "body",
+      "startTime": 69.0,
+      "endTime": 74.67,
+      "visual": {
+        "description": "A close-up of hands holding and adjusting a rectangular selfie light with a sturdy clip, positioned above the back of a cat. The focus is on the product and the action of demonstrating its features.",
+        "cameraAngle": "Tight close-up, slightly angled from above, focusing on the hands and the product.",
+        "lighting": "Soft, even lighting with minimal shadows, highlighting the product details.",
+        "movement": "Hands are actively adjusting the light, demonstrating its clip mechanism.",
+        "textOverlay": "No visible text overlays or graphics in this shot.",
+        "background": "Out-of-focus kitchen background with wood cabinetry and marble backsplash, and part of a cat's back in the foreground."
+      },
+      "audio": {
+        "transcript": "My favorite selfie light is actually not the new Moa. Sorry Alex Earl. I find the Alton light is 10 times better. It has such a sturdy clip, and there are so many warmth settings and brightness settings.",
+        "tone": "Friendly, confident, and slightly playful.",
+        "backgroundMusic": "Light, unobtrusive background music.",
+        "volume": "Consistent, moderate volume with clear voiceover."
+      }
+    },
+    {
+      "id": "chunk_002",
+      "type": "body",
+      "startTime": 74.67,
+      "endTime": 87.33,
+      "visual": {
+        "description": "A wide shot of a modern kitchen. The creator stands on the right, smiling and holding a large pink gift box. On the counter are several pieces of content creation equipment, including a camera, microphone, and tripod. A cat is sitting in the sink, looking down.",
+        "cameraAngle": "Wide shot, straight-on angle capturing the creator, products, and kitchen setting.",
+        "lighting": "Bright, natural lighting illuminating the entire scene evenly.",
+        "movement": "The creator is in the process of placing or presenting the gift box, with subtle movement as she interacts with the items.",
+        "textOverlay": "No visible text overlays or graphics in this shot.",
+        "background": "Modern kitchen with wood cabinets, marble backsplash, and open shelving with plants and kitchenware."
+      },
+      "audio": {
+        "transcript": "Although I love all this equipment for content creation, the truth is, you can make an entire career with the phone you're watching this on. All it takes is a bit of belief and a lot of action. Everything else is just extra.",
+        "tone": "Motivational, sincere, and encouraging.",
+        "backgroundMusic": "Light, inspirational background music.",
+        "volume": "Steady, clear narration at a moderate volume."
+      }
+    },
+    {
+      "id": "chunk_003",
+      "type": "body",
+      "startTime": 87.33,
+      "endTime": 90.17,
+      "visual": {
+        "description": "Medium shot of the creator holding a fluffy white and gray cat in front of a large pink gift box on the kitchen counter. The creator is smiling, and the focus is on both her and the cat.",
+        "cameraAngle": "Medium shot, straight-on, centered on the creator and the cat.",
+        "lighting": "Soft, even lighting that highlights the subjects without harsh shadows.",
+        "movement": "The creator is gently holding and possibly lifting the cat, with minimal movement.",
+        "textOverlay": "No visible text overlays or graphics in this shot.",
+        "background": "Kitchen background with wood cabinetry, marble backsplash, and decorative items on shelves."
+      },
+      "audio": {
+        "transcript": "But, if you'd like some help along the way, comment below for a chance to win this gift box.",
+        "tone": "Inviting, warm, and enthusiastic.",
+        "backgroundMusic": "Uplifting, gentle background music.",
+        "volume": "Consistent, friendly narration at a moderate volume."
+      }
+    },
+    {
+      "id": "chunk_004",
+      "type": "cta",
+      "startTime": 90.17,
+      "endTime": 91.2,
+      "visual": {
+        "description": "Close-up of a cat standing in the kitchen sink, sniffing or investigating the surface. The creator is partially visible on the left, moving out of frame with a smile.",
+        "cameraAngle": "Close-up, slightly angled to capture both the cat and part of the creator.",
+        "lighting": "Bright, natural lighting with soft shadows.",
+        "movement": "The cat is moving its head to sniff, while the creator exits the frame with a sense of motion.",
+        "textOverlay": "No visible text overlays or graphics in this shot.",
+        "background": "Kitchen sink area with wood cabinetry and marble backsplash."
+      },
+      "audio": {
+        "transcript": "[No spoken words; likely just background music and ambient sound]",
+        "tone": "Playful, lighthearted ending.",
+        "backgroundMusic": "Light, cheerful outro music.",
+        "volume": "Music slightly more prominent as narration ends."
+      }
+    }
+  ]
+}

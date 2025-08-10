@@ -35,19 +35,52 @@
 ### Phase 1: Script Generation Workspace
 **Priority: P1 - Core functionality**
 
-#### Core Features
-- [ ] Manual script generation with "Generate Script" button
-- [ ] Chunk-based script editing (3 versions per chunk)
-- [ ] AI-powered script editing chat integration
-- [ ] Graph View enhancements for script generation flow
-- [ ] Static View complete overhaul
+#### Core Features (From Marketing App 2 Analysis)
+- [ ] **Product Specs Input System**
+  - [ ] File upload component (PDF/DOCX/TXT support)
+  - [ ] Document parsing with mammoth.js (DOCX) and pdfjs-dist (PDF)
+  - [ ] Text extraction and concatenation
+  - [ ] Manual text editor fallback
+- [ ] **Ad Reference Analysis**
+  - [ ] URL input for up to 4 reference ads
+  - [ ] Integration with our video analysis backend
+  - [ ] Embedded preview support (YouTube, Instagram, TikTok)
+  - [ ] Analysis result caching in project state
+- [ ] **AI Script Generation**
+  - [ ] OpenAI function calling with context tools
+  - [ ] Generate script with HOOK/PRODUCT/CTA chunks
+  - [ ] Each chunk has script_text and camera_instruction
+  - [ ] Context-aware generation using specs and ad analyses
+- [ ] **Chunk-Based Script Editor**
+  - [ ] Editable script chunks with type indicators
+  - [ ] Move up/down/delete chunk operations
+  - [ ] Real-time text and camera instruction editing
+  - [ ] Chunk variant display from timeline (if exists)
+- [ ] **AI Chat Assistant**
+  - [ ] Natural language script refinement
+  - [ ] Action-based modifications (rewrite, add, remove, move)
+  - [ ] Batch operations support
+  - [ ] Context selection (specs + ad refs)
+  - [ ] Proposed changes with apply/reject flow
+  - [ ] Auto-continue mode for multi-step edits
+- [ ] **State Management**
+  - [ ] 20-action undo/redo history
+  - [ ] Auto-save to local storage
+  - [ ] Project-based data structure
 
 #### API Integration
-- [ ] Mock analyze-ad endpoint (3 sample JSON files)
-- [ ] Mock script generation endpoint
-- [ ] AI chat integration (Vercel AI SDK recommended)
-- [ ] Browser caching for analyzed ads
-- [ ] Local storage for projects and scripts
+- [ ] **Express Server Setup**
+  - [ ] OpenAI integration with function calling
+  - [ ] Tool definitions for context retrieval
+  - [ ] Fallback model support (gpt-4o-mini)
+- [ ] **Endpoint Implementation**
+  - [ ] `/api/generateScript` - AI script generation
+  - [ ] `/api/chatActions` - Chat-based script editing
+  - [ ] `/api/analyzeAd` - Proxy to Python video backend
+  - [ ] `/api/generateVariant` - Chunk variant generation
+- [ ] **Mock Mode Support**
+  - [ ] Deterministic responses for testing
+  - [ ] Graceful fallback when API unavailable
 
 ### Phase 2: Video Assembly Workspace  
 **Priority: P1 - Core functionality**
@@ -79,6 +112,58 @@
 - [ ] Project management system
 - [ ] Advanced state management
 - [ ] Performance optimizations
+
+## Marketing App 2 Integration Strategy
+
+### Architecture Comparison
+**Marketing App 2 Strengths:**
+- Sophisticated script generation with OpenAI function calling
+- File upload and document parsing capabilities
+- Natural language chat assistant with action-based editing
+- Ad reference analysis integration
+- Clean state management with undo/redo
+
+**Our Marketing App Strengths:**
+- Superior visual node-based editor
+- Beautiful dual-view workspace (Graph + Static)
+- Polished component library and theme system
+- Advanced frame extraction and video analysis
+- Better visual design and user experience
+
+### Integration Approach
+**Best of Both Worlds Strategy:**
+
+#### Backend (From Marketing App 2)
+- Express server with OpenAI integration
+- Function calling for context-aware generation
+- Document parsing endpoints
+- Chat action processing logic
+- Mock mode for development
+
+#### Frontend (Hybrid Approach)
+- **Keep Our UI**: Node-based editor, dual views, theme system
+- **Port Their Logic**: Script generation, chat assistant, file upload
+- **New Components**:
+  - Script Generation Node (fits our graph view)
+  - AI Chat Sidebar (matches our theme)
+  - File Upload Component (our visual style)
+  - Ad Reference Manager (embedded in nodes)
+
+#### Data Flow Integration
+```
+Our Graph Nodes → Their Script Generation → Our Visual Display
+                ↓
+        Their Chat Logic → Our UI Updates
+                ↓
+        Our Video Assembly → Export Pipeline
+```
+
+### Implementation Priority
+1. **Phase 1A**: Port backend API endpoints
+2. **Phase 1B**: Create script nodes for graph view
+3. **Phase 1C**: Integrate chat assistant in static view
+4. **Phase 1D**: Connect file upload to our UI
+5. **Phase 2**: Enhance with our video assembly features
 
 ## Technology Stack Decisions
 

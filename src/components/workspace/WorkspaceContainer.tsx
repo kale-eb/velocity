@@ -1,9 +1,60 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Home, Folder, Settings, Minus, Sun, Moon, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Home, Folder, Settings, Minus, Sun, Moon, Zap, Database, Download, Upload, Trash2 } from 'lucide-react';
 import NodeBasedWorkspaceFixed from './NodeBasedWorkspaceFixed';
-import StaticScriptView from '../views/StaticScriptView';
+import EnhancedStaticScriptView from '../views/EnhancedStaticScriptView';
+import ScriptGenerationNode from '../script/nodes/ScriptGenerationNode';
+import ChatAssistant from '../script/chat/ChatAssistant';
 import { useWorkspaceStore, useUIStore, useProjectStore } from '../../stores';
+import { storage, WorkspaceStorage, AdStorage, ScriptStorage, AutoSave, DataPortability } from '../../utils/localStorage';
 import type { NodeType, Point } from '../../types';
+
+// API helper functions for script generation
+const apiHelpers = {
+  async generateScript(inputs: any, adAnalyses: any = {}) {
+    try {
+      const response = await fetch('/api/generateScript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inputs, adAnalyses })
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Script generation failed:', error);
+      throw error;
+    }
+  },
+
+  async chatActions(data: any) {
+    try {
+      const response = await fetch('/api/chatActions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Chat actions failed:', error);
+      throw error;
+    }
+  },
+
+  async analyzeAd(url: string, contentDescription?: string) {
+    try {
+      const response = await fetch('/api/analyzeAd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, content_description: contentDescription })
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Ad analysis failed:', error);
+      throw error;
+    }
+  }
+};
 
 const WorkspaceContainer: React.FC = () => {
   // UI Store
@@ -34,17 +85,18 @@ const WorkspaceContainer: React.FC = () => {
   // Project Store
   const { currentProjectId, createProject } = useProjectStore();
 
+  // State for tracking loaded data
+  const [adAnalyses, setAdAnalyses] = React.useState<Record<string, any>>({});
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [storageInfo, setStorageInfo] = React.useState({ totalSize: 0, itemCount: 0, items: {} });
+  const [showDataManagement, setShowDataManagement] = React.useState(false);
+  const [currentScript, setCurrentScript] = React.useState<any>(null);
+  
   // Use a ref to prevent double initialization in StrictMode
   const initializationRef = React.useRef(false);
 
-  // Initialize default project if none exists
+  // Load saved data from localStorage on mount
   React.useEffect(() => {
-    // Check if we already have data
-    if (currentProjectId || nodes.length > 0) {
-      console.log('Already have data, skipping initialization');
-      return;
-    }
-    
     // Prevent double initialization in StrictMode
     if (initializationRef.current) {
       console.log('Already initializing, skipping...');
@@ -52,25 +104,80 @@ const WorkspaceContainer: React.FC = () => {
     }
     
     initializationRef.current = true;
+    setIsLoading(true);
     
-    console.log('=== INITIALIZATION START ===');
-    console.log('Current state:', { currentProjectId, nodeCount: nodes.length });
+    console.log('=== LOADING SAVED DATA ===');
     
-    // Create project first
-    const projectId = createProject('My First Project', 'Demo project with sample nodes');
-    console.log('Created project:', projectId);
-    
-    // Add nodes immediately
-    console.log('Adding productSpec node...');
-    addNode('productSpec', { x: 100, y: 100 });
-    
-    console.log('Adding ad node...');
-    addNode('ad', { x: 300, y: 100 });
-    
-    console.log('Adding script node...');
-    addNode('script', { x: 200, y: 250 });
-    
-    console.log('=== INITIALIZATION COMPLETE ===');
+    try {
+      // Load workspace data from localStorage
+      const savedWorkspace = WorkspaceStorage.loadWorkspace();
+      const savedAds = AdStorage.loadProcessedAds();
+      const savedScripts = ScriptStorage.loadGeneratedScripts();
+      const savedCurrentScript = savedScripts['current_script'] || null;
+      
+      console.log('Loaded from storage:', {
+        nodes: savedWorkspace.nodes.length,
+        connections: savedWorkspace.connections.length,
+        processedAds: Object.keys(savedAds).length,
+        hasCurrentScript: !!savedCurrentScript
+      });
+      
+      if (savedWorkspace.nodes.length > 0) {
+        // Restore saved workspace
+        console.log('📂 Restoring saved workspace...');
+        
+        // Load nodes and connections through the store
+        savedWorkspace.nodes.forEach(node => {
+          addNode(node.type, node.position, node.data, node.id);
+        });
+        
+        // Restore connections
+        setTimeout(() => {
+          savedWorkspace.connections.forEach(connection => {
+            addConnection(connection.fromNodeId, connection.toNodeId);
+          });
+        }, 100);
+        
+        // Restore viewport if available
+        if (savedWorkspace.viewport.panOffset) {
+          // Note: Viewport restoration would need to be handled by the workspace component
+          console.log('📍 Viewport state available for restoration');
+        }
+        
+      } else {
+        // No saved data, create default project
+        console.log('🆕 No saved data found, creating default project');
+        const projectId = createProject('My First Project', 'Demo project with sample nodes');
+        console.log('Created project:', projectId);
+        
+        // Add default nodes
+        addNode('productSpec', { x: 100, y: 100 });
+        addNode('ad', { x: 300, y: 100 });
+        addNode('scriptGenerator', { x: 200, y: 250 });
+      }
+      
+      // Load processed ads and current script
+      setAdAnalyses(savedAds);
+      setCurrentScript(savedCurrentScript);
+      
+      if (savedCurrentScript) {
+        console.log('📄 Restored current script with', savedCurrentScript.chunks?.length || 0, 'chunks');
+      }
+      
+      // Enable auto-save
+      AutoSave.enable();
+      
+    } catch (error) {
+      console.error('❌ Failed to load saved data:', error);
+      // Fallback to default initialization
+      const projectId = createProject('My First Project', 'Demo project with sample nodes');
+      addNode('productSpec', { x: 100, y: 100 });
+      addNode('ad', { x: 300, y: 100 });
+      addNode('scriptGenerator', { x: 200, y: 250 });
+    } finally {
+      setIsLoading(false);
+      console.log('=== INITIALIZATION COMPLETE ===');
+    }
   }, []); // Only depend on mount
   
   // Add connections after nodes are created
@@ -80,7 +187,7 @@ const WorkspaceContainer: React.FC = () => {
       
       const productSpec = nodes.find(n => n.type === 'productSpec');
       const ad = nodes.find(n => n.type === 'ad');
-      const scriptGen = nodes.find(n => n.type === 'script');
+      const scriptGen = nodes.find(n => n.type === 'scriptGenerator');
       
       console.log('Found nodes:', { productSpec: !!productSpec, ad: !!ad, scriptGen: !!scriptGen });
       
@@ -100,6 +207,38 @@ const WorkspaceContainer: React.FC = () => {
     }
   }, [nodes, connections, addConnection]);
 
+  // Auto-save workspace changes
+  React.useEffect(() => {
+    if (isLoading) return; // Don't save during initial load
+    
+    if (nodes.length > 0) {
+      console.log('🔄 Auto-saving workspace changes...');
+      const uiState = {
+        currentView,
+        theme,
+        sidebarOpen,
+        chatOpen
+      };
+      
+      AutoSave.scheduleWorkspaceSave(
+        nodes, 
+        connections, 
+        { panOffset, zoomLevel, canvasBounds }, 
+        uiState
+      );
+    }
+  }, [nodes, connections, panOffset, zoomLevel, currentView, theme, isLoading]);
+
+  // Auto-save ad analyses changes
+  React.useEffect(() => {
+    if (isLoading) return;
+    
+    if (Object.keys(adAnalyses).length > 0) {
+      console.log('🔄 Auto-saving processed ads...');
+      AdStorage.saveProcessedAds(adAnalyses);
+    }
+  }, [adAnalyses, isLoading]);
+
   // Local state for legacy compatibility
   const [activeTab, setActiveTab] = useState<'Scripting' | 'Video Assembly'>('Scripting');
   const [zoomLimits, setZoomLimits] = useState({ min: 25, max: 200 });
@@ -117,7 +256,7 @@ const WorkspaceContainer: React.FC = () => {
   // Get current nodes/connections based on active view
   const currentNodes = currentView === 'graph' 
     ? nodes  // Graph view shows all nodes
-    : nodes.filter(node => node.type !== 'script'); // Static view shows all except script generator
+    : nodes.filter(node => node.type !== 'scriptGenerator'); // Static view shows all except script generator
   const currentConnections = currentView === 'graph' ? connections : [];
   
   console.log('Current connections being passed to workspace:', {
@@ -154,9 +293,15 @@ const WorkspaceContainer: React.FC = () => {
       if (instructionCount >= 4) {
         return null; // Silently reject - UI handles disabled state
       }
+    } else if (nodeType === 'scriptGenerator') {
+      // Only allow one script generator
+      const generatorCount = nodes.filter(n => n.type === 'scriptGenerator').length;
+      if (generatorCount >= 1) {
+        return null;
+      }
     }
     
-    const scriptGenerator = nodes.find(n => n.type === 'script');
+    const scriptGenerator = nodes.find(n => n.type === 'scriptGenerator');
     
     // Use provided position from data if available, otherwise calculate
     let position: Point;
@@ -232,6 +377,21 @@ const WorkspaceContainer: React.FC = () => {
     console.log('Viewport state changed:', viewportState);
   }, []);
 
+  // Script management functions
+  const handleScriptUpdate = useCallback((script: any) => {
+    setCurrentScript(script);
+    if (script) {
+      ScriptStorage.saveScript('current_script', script);
+      console.log('💾 Saved current script to localStorage');
+    }
+  }, []);
+
+  const handleScriptClear = useCallback(() => {
+    setCurrentScript(null);
+    ScriptStorage.saveScript('current_script', null);
+    console.log('🗑️ Cleared current script from localStorage');
+  }, []);
+
   const cycleColorScheme = () => {
     const themes = ['light', 'dark', 'experimental'] as const;
     const currentIndex = themes.indexOf(theme);
@@ -245,6 +405,55 @@ const WorkspaceContainer: React.FC = () => {
 
   const isDarkMode = theme === 'dark';
   const isExperimental = theme === 'experimental';
+
+  // Data management functions
+  const updateStorageInfo = React.useCallback(() => {
+    const info = storage.getStorageInfo();
+    setStorageInfo(info);
+  }, []);
+
+  const handleExportData = React.useCallback(() => {
+    try {
+      DataPortability.downloadBackup();
+    } catch (error) {
+      console.error('Failed to export data:', error);
+    }
+  }, []);
+
+  const handleImportData = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (content && DataPortability.importAllData(content)) {
+        // Refresh the page to reload imported data
+        window.location.reload();
+      } else {
+        alert('Failed to import data. Please check the file format.');
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset input
+    event.target.value = '';
+  }, []);
+
+  const handleClearData = React.useCallback(() => {
+    if (confirm('Are you sure you want to clear all saved data? This action cannot be undone.')) {
+      storage.clear();
+      // Refresh the page to reset the app
+      window.location.reload();
+    }
+  }, []);
+
+  // Update storage info when data changes
+  React.useEffect(() => {
+    if (!isLoading) {
+      updateStorageInfo();
+    }
+  }, [nodes, adAnalyses, isLoading, updateStorageInfo]);
 
   const renderWorkspaceContent = () => {
     if (activeTab === 'Scripting') {
@@ -266,13 +475,62 @@ const WorkspaceContainer: React.FC = () => {
               onAddNode={handleAddNode}
               onUpdateNode={handleUpdateNode}
               onDeleteNode={handleDeleteNode}
-              onReorganizeNodes={reorganizeNodes}
+              onReorganizeNodes={() => {
+                // Use store's reorganize
+                reorganizeNodes();
+                
+                // Force a re-center after reorganization
+                // The nodes will be positioned around (0,0)
+                // We need to wait for canvas bounds to update, then center
+                setTimeout(() => {
+                  const state = useWorkspaceStore.getState();
+                  const nodes = state.nodes;
+                  
+                  if (nodes.length === 0) return;
+                  
+                  // Calculate actual bounds of reorganized nodes
+                  let minX = Infinity, maxX = -Infinity;
+                  let minY = Infinity, maxY = -Infinity;
+                  
+                  nodes.forEach(node => {
+                    if (node.position) {
+                      // Account for node dimensions (approximate)
+                      const width = 400;
+                      const height = 300;
+                      
+                      minX = Math.min(minX, node.position.x);
+                      maxX = Math.max(maxX, node.position.x + width);
+                      minY = Math.min(minY, node.position.y);
+                      maxY = Math.max(maxY, node.position.y + height);
+                    }
+                  });
+                  
+                  // Calculate center of all nodes
+                  const centerX = (minX + maxX) / 2;
+                  const centerY = (minY + maxY) / 2;
+                  
+                  // Get viewport dimensions
+                  const viewportWidth = workspaceRef.current?.clientWidth || 1200;
+                  const viewportHeight = workspaceRef.current?.clientHeight || 800;
+                  
+                  // Calculate pan offset to center the nodes
+                  // panOffset translates the canvas, so to center point (centerX, centerY)
+                  // we need: panOffset = viewportCenter - canvasPoint
+                  const newPanOffset = {
+                    x: (viewportWidth / 2) - centerX,
+                    y: (viewportHeight / 2) - centerY
+                  };
+                  
+                  // Update pan offset in store
+                  state.setPanOffset(newPanOffset);
+                }, 200); // Slightly longer delay to ensure canvas bounds are updated
+              }}
             />
           </div>
         );
       } else {
         return (
-          <StaticScriptView 
+          <EnhancedStaticScriptView 
             nodes={currentNodes} 
             colorScheme={theme}
             onAddNode={handleAddNode}
@@ -280,6 +538,15 @@ const WorkspaceContainer: React.FC = () => {
             onDeleteNode={handleDeleteNode}
             chatExpanded={chatOpen}
             onToggleChat={toggleChat}
+            adAnalyses={adAnalyses}
+            currentScript={currentScript}
+            onScriptUpdate={handleScriptUpdate}
+            onScriptClear={handleScriptClear}
+            onAdAnalyzed={(nodeId: string, analysis: any) => {
+              console.log('💾 Saving ad analysis for', nodeId);
+              setAdAnalyses(prev => ({ ...prev, [nodeId]: analysis }));
+              AdStorage.addProcessedAd(nodeId, analysis);
+            }}
           />
         );
       }
@@ -418,6 +685,87 @@ const WorkspaceContainer: React.FC = () => {
                       }`}>
                         Social Media Assets
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Data Management Section */}
+                  <div>
+                    <h3 className={`text-xs font-semibold uppercase tracking-wide mb-3 ${
+                      isDarkMode ? 'text-purple-400/80' : 
+                      isExperimental ? 'text-yellow-400/80' : 
+                      'text-gray-500'
+                    }`}>
+                      Data Management
+                    </h3>
+                    <div className="space-y-2">
+                      {/* Storage Info */}
+                      <div className={`px-3 py-2.5 text-xs rounded-lg border ${
+                        isDarkMode ? 'text-purple-200/80 bg-purple-500/5 border-purple-500/20' : 
+                        isExperimental ? 'text-yellow-200/80 bg-yellow-400/5 border-yellow-400/20' : 
+                        'text-gray-600 bg-gray-50 border-gray-200'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <Database size={14} />
+                          <span>{Math.round(storageInfo.totalSize / 1024)}KB</span>
+                        </div>
+                        <div className="mt-1 text-xs opacity-75">
+                          {storageInfo.itemCount} items saved
+                        </div>
+                      </div>
+
+                      {/* Export Data */}
+                      <button
+                        onClick={handleExportData}
+                        className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg transition-all group ${
+                          isDarkMode ? 'text-purple-200 hover:bg-purple-500/10 hover:text-purple-100' : 
+                          isExperimental ? 'text-yellow-200 hover:bg-yellow-400/10 hover:text-yellow-100' : 
+                          'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        <Download size={16} className={`mr-3 transition-colors ${
+                          isDarkMode ? 'text-purple-400 group-hover:text-purple-300' : 
+                          isExperimental ? 'text-yellow-400 group-hover:text-yellow-300' : 
+                          'text-gray-500'
+                        }`} />
+                        Export Data
+                      </button>
+
+                      {/* Import Data */}
+                      <label className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg transition-all cursor-pointer group ${
+                        isDarkMode ? 'text-purple-200 hover:bg-purple-500/10 hover:text-purple-100' : 
+                        isExperimental ? 'text-yellow-200 hover:bg-yellow-400/10 hover:text-yellow-100' : 
+                        'text-gray-700 hover:bg-gray-100'
+                      }`}>
+                        <Upload size={16} className={`mr-3 transition-colors ${
+                          isDarkMode ? 'text-purple-400 group-hover:text-purple-300' : 
+                          isExperimental ? 'text-yellow-400 group-hover:text-yellow-300' : 
+                          'text-gray-500'
+                        }`} />
+                        Import Data
+                        <input
+                          type="file"
+                          accept=".json"
+                          onChange={handleImportData}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {/* Clear Data */}
+                      <button
+                        onClick={handleClearData}
+                        className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg transition-all group ${
+                          isDarkMode ? 'text-red-300 hover:bg-red-500/10 hover:text-red-200' : 
+                          isExperimental ? 'text-red-300 hover:bg-red-400/10 hover:text-red-200' : 
+                          'text-red-600 hover:bg-red-50 hover:text-red-700'
+                        }`}
+                      >
+                        <Trash2 size={16} className={`mr-3 transition-colors ${
+                          isDarkMode ? 'text-red-400 group-hover:text-red-300' : 
+                          isExperimental ? 'text-red-400 group-hover:text-red-300' : 
+                          'text-red-500'
+                        }`} />
+                        Clear All Data
+                      </button>
                     </div>
                   </div>
 

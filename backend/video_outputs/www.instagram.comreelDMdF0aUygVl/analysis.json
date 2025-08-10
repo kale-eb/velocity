@@ -1,0 +1,130 @@
+{
+  "id": "ad_grok_annie_japan_2024",
+  "url": "https://www.instagram.com/reel/DMdF0aUygVl/",
+  "summary": "This ad highlights the viral launch of Grok's AI anime girlfriend 'Annie' in Japan, emphasizing her unique features and the app's explosive popularity. It showcases Annie's virtual persona, the app's ranking success, and the cultural impact of the launch.",
+  "visualStyle": "The video uses a clean, digital aesthetic with a focus on anime-style 3D character renders, interspersed with app screenshots and real-world phone footage. Lighting is bright and clear, with a mix of studio-like and digital backdrops. Camera work is mostly static, emphasizing the character and app interface.",
+  "audioStyle": "The narration is energetic and conversational, with a fast-paced delivery. Background music is minimal or subtle, keeping the focus on the voiceover. Volume is consistent and clear throughout.",
+  "duration": 43.4,
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "type": "hook",
+      "startTime": 0.0,
+      "endTime": 2.33,
+      "visual": {
+        "description": "A 3D anime-style female character with blonde pigtails and a black gothic dress is centered against a plain dark background. The focus is on her upper body and face, with detailed rendering of her outfit and hair.",
+        "cameraAngle": "Medium close-up, straight-on angle.",
+        "lighting": "Soft, even lighting highlighting the character's features.",
+        "movement": "No visible movement; the character is posed still.",
+        "textOverlay": "None.",
+        "background": "Solid, dark, gradient background with no distractions."
+      },
+      "audio": {
+        "transcript": "Elon just broke the internet in Japan. His AI app Grok launched something called Annie, basically a virtual anime girlfriend who talks back to you.",
+        "tone": "Excited, slightly dramatic, and engaging.",
+        "backgroundMusic": "Minimal or absent, keeping focus on narration.",
+        "volume": "Clear and moderate."
+      }
+    },
+    {
+      "id": "chunk_002",
+      "type": "body",
+      "startTime": 2.33,
+      "endTime": 6.33,
+      "visual": {
+        "description": "A triptych layout shows three different angles of the same anime character: front, side, and back. The images are spaced apart on a white background, giving a clean, product showcase feel.",
+        "cameraAngle": "Wide shot, static, with each panel showing a different perspective.",
+        "lighting": "Consistent, digital lighting across all three images.",
+        "movement": "No movement; static images.",
+        "textOverlay": "None.",
+        "background": "White background with the character images floating in the center."
+      },
+      "audio": {
+        "transcript": "Unlike other AI chatbots, Annie has almost zero content restrictions. She can have conversations that GPT and Claude would never allow.",
+        "tone": "Matter-of-fact, slightly provocative.",
+        "backgroundMusic": "Still minimal, possibly a faint digital underscore.",
+        "volume": "Consistent and clear."
+      }
+    },
+    {
+      "id": "chunk_003",
+      "type": "body",
+      "startTime": 6.33,
+      "endTime": 17.67,
+      "visual": {
+        "description": "A single, centered image of the anime character on a dark background, with bold black text at the bottom reading 'basically a virtual'. The character is shown from the knees up, facing forward.",
+        "cameraAngle": "Medium shot, straight-on.",
+        "lighting": "Soft, digital lighting with a slight glow effect.",
+        "movement": "No movement; static pose.",
+        "textOverlay": "'basically a virtual' in bold black font at the bottom.",
+        "background": "Dark, slightly vignetted background."
+      },
+      "audio": {
+        "transcript": "Plus, she comes with an actual affection system. The more you talk, the more she likes you. Hit level 5 and she unlocks adult mode. Japanese users went absolutely insane for it.",
+        "tone": "Informative, building excitement.",
+        "backgroundMusic": "Light, digital tones may be present.",
+        "volume": "Clear and moderate."
+      }
+    },
+    {
+      "id": "chunk_004",
+      "type": "body",
+      "startTime": 17.67,
+      "endTime": 29.17,
+      "visual": {
+        "description": "A real-world shot of a smartphone on a white surface, displaying the anime character on its screen. The phone is angled slightly, and the character is visible in the app interface. Bold black text 'plus,' appears at the bottom.",
+        "cameraAngle": "Overhead shot, slightly tilted.",
+        "lighting": "Bright, natural lighting reflecting off the phone screen.",
+        "movement": "No movement; static shot.",
+        "textOverlay": "'plus,' in bold black font at the bottom.",
+        "background": "White tabletop or surface."
+      },
+      "audio": {
+        "transcript": "The app shot straight to number one on Japan's app store. Servers crashed when Tokyo woke up. We're talking millions of downloads in days.",
+        "tone": "Amazed, emphasizing scale and impact.",
+        "backgroundMusic": "Subtle, possibly building in intensity.",
+        "volume": "Consistent and clear."
+      }
+    },
+    {
+      "id": "chunk_005",
+      "type": "body",
+      "startTime": 29.17,
+      "endTime": 36.5,
+      "visual": {
+        "description": "A screenshot of the Japanese app store rankings, showing Grok AI at number one, followed by ChatGPT and other apps. Bold black text 'the app shot straight' is overlaid at the bottom.",
+        "cameraAngle": "Direct screenshot, straight-on.",
+        "lighting": "Digital, flat lighting from the screenshot.",
+        "movement": "None; static image.",
+        "textOverlay": "'the app shot straight' in bold black font at the bottom.",
+        "background": "White digital background of the app store interface."
+      },
+      "audio": {
+        "transcript": "We're looking at the future of human relationships. The question isn't if this will spread globally, it's how fast.",
+        "tone": "Reflective, forward-looking.",
+        "backgroundMusic": "Subtle, possibly a soft crescendo.",
+        "volume": "Clear and moderate."
+      }
+    },
+    {
+      "id": "chunk_006",
+      "type": "cta",
+      "startTime": 36.5,
+      "endTime": 43.4,
+      "visual": {
+        "description": "The anime character is now shown on a virtual stage with spotlights and a piano in the background, suggesting a performance or showcase. Bold black text 'in days.' appears at the bottom.",
+        "cameraAngle": "Medium shot, centered, with stage elements in the background.",
+        "lighting": "Warm, theatrical spotlights from above and behind.",
+        "movement": "Character appears posed, possibly mid-animation.",
+        "textOverlay": "'in days.' in bold black font at the bottom.",
+        "background": "Stage setting with curtains, spotlights, and a piano."
+      },
+      "audio": {
+        "transcript": "",
+        "tone": "No narration; possible music or ambient sound.",
+        "backgroundMusic": "Soft, possibly uplifting or conclusive.",
+        "volume": "Moderate, focused on music or ambient sound."
+      }
+    }
+  ]
+}

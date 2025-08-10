@@ -1,0 +1,70 @@
+{
+  "id": "ad_igreel_DNBhZWxyjQS_001",
+  "url": "https://www.instagram.com/reels/DNBhZWxyjQS/",
+  "summary": "A content creator shares her favorite content creation equipment, demonstrates their features, and invites viewers to join a giveaway for a chance to win a curated gift box of gear.",
+  "visualStyle": "Bright, modern, and clean with natural daylight and soft, even lighting. The camera work is steady, mostly static with occasional close-ups and product focus. The kitchen setting is aesthetically pleasing with wood and marble textures, and the overall vibe is friendly and inviting.",
+  "audioStyle": "Conversational, upbeat narration with clear enunciation and a friendly, enthusiastic tone. Background music is light, modern, and unobtrusive, supporting the energetic pace of the video. Volume is medium, ensuring the voiceover is always clear.",
+  "duration": 91.2,
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "type": "hook",
+      "startTime": 0,
+      "endTime": 9,
+      "visual": {
+        "description": "The creator stands confidently in a stylish kitchen, holding a green drink and making direct eye contact with the camera. Her hair moves as if she just turned toward the camera, creating a dynamic, attention-grabbing opening. The background is a modern kitchen with wood cabinetry, marble backsplash, and decorative items on the shelves.",
+        "cameraAngle": "Medium shot, straight-on framing, centered on the creator from the waist up.",
+        "lighting": "Soft, natural daylight fills the scene, creating a bright and welcoming mood.",
+        "movement": "Subtle movement as the creator turns and faces the camera, hair in motion. No camera movement.",
+        "textOverlay": "No text overlay in the opening frames.",
+        "background": "Modern kitchen with wood cabinets, marble backsplash, and open shelving with plants and teapots."
+      },
+      "audio": {
+        "transcript": "I've been making content for over 10 years. Here is all the equipment I swear by. And don't worry, for 31 days of giveaways, I got these all for you!",
+        "tone": "Warm, confident, and enthusiastic; designed to quickly establish credibility and excitement.",
+        "backgroundMusic": "Light, upbeat, modern instrumental music.",
+        "volume": "medium"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "type": "body",
+      "startTime": 9,
+      "endTime": 86.5,
+      "visual": {
+        "description": "The creator showcases various pieces of content creation equipment, including the Canon G7X Mark II, a compact tripod, a Panasonic Lumix S9 camera, Hollyland wireless mics, and a portable selfie light. She demonstrates each item, holding them up to the camera, assembling accessories, and occasionally interacting with a cat that appears on the counter. There are close-up shots of her hands operating the cameras and lights, as well as product-focused shots. The creator alternates between speaking directly to the camera and demonstrating the gear, with playful expressions, winks, and gestures. A brief cutaway shows a different woman in front of a digital product listing for a selfie light, then returns to the original creator for further demonstrations. The kitchen background remains consistent, with the cat adding a lively, personal touch.",
+        "cameraAngle": "Mix of medium shots, close-ups (for product details), and occasional selfie-style shots. Mostly static camera, with some handheld movement for close-ups.",
+        "lighting": "Consistently bright and soft, with some scenes using the demonstrated selfie light for added effect.",
+        "movement": "The creator moves around the kitchen, picks up and demonstrates products, interacts with the cat, and uses expressive gestures. Camera remains mostly static except for close-up product shots.",
+        "textOverlay": "At 58s, 'without mic:' appears above the creator to demonstrate audio difference.",
+        "background": "Modern kitchen setting with wood and marble, products and boxes displayed on the counter, and a cat occasionally in the frame."
+      },
+      "audio": {
+        "transcript": "Starting off strong, the Canon G7X Mark II. This bad boy has gone viral for the beautiful flash photos it takes, but I've personally loved it for a strong 8 years because it is such a flattering camera for vlogging. That camera may not be cheap, but my favorite tripod is. I've tried almost every other tripod on the market, and I still keep going back to this $20 one-off Amazon. It's lightweight, extends so far, and most importantly, it fits in all my purses. What more could a girl need? When I want to use a DSLR, my go-to has been this sleeper pick from Panasonic. It's called the S9, it's high quality, full frame, and it comes in so many pretty colors. As for filming on your phone, here are my must-have accessories. For crispy audio, the new Hollyland mics are incredible. They're the smallest mics I've ever seen, and you can really hear the difference. Hello! This is my go-to tripod for iPhones. My favorite selfie light is actually not the new Moa. Sorry Alex Earl. I find the Alton light is 10 times better. It has such a sturdy clip, and there are so many warmth settings and brightness settings. Although I love all this equipment for content creation, the truth is, you can make an entire career with the phone you're watching this on. All it takes is a bit of belief and a lot of action. Everything else is just extra.",
+        "tone": "Conversational, knowledgeable, and enthusiastic. The creator uses a friendly, encouraging delivery with playful asides and personal endorsements.",
+        "backgroundMusic": "Consistent light, modern instrumental music, with subtle shifts in energy to match product demonstrations.",
+        "volume": "medium"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "type": "cta",
+      "startTime": 86.5,
+      "endTime": 91.2,
+      "visual": {
+        "description": "The creator holds up a large pink gift box, smiling and gesturing toward the camera as if inviting viewers to participate. The cat is visible in the background on the kitchen counter, adding a playful and cozy touch. The creator then exits the frame with a cheerful expression, leaving the cat in the shot.",
+        "cameraAngle": "Medium shot, straight-on, centered on the creator and the gift box.",
+        "lighting": "Bright, soft daylight, maintaining the inviting mood.",
+        "movement": "The creator lifts the gift box, gestures to the camera, and then walks out of frame, smiling.",
+        "textOverlay": "No additional text overlay in this section.",
+        "background": "Consistent modern kitchen with the cat in the background, reinforcing the personal, homey vibe."
+      },
+      "audio": {
+        "transcript": "But, if you'd like some help along the way, comment below for a chance to win this gift box.",
+        "tone": "Inviting, upbeat, and encouraging, with a clear call to action.",
+        "backgroundMusic": "Music swells slightly for emphasis, remaining light and positive.",
+        "volume": "medium"
+      }
+    }
+  ]
+}

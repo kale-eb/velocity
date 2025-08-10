@@ -124,6 +124,19 @@ WorkspaceContainer (Master State)
 ### Theme System
 Three modes (light/dark/experimental) with dynamic styling and consistent color schemes.
 
+### Enhanced File Management System
+- **PDF Processing Pipeline**: Python FastAPI backend with PyPDF2 for robust text extraction
+- **CORS-Safe Architecture**: Express → Python raw byte transmission avoiding browser limitations
+- **File Card UI**: Individual file cards with metadata, processing status, and deletion controls
+- **Separated Data Storage**: File metadata for UI, extracted text for AI processing
+
+### Backend Processing Pipeline
+- **Intelligent Jump Cut Detection**: Multi-metric approach with delta intensity veto system
+- **Advanced Frame Extraction**: Scene-based gap filling with perceptual hash prioritization
+- **Debug Interface**: Unified web-based tool for frame analysis and algorithm tuning
+- **Video Processing**: Support for Instagram, TikTok, YouTube with automated transcription
+- **Document Processing**: PDF, TXT, CSV, JSON, Markdown with full content extraction
+
 ## Component Overview
 
 ### WorkspaceContainer.jsx
@@ -145,12 +158,68 @@ Traditional three-panel interface (sidebar/editor/chat) with resizable panels, m
   position: { x: number, y: number },
   selected: boolean,
   expanded: boolean,
-  data: { /* type-specific properties */ }
+  data: { 
+    content: string,              // Combined extracted text for AI
+    uploadedFiles: [              // File metadata for UI
+      {
+        id: string,
+        name: string,
+        size: number,
+        type: string,
+        uploadedAt: string,
+        success: boolean,
+        error?: string,
+        pageCount?: number
+      }
+    ],
+    extractedTexts: string[]      // Raw extracted texts
+  }
 }
 ```
 
 **Connection:** `{ id, fromNodeId, toNodeId }`
 **Viewport:** `{ panOffset: {x, y}, zoomLevel: 25-200% }`
+
+**File Processing Flow:**
+```
+Frontend Upload → Express (multipart) → Python (raw bytes) → PyPDF2 Extraction → 
+  ↓
+{uploadedFiles: [...], extractedTexts: [...], content: "combined text"}
+```
+
+## Backend Processing Architecture
+
+### Jump Cut Detection Algorithm
+
+**Multi-Metric Similarity Analysis:**
+- **Perceptual Hash (75%)**: DCT-based structural comparison for major scene changes
+- **Histogram Comparison (25%)**: Color distribution analysis for lighting consistency
+- **Delta Intensity**: Brightness difference measurement for veto system
+
+**Intelligent Veto System:**
+```python
+def _is_jump_cut(frame1, frame2, threshold=0.73):
+    combined_sim = _combined_similarity(frame1, frame2)  # 75% phash + 25% histogram
+    delta_intensity = _delta_intensity(frame1, frame2)
+    
+    initial_jump_cut = combined_sim < threshold
+    delta_veto = delta_intensity > 0.9  # Veto if brightness too similar
+    
+    return initial_jump_cut and not delta_veto
+```
+
+**Configuration:**
+- Jump cut threshold: 0.73 (similarity scores below this trigger detection)
+- Delta intensity veto: >0.9 similarity prevents false positives
+- Target frames: 20 per video with scene-based gap filling
+
+### Debug Tools
+
+**Unified Debug Interface (`debug_jump_cuts.py`):**
+- Real-time frame-by-frame analysis with similarity metrics
+- Veto status visualization (initial detection vs final result)
+- Interactive threshold adjustment with live recalculation
+- Generates `jump_cut_debug_report.html` for offline analysis
 
 ## Development Notes
 

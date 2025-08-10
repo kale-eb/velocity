@@ -1,0 +1,101 @@
+{
+  "id": "ad_DNBhZWxyjQS",
+  "url": "https://www.instagram.com/reels/DNBhZWxyjQS/",
+  "summary": "Content creator showcases favorite equipment for content creation with a giveaway promotion.",
+  "visualStyle": "Bright, modern kitchen setting with natural lighting, influencer-style presentation",
+  "audioStyle": "Conversational, upbeat narration with light background music",
+  "duration": 91.23,
+  "entities": {
+    "people": [
+      {
+        "id": "presenter",
+        "role": "content creator/presenter",
+        "appearance": "Young woman, long dark hair, wearing white sleeveless top and dark pleated skirt, professional presentation style",
+        "demographics": "Female, approximately 25-30 years old"
+      }
+    ],
+    "products": [
+      {
+        "id": "canon_camera",
+        "name": "Canon G7X Mark II",
+        "description": "Compact digital camera in original box packaging, black color",
+        "category": "electronics"
+      },
+      {
+        "id": "lumix_camera",
+        "name": "Lumix S9",
+        "description": "Professional camera in large retail box",
+        "category": "electronics"
+      },
+      {
+        "id": "green_drink",
+        "name": "Green smoothie/juice",
+        "description": "Green-colored beverage in clear glass",
+        "category": "beverage"
+      }
+    ],
+    "locations": [
+      {
+        "id": "kitchen",
+        "type": "modern kitchen",
+        "description": "Upscale kitchen with marble countertops, wooden cabinets, open shelving with plants and dishware, marble backsplash",
+        "lighting": "natural daylight, bright and even"
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "type": "shot",
+      "startTime": 0.0,
+      "endTime": 8.67,
+      "visual": {
+        "subjects": ["presenter", "green_drink"],
+        "location": "kitchen",
+        "action": "Presenter introducing herself while holding drink",
+        "subjectChanges": {
+          "presenter": "Standing behind counter, slight hair movement, confident posture",
+          "green_drink": "Held in right hand at waist level"
+        },
+        "cameraAngle": "Medium shot, straight-on, eye level",
+        "movement": "Static camera, slight subject movement",
+        "textOverlay": "None",
+        "newElements": null
+      },
+      "audio": {
+        "speaker": "presenter",
+        "transcript": "I've been making content for over 10 years. Here is all the equipment I swear by. And don't worry, for 31 days of giveaways, I got these all for you!",
+        "tone": "Friendly, enthusiastic, confident",
+        "backgroundMusic": "Upbeat, light",
+        "volume": "Moderate"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "type": "shot",
+      "startTime": 8.67,
+      "endTime": 11.5,
+      "visual": {
+        "subjects": ["presenter", "canon_camera", "lumix_camera"],
+        "location": "kitchen",
+        "action": "Presenter displaying camera products",
+        "subjectChanges": {
+          "presenter": "Smiling, holding Canon box up",
+          "canon_camera": "Held prominently in frame",
+          "lumix_camera": "Displayed on counter"
+        },
+        "cameraAngle": "Medium shot, straight-on",
+        "movement": "Minimal, hand gesture to present product",
+        "textOverlay": "None",
+        "newElements": "Multiple tech product boxes arranged on counter"
+      },
+      "audio": {
+        "speaker": "presenter",
+        "transcript": "Starting off strong, the Canon G7X Mark II.",
+        "tone": "Excited, emphasizing product name",
+        "backgroundMusic": "Continues upbeat",
+        "volume": "Moderate"
+      }
+    }
+  ]
+}

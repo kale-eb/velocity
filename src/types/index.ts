@@ -18,7 +18,7 @@ export interface Bounds {
 }
 
 // Node types
-export type NodeType = 'ad' | 'instructions' | 'script' | 'productSpec';
+export type NodeType = 'ad' | 'instructions' | 'script' | 'scriptGenerator' | 'productSpec';
 
 export interface NodePosition {
   x: number;
@@ -76,7 +76,32 @@ export interface ScriptGeneratorNode extends BaseNode {
   };
 }
 
-export type WorkspaceNode = AdNode | InstructionsNode | ProductSpecNode | ScriptGeneratorNode;
+export interface ScriptGenerationNode extends BaseNode {
+  type: 'scriptGenerator';
+  data: {
+    inputs: {
+      product_specs: string;
+      ad_refs: string[];
+      extra_instructions: string;
+    };
+    script?: {
+      id: string;
+      title: string;
+      chunks: Array<{
+        id: string;
+        type: 'HOOK' | 'PRODUCT' | 'CTA';
+        script_text: string;
+        camera_instruction: string;
+      }>;
+    };
+    adAnalyses?: Record<string, any>;
+    lastGenerated?: string;
+    isGenerating?: boolean;
+    expanded?: boolean;
+  };
+}
+
+export type WorkspaceNode = AdNode | InstructionsNode | ProductSpecNode | ScriptGeneratorNode | ScriptGenerationNode;
 
 // Connection types
 export interface Connection {

@@ -1,0 +1,90 @@
+{
+  "id": "ad_DNBhZWxyjQS",
+  "url": "https://www.instagram.com/reels/DNBhZWxyjQS/",
+  "summary": "This ad showcases a creator's favorite content creation equipment, offering recommendations and a giveaway, while demonstrating each product's features and benefits for aspiring creators.",
+  "visualStyle": "Bright, clean, and modern kitchen setting with natural lighting and steady, front-facing camera shots. Visuals are crisp with minimalistic backgrounds, focusing on the presenter and products.",
+  "audioStyle": "Conversational, energetic narration with clear enunciation. Light background music may be present, but the focus is on the enthusiastic and informative voiceover.",
+  "duration": 91.2,
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "type": "hook",
+      "startTime": 0.0,
+      "endTime": 15.0,
+      "visual": {
+        "description": "A woman stands behind a marble kitchen counter, holding a green drink, looking directly at the camera. The background features wooden cabinets, open shelving with plants, and kitchenware. She is dressed in a white sleeveless top and dark skirt, with her hair styled in loose waves.",
+        "cameraAngle": "Medium shot, straight-on angle, centered framing.",
+        "lighting": "Bright, even natural lighting with no harsh shadows.",
+        "movement": "Subtle movement as the presenter holds the drink and possibly gestures.",
+        "textOverlay": "No visible text overlays in this shot.",
+        "background": "Modern kitchen with wood cabinetry, marble backsplash, and decorative plants."
+      },
+      "audio": {
+        "transcript": "I've been making content for over 10 years. Here is all the equipment I swear by. And don't worry, for 31 days of giveaways, I got these all for you! Starting off strong, the Canon G7X Mark II. This bad boy has gone viral for the beautiful flash photos it takes, but I've personally loved it for a strong 8 years because it is such a flattering camera for vlogging.",
+        "tone": "Friendly, confident, and enthusiastic.",
+        "backgroundMusic": "Light, upbeat background music (if present).",
+        "volume": "Moderate, clear narration with music mixed low."
+      }
+    },
+    {
+      "id": "chunk_002",
+      "type": "body",
+      "startTime": 15.0,
+      "endTime": 58.0,
+      "visual": {
+        "description": "The same woman is now holding a camera up to her face, demonstrating it. Several pieces of content creation equipment, including a Lumix S9 box, microphones, and a tripod, are displayed on the counter in front of her. The kitchen setting remains consistent.",
+        "cameraAngle": "Medium shot, straight-on angle, presenter centered.",
+        "lighting": "Consistent, bright, and natural.",
+        "movement": "Presenter demonstrates equipment, possibly picking up and showing different items.",
+        "textOverlay": "No visible text overlays in this shot.",
+        "background": "Modern kitchen with visible product boxes and accessories on the counter."
+      },
+      "audio": {
+        "transcript": "That camera may not be cheap, but my favorite tripod is. I've tried almost every other tripod on the market, and I still keep going back to this $20 one-off Amazon. It's lightweight, extends so far, and most importantly, it fits in all my purses. What more could a girl need? When I want to use a DSLR, my go-to has been this sleeper pic from Panasonic. It's called the S9, it's high quality, full frame, and it comes in so many pretty colors. As for filming on your phone, here are my must-have accessories. For crispy audio, the new Hollyland mics are incredible. They're the smallest mics I've ever seen, and you can really hear the difference. Hello! This is my go-to tripod for iPhones. My favorite selfie light is actually not the new Moa. Sorry Alex Earl. I find the Alton light is 10 times better. It has such a sturdy clip, and there are so many warmth settings and brightness settings.",
+        "tone": "Conversational, informative, and enthusiastic.",
+        "backgroundMusic": "Light, consistent background music (if present).",
+        "volume": "Moderate, clear narration with music mixed low."
+      }
+    },
+    {
+      "id": "chunk_003",
+      "type": "body",
+      "startTime": 58.0,
+      "endTime": 65.5,
+      "visual": {
+        "description": "The woman stands behind the counter with various equipment set up, including a camera on a tripod and boxes for microphones and lights. The text overlay 'without mic:' appears above her head, indicating a demonstration of audio quality.",
+        "cameraAngle": "Medium shot, straight-on angle, presenter centered.",
+        "lighting": "Bright, even lighting highlighting both the presenter and products.",
+        "movement": "Presenter gestures with hands, possibly speaking directly to the camera.",
+        "textOverlay": "'without mic:' in white text at the top of the frame.",
+        "background": "Same modern kitchen, with equipment and boxes arranged on the counter."
+      },
+      "audio": {
+        "transcript": "Although I love all this equipment for content creation, the truth is, you can make an entire career with the phone you're watching this on. All it takes is a bit of belief and a lot of action. Everything else is just extra.",
+        "tone": "Encouraging, motivational, and sincere.",
+        "backgroundMusic": "Background music continues softly (if present).",
+        "volume": "Moderate, clear narration with music mixed low."
+      }
+    },
+    {
+      "id": "chunk_004",
+      "type": "cta",
+      "startTime": 65.5,
+      "endTime": 91.2,
+      "visual": {
+        "description": "A new woman appears in front of a digital background displaying a product page for a selfie light, with images of the light attached to a phone and laptop. She gestures toward the product images, highlighting features and possibly discussing the giveaway.",
+        "cameraAngle": "Medium close-up, presenter on the left, product images on the right.",
+        "lighting": "Bright, studio-like lighting on the presenter; digital background is well-lit and clear.",
+        "movement": "Presenter gestures with hands, drawing attention to the product visuals.",
+        "textOverlay": "Product details and price visible as part of the digital background.",
+        "background": "Digital product page with images of the selfie light and usage scenarios."
+      },
+      "audio": {
+        "transcript": "But, if you'd like some help along the way, comment below for a chance to win this gift box.",
+        "tone": "Inviting, friendly, and promotional.",
+        "backgroundMusic": "Background music continues, possibly with a slight uplift for the call-to-action.",
+        "volume": "Moderate, clear narration with music mixed low."
+      }
+    }
+  ]
+}

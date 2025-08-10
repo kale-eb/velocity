@@ -1,0 +1,42 @@
+{
+  "video_processing": {
+    "max_video_duration": 95,
+    "max_video_size_mb": 5,
+    "target_frames_per_video": 20,
+    "jump_cut_threshold": 0.73,
+    "max_frames_per_video": 30
+  },
+  "api": {
+    "timeout": 600,
+    "max_concurrent_requests": 10,
+    "openai_model": "gpt-5",
+    "max_tokens": 8000,
+    "temperature": 0.2,
+    "max_frames_per_batch": 6,
+    "frame_image_max_size": 512,
+    "frame_image_quality": 70
+  },
+  "logging": {
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "date_format": "%Y-%m-%d %H:%M:%S"
+  },
+  "frame_extraction": {
+    "sample_rate": 6,
+    "similarity_methods": {
+      "histogram_weight": 0.3,
+      "perceptual_hash_weight": 0.7
+    },
+    "scene_gap_thresholds": {
+      "min_scene_duration": 1.0,
+      "significant_gap_duration": 2.0,
+      "fill_gap_duration": 3.0
+    }
+  },
+  "audio_processing": {
+    "sample_rate": 16000,
+    "channels": 1,
+    "codec": "pcm_s16le",
+    "whisper_model": "whisper-1",
+    "temperature": 0.0
+  }
+}

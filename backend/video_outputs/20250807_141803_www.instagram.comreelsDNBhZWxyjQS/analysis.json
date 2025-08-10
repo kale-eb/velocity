@@ -1,0 +1,30 @@
+{
+  "id": "ad_fallback_1754601567",
+  "url": "https://www.instagram.com/reels/DNBhZWxyjQS/",
+  "summary": "Analysis parsing failed - manual review required",
+  "visualStyle": "Unable to determine visual style",
+  "audioStyle": "Unable to determine audio style",
+  "duration": 91.232625,
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "type": "hook",
+      "startTime": 0,
+      "endTime": 5,
+      "visual": {
+        "description": "Analysis failed - manual review needed",
+        "cameraAngle": "unknown",
+        "lighting": "unknown",
+        "movement": "unknown",
+        "textOverlay": "",
+        "background": "unknown"
+      },
+      "audio": {
+        "transcript": "Analysis failed",
+        "tone": "unknown",
+        "backgroundMusic": "unknown",
+        "volume": "unknown"
+      }
+    }
+  ]
+}

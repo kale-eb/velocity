@@ -8,13 +8,230 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned for Phase 1
-- Manual script generation with "Generate Script" button
 - Chunk-based script editing (3 versions per chunk)
-- AI-powered script editing chat integration
 - Enhanced Graph View for script generation flow
-- Complete Static View overhaul
-- Mock analyze-ad endpoint integration
-- AI chat integration (Vercel AI SDK)
+- Video Assembly Workspace implementation
+
+## [0.5.0] - 2025-01-09 - Enhanced File Management & PDF Processing
+
+### 🗂️ Major Improvement: Advanced File Management System
+
+### Added
+- **PDF Processing Backend Integration**
+  - Python FastAPI backend with PyPDF2 for robust PDF text extraction
+  - Express.js proxy server handling multipart file uploads
+  - Raw PDF byte transmission to avoid CORS and boundary parsing issues
+  - Support for PDF, TXT, CSV, JSON, and Markdown files
+
+- **Enhanced File Management UI**
+  - Individual file cards displaying filename, size, page count, and upload date
+  - Right-click context menu for file deletion with confirmation
+  - File processing status indicators (Processed/Failed with error messages)
+  - Dropdown expansion to view all uploaded files in scrollable container
+  - "Clear All" functionality to remove all files at once
+
+- **Separated Data Architecture**
+  - Raw extracted text stored separately in `extractedTexts` array for AI processing
+  - File metadata stored in `uploadedFiles` array for UI display
+  - Combined content string for seamless AI script generation
+  - Unique file IDs for reliable tracking and deletion
+
+- **Script Generation Integration**
+  - Manual script generation with "Generate Script" button
+  - Full PDF content integration (4,000+ characters) with OpenAI GPT-5
+  - AI-powered script editing chat integration with tool access
+  - Comprehensive logging for API calls and tool usage
+  - Chat assistant access to product specs, ads, and instructions via tools
+
+### Enhanced
+- **Backend Services**
+  - Express server with multer middleware for file upload handling
+  - Python FastAPI with `/process-pdf-raw` endpoint for direct PDF processing  
+  - Comprehensive error handling and debugging for file processing pipeline
+  - CORS-safe file processing without browser-side PDF parsing
+
+- **User Experience**
+  - File cards show actual uploaded documents instead of raw text content
+  - Visual feedback for processing status and file information
+  - Intuitive right-click deletion with confirmation dialogs
+  - File count display in collapsed card headers
+  - Scrollable file list with proper theming (light/dark/experimental)
+
+### Fixed
+- **PDF Processing CORS Issues**
+  - Eliminated client-side PDF.js worker CORS conflicts
+  - Implemented reliable server-side PDF text extraction
+  - Fixed multipart boundary parsing between Express and Python services
+  - Resolved file upload failures with proper error handling
+
+- **Data Management**
+  - Fixed content duplication when adding multiple files
+  - Proper file deletion removes both metadata and extracted text
+  - Correct file indexing for text extraction synchronization
+  - Enhanced error handling for failed file processing
+
+### Technical Improvements
+- **Processing Pipeline**: Frontend → Express (multipart) → Python (raw bytes) → Text extraction
+- **File Structure**: Unique IDs, timestamps, success status, error messages, page counts
+- **AI Integration**: Full document content available for script generation context
+- **Performance**: Efficient file processing with proper cleanup and error recovery
+
+### Dependencies Added
+```json
+{
+  "multer": "^2.0.2",
+  "form-data": "^4.0.4",
+  "PyPDF2": "^3.0.1",
+  "python-multipart": "^0.0.20"
+}
+```
+
+**Status: ✅ ENHANCED FILE MANAGEMENT - Professional document handling with full PDF processing**
+
+## [0.4.2] - 2025-01-08 - Token Usage Optimization
+
+### 💰 API Token Optimization for Single-Call Processing
+
+### Added
+- **Configurable Image Compression Settings**
+  - `frame_image_max_size`: Configurable max image dimension (default 512px)
+  - `frame_image_quality`: JPEG compression quality (default 70)
+  - `max_frames_per_batch`: Frames per API call (default 20)
+- **Token Usage Estimator**: Script to calculate and compare token usage across different settings
+
+### Changed
+- **Image Compression**: Reduced from 1024px/85 quality to 512px/70 quality
+- **Batch Size**: Increased from 8 to 20 frames per API call
+- **Token Efficiency**: 66.7% reduction in tokens per image (765 → 255 tokens)
+
+### Optimized
+- **Single API Call**: Most videos (≤20 jump cuts) now process in one API call
+- **Cost Reduction**: Similar token usage while processing 2.5x more frames
+- **Processing Speed**: Eliminated multi-pass delays for typical videos
+
+## [0.4.1] - 2025-01-08 - Enhanced Jump Cut Detection
+
+### 🔧 Jump Cut Detection Improvements
+
+### Added
+- **Delta Intensity Veto System**
+  - New `_delta_intensity()` similarity metric measuring brightness changes
+  - Intelligent jump cut veto: frames with >0.9 delta intensity similarity bypass jump cut detection
+  - Prevents false positives from subtle lighting/exposure changes within same scene
+
+### Changed
+- **Updated Similarity Weighting**: Perceptual hash increased to 75% (from 70%), histogram reduced to 25% (from 30%)
+- **Threshold Adjustment**: Jump cut threshold raised from 0.65 to 0.73 for increased sensitivity
+- **Enhanced Debug Interface**: 
+  - Unified debug tool (consolidated from 3 separate tools)
+  - Real-time veto status display showing initial detection vs final result
+  - Updated UI to reflect new 75%/25% weighting
+
+### Fixed
+- **Debug Tool Consolidation**: Removed redundant tkinter and static HTML generators, kept web-based tool
+- **JSON Serialization**: Fixed NumPy boolean serialization errors in debug interface
+- **Scoring Consistency**: Debug tool now uses identical jump cut logic as production pipeline
+
+### Technical Details
+- New `_is_jump_cut()` function combines similarity threshold with delta intensity veto
+- Debug tool generates `jump_cut_debug_report.html` with embedded frame analysis
+- Enhanced logging shows veto statistics and detailed frame-by-frame decisions
+
+## [0.4.0] - 2024-08-07 - Backend Processing Pipeline Complete
+
+### 🚀 Major Addition: Advertisement Analysis Backend
+
+### Added
+- **Complete Backend Processing System**
+  - Node.js Express server with comprehensive middleware stack
+  - Video download support for YouTube, TikTok, Instagram, Twitter, Vimeo, Facebook, Twitch
+  - Intelligent frame extraction using FFmpeg with duplicate removal
+  - OpenAI Whisper integration for accurate audio transcription
+  - GPT-4o powered advertisement analysis with structured output
+
+- **Core Backend Services**
+  - `VideoDownloader` - Multi-platform video downloading with yt-dlp
+  - `FrameExtractor` - Smart scene-based frame extraction (max 30 frames)
+  - `AudioTranscriber` - OpenAI Whisper API integration with timestamped segments
+  - `AdAnalyzer` - GPT-4o analysis producing structured JSON output
+  - `AdProcessor` - Pipeline orchestrator with concurrent processing
+
+- **API Endpoints Implementation**
+  - `/analyze-ad` - **Primary endpoint from description.md** - Structured JSON output for Script Generation Workspace
+  - `/analyze-url` - Viral analysis with markdown output
+  - `/analyze-upload` - Direct file upload processing
+  - `/validate-url` - URL validation without processing
+  - `/status` - Service health monitoring
+  - `/supported-domains` - Platform compatibility information
+
+- **Structured JSON Output**
+  - Matches exact format from mock data files (fashion-lifestyle-ad.json, tech-product-ad.json, skincare-ugc-ad.json)
+  - Automatic chunk detection and classification (hook, body, cta)
+  - Detailed visual analysis (camera angles, lighting, movement, text overlays)
+  - Comprehensive audio analysis (transcription, tone, background music, volume)
+  - Ready for immediate frontend integration
+
+### Technical Architecture
+- **Production-Ready Infrastructure**
+  - Comprehensive error handling with detailed debugging information
+  - Rate limiting system (configurable: 100 requests per 15 minutes)
+  - Security middleware (Helmet, CORS, input validation)
+  - Structured logging with color-coded levels
+  - Graceful shutdown handling and resource cleanup
+
+- **Processing Pipeline**
+  ```
+  URL Input → Video Download → Frame Extraction ↘
+                                              → AI Analysis → Structured JSON
+  File Upload → Validation → Audio Transcription ↗
+  ```
+
+- **Performance Optimizations**
+  - Concurrent frame extraction and audio transcription
+  - Perceptual hash duplicate frame removal (85% similarity threshold)
+  - Smart frame selection based on video duration
+  - Automatic temporary file cleanup
+  - Token usage and cost tracking
+
+### Configuration & Deployment
+- **Environment Configuration**
+  - Complete .env.example with all required variables
+  - Configurable processing limits (duration, file size, frame count)
+  - OpenAI API integration with cost tracking
+  - Development and production environment support
+
+- **Documentation & Testing**
+  - Comprehensive README with API documentation and examples
+  - Interactive test script (`npm run backend:test`)
+  - Example responses showing structured JSON format
+  - Integration commands (`npm run backend:install`, `npm run backend:dev`)
+
+### Integration Ready
+- **Script Generation Workspace Integration**
+  - JSON output directly consumable by React frontend
+  - Chunk data ready for script generation context
+  - Visual and audio metadata for creative inspiration
+  - Perfect alignment with existing node-based architecture
+
+- **Cost & Performance Metrics**
+  - Typical processing time: 20-60 seconds
+  - Token usage: 2000-4000 tokens per video
+  - Estimated cost: $0.01-0.05 per analysis
+  - Support for videos up to 5 minutes, 100MB file size
+
+### Dependencies Added
+```json
+{
+  "express": "^4.18.2",
+  "openai": "^4.20.1", 
+  "yt-dlp-wrap": "^3.0.1",
+  "ffmpeg-static": "^5.2.0",
+  "fluent-ffmpeg": "^2.1.2",
+  "sharp": "^0.32.6"
+}
+```
+
+**Status: ✅ BACKEND COMPLETE - Ready for Frontend Integration**
 
 ## [0.3.1] - 2024-08-05 - Documentation & GitHub Integration
 

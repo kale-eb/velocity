@@ -1,0 +1,87 @@
+{
+  "id": "ad_unique_id",
+  "url": "https://www.instagram.com/p/DNBhZWxyjQS/",
+  "summary": "The video showcases a content creator presenting various equipment she uses for content creation, with a focus on cameras, tripods, and accessories, while also promoting a giveaway.",
+  "visualStyle": "Bright and modern kitchen setting with smooth camera transitions and close-up shots.",
+  "audioStyle": "Casual and enthusiastic narration with a friendly tone.",
+  "duration": 91.2,
+  "entities": {
+    "people": [
+      {
+        "id": "presenter_1",
+        "role": "presenter",
+        "appearance": "Long dark brown hair, fair skin, youthful appearance, wearing a white sleeveless top and dark skirt, minimal makeup, estimated height around 5'6\", casual and confident demeanor.",
+        "demographics": "Mid-20s, female, possibly of mixed ethnicity, middle-class indicators."
+      }
+    ],
+    "products": [
+      {
+        "id": "camera_1",
+        "name": "Canon G7X Mark II",
+        "description": "Compact digital camera, known for high-quality flash photos, black body with a sleek design, popular for vlogging.",
+        "category": "camera"
+      },
+      {
+        "id": "tripod_1",
+        "name": "Amazon Tripod",
+        "description": "Lightweight, extendable tripod, black color, compact design, affordable price point, fits in purses.",
+        "category": "tripod"
+      },
+      {
+        "id": "dslr_1",
+        "name": "Panasonic S9",
+        "description": "High-quality, full-frame DSLR camera, available in multiple colors, known for its versatility and quality.",
+        "category": "camera"
+      },
+      {
+        "id": "mic_1",
+        "name": "Hollyland Mics",
+        "description": "Small, wireless microphones, known for clear audio quality, compact design, black color.",
+        "category": "microphone"
+      },
+      {
+        "id": "light_1",
+        "name": "Alton Light",
+        "description": "Selfie light with sturdy clip, multiple warmth and brightness settings, compact and portable.",
+        "category": "lighting"
+      }
+    ],
+    "locations": [
+      {
+        "id": "kitchen_1",
+        "type": "kitchen",
+        "description": "Modern kitchen with wooden cabinets, marble countertops, decorative elements like plants and teapots, clean and organized.",
+        "lighting": "Bright natural lighting from overhead and ambient sources, soft shadows."
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "startTime": 0.0,
+      "endTime": 9.67,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "kitchen_1",
+        "description": "The presenter stands in the kitchen holding a green drink, introducing the video.",
+        "cameraAngle": "Medium shot, eye-level",
+        "movement": "Static",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "I've been making content for over 10 years. Here is all the equipment I swear by. And don't worry, for 31 days of giveaways, I got these all for you!",
+        "tone": "Enthusiastic and inviting"
+      }
+    }
+  ],
+  "processing_info": {
+    "processed_at": "2025-08-09T16:57:44.796054",
+    "file_size_mb": 12.61,
+    "frames_extracted": 20,
+    "scenes_detected": 1,
+    "audio_segments": 28,
+    "transcript_length": 1580
+  }
+}

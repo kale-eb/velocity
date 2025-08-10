@@ -1,0 +1,91 @@
+{
+  "duration": 43.353063,
+  "full_transcript": "Elon just broke the internet in Japan. His AI app Grok launched something called Annie, basically a virtual anime girlfriend who talks back to you. Unlike other AI chatbots, Annie has almost zero content restrictions. She can have conversations that GPT and Claude would never allow. Plus, she comes with an actual affection system. The more you talk, the more she likes you. Hit level 5 and she unlocks adult mode. Japanese users went absolutely insane for it. The app shot straight to number one on Japan's app store. Servers crashed when Tokyo woke up. We're talking millions of downloads in days. We're looking at the future of human relationships. The question isn't if this will spread globally, it's how fast.",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.4000000953674316,
+      "text": "Elon just broke the internet in Japan.",
+      "confidence": -0.22239527106285095
+    },
+    {
+      "start": 2.4000000953674316,
+      "end": 5.519999980926514,
+      "text": "His AI app Grok launched something called Annie,",
+      "confidence": -0.22239527106285095
+    },
+    {
+      "start": 5.519999980926514,
+      "end": 8.960000038146973,
+      "text": "basically a virtual anime girlfriend who talks back to you.",
+      "confidence": -0.22239527106285095
+    },
+    {
+      "start": 8.960000038146973,
+      "end": 13.359999656677246,
+      "text": "Unlike other AI chatbots, Annie has almost zero content restrictions.",
+      "confidence": -0.22239527106285095
+    },
+    {
+      "start": 13.359999656677246,
+      "end": 17.440000534057617,
+      "text": "She can have conversations that GPT and Claude would never allow.",
+      "confidence": -0.22239527106285095
+    },
+    {
+      "start": 17.440000534057617,
+      "end": 20.559999465942383,
+      "text": "Plus, she comes with an actual affection system.",
+      "confidence": -0.22239527106285095
+    },
+    {
+      "start": 20.559999465942383,
+      "end": 22.959999084472656,
+      "text": "The more you talk, the more she likes you.",
+      "confidence": -0.22239527106285095
+    },
+    {
+      "start": 22.959999084472656,
+      "end": 25.760000228881836,
+      "text": "Hit level 5 and she unlocks adult mode.",
+      "confidence": -0.22239527106285095
+    },
+    {
+      "start": 25.760000228881836,
+      "end": 28.799999237060547,
+      "text": "Japanese users went absolutely insane for it.",
+      "confidence": -0.22239527106285095
+    },
+    {
+      "start": 28.799999237060547,
+      "end": 32.0,
+      "text": "The app shot straight to number one on Japan's app store.",
+      "confidence": -0.16458043456077576
+    },
+    {
+      "start": 32.0,
+      "end": 34.15999984741211,
+      "text": "Servers crashed when Tokyo woke up.",
+      "confidence": -0.16458043456077576
+    },
+    {
+      "start": 34.15999984741211,
+      "end": 36.63999938964844,
+      "text": "We're talking millions of downloads in days.",
+      "confidence": -0.16458043456077576
+    },
+    {
+      "start": 36.63999938964844,
+      "end": 39.36000061035156,
+      "text": "We're looking at the future of human relationships.",
+      "confidence": -0.16458043456077576
+    },
+    {
+      "start": 39.36000061035156,
+      "end": 43.119998931884766,
+      "text": "The question isn't if this will spread globally, it's how fast.",
+      "confidence": -0.16458043456077576
+    }
+  ],
+  "error": null
+}
