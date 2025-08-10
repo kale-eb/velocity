@@ -1073,6 +1073,16 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                           <div>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2 flex-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleCard(ad.id);
+                                  }}
+                                  className="p-1 hover:bg-black/5 rounded"
+                                >
+                                  {expandedCards.has(ad.id) ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                                </button>
+                                
                                 <div className="flex-1">
                                   <div className="text-sm font-medium">{ad.data?.title || 'Ad Reference'}</div>
                                   <div className={`text-xs flex items-center gap-1 ${
@@ -1133,6 +1143,28 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                     allowFullScreen
                                     title="Ad Video"
                                   />
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Expanded content for analyzed ads */}
+                            {expandedCards.has(ad.id) && (
+                              <div className="px-2 pb-2 border-t border-black/10 mt-2" onClick={(e) => e.stopPropagation()}>
+                                <div className="pt-2 space-y-2">
+                                  {ad.data?.url && (
+                                    <div className="text-xs opacity-75">
+                                      <div className="font-medium mb-1">URL:</div>
+                                      <div className="break-all">{ad.data.url}</div>
+                                    </div>
+                                  )}
+                                  {adAnalyses[ad.id] && (
+                                    <div className="text-xs opacity-75">
+                                      <div className="font-medium mb-1">Analysis Summary:</div>
+                                      <div className="text-xs">
+                                        {adAnalyses[ad.id].chunks?.length || 0} chunks analyzed
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             )}
