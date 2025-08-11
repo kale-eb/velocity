@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Frame Extraction**: Implemented timestamp-first approach for jump cut detection
+  - Now extracts timestamps only during detection, then selects most significant jump cuts
+  - Scene-based intelligent frame sampling with positioning strategy (1/3, 2/3, start/middle/end)
+  - Removed delta intensity veto for improved jump cut detection accuracy
+  - Optimized for exactly 30 frames per video with proper scene distribution
+- **API Model**: Switched from GPT-5 to GPT-5-Mini for video analysis
+- **UI Improvements**: 
+  - Fixed color mode consistency across all components
+  - Updated script editor background colors for each theme
+  - Changed "Ad Reference" to "Video Reference" throughout UI
+  - Enhanced chat assistant with proper theming
+- **Backend Fixes**:
+  - Fixed Python stdout buffering issues causing timeouts
+  - Increased request timeout from 5 to 10 minutes
+  - Fixed frame type handling in analyzer (now processes all frame types)
+
 ### Planned for Phase 1
 - Chunk-based script editing (3 versions per chunk)
 - Enhanced Graph View for script generation flow

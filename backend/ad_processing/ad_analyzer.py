@@ -86,18 +86,21 @@ class AdAnalyzer:
         """
         print(f"🤖 Analyzing advertisement with {len(frames)} frames and {len(audio_extraction.transcript_segments)} audio segments...")
         
-        # Get jump cut frames only
-        jump_cut_frames = [f for f in frames if f.frame_type == 'jump_cut']
-        jump_cut_frames.sort(key=lambda f: f.timestamp)
+        # Use ALL frames for analysis (both jump_cut and scene_interval types)
+        all_frames = sorted(frames, key=lambda f: f.timestamp)
         
-        print(f"📹 Found {len(jump_cut_frames)} jump cut frames")
-        print(f"✅ Single API call with ALL {len(jump_cut_frames)} frames (viral analyzer approach)")
+        # Count frame types for logging
+        jump_cut_count = sum(1 for f in frames if f.frame_type == 'jump_cut')
+        scene_interval_count = sum(1 for f in frames if f.frame_type == 'scene_interval')
         
-        return await self._analyze_single_call_all_frames(jump_cut_frames, audio_extraction, original_url, content_description)
+        print(f"📹 Found {len(all_frames)} total frames ({jump_cut_count} jump cuts, {scene_interval_count} scene intervals)")
+        print(f"✅ Single API call with ALL {len(all_frames)} frames")
+        
+        return await self._analyze_single_call_all_frames(all_frames, audio_extraction, original_url, content_description)
     
     async def _analyze_single_call_all_frames(
         self, 
-        jump_cut_frames: List[FrameData], 
+        frames: List[FrameData], 
         audio_extraction: AudioExtraction, 
         original_url: str,
         content_description: Optional[str] = None
@@ -109,7 +112,7 @@ class AdAnalyzer:
         
         # Build content array with all frames
         content = self._build_single_call_content(
-            jump_cut_frames=jump_cut_frames,
+            frames=frames,
             audio_extraction=audio_extraction,
             original_url=original_url,
             content_description=content_description
@@ -216,7 +219,7 @@ class AdAnalyzer:
     
     def _build_single_call_content(
         self, 
-        jump_cut_frames: List[FrameData], 
+        frames: List[FrameData], 
         audio_extraction: AudioExtraction, 
         original_url: str,
         content_description: Optional[str] = None
@@ -233,7 +236,7 @@ class AdAnalyzer:
         # Add video information
         content.append({
             "type": "text",
-            "text": f"\n\nVIDEO TO ANALYZE:\n- URL: {original_url}\n- Duration: {audio_extraction.duration:.1f} seconds\n- Jump cut frames: {len(jump_cut_frames)}\n"
+            "text": f"\n\nVIDEO TO ANALYZE:\n- URL: {original_url}\n- Duration: {audio_extraction.duration:.1f} seconds\n- Total frames: {len(frames)}\n"
         })
         
         if content_description:
@@ -248,7 +251,7 @@ class AdAnalyzer:
             "text": f"\nVIDEO FRAMES (in chronological order):"
         })
         
-        for i, frame in enumerate(jump_cut_frames):
+        for i, frame in enumerate(frames):
             # Add frame description with timestamp
             content.append({
                 "type": "text",
@@ -285,7 +288,7 @@ class AdAnalyzer:
         # Add final instruction for our entity-based JSON format
         content.append({
             "type": "text",
-            "text": f"\n\nAnalyze and return structured JSON with entities and {len(jump_cut_frames)} chunks - one per jump cut frame."
+            "text": f"\n\nAnalyze and return structured JSON with entities and {len(frames)} chunks - one per frame analyzed."
         })
         
         return content
@@ -602,7 +605,7 @@ class AdAnalyzer:
             "text": f"\nJUMP CUT FRAMES ({len(jump_cut_frames)} frames):"
         })
         
-        for i, frame in enumerate(jump_cut_frames):
+        for i, frame in enumerate(frames):
             content.append({
                 "type": "text",
                 "text": f"\n=== JUMP CUT {i+1} at {frame.timestamp:.2f}s ==="

@@ -150,7 +150,8 @@ def _combined_similarity(frame1: np.ndarray, frame2: np.ndarray) -> float:
 
 def _is_jump_cut(frame1: np.ndarray, frame2: np.ndarray, threshold: float = None) -> tuple[bool, dict]:
     """
-    Intelligent jump cut detection with delta intensity veto.
+    Jump cut detection based on combined similarity (histogram + perceptual hash).
+    Delta intensity veto removed to detect more legitimate jump cuts.
     
     Returns:
         tuple: (is_jump_cut, metrics_dict)
@@ -163,25 +164,17 @@ def _is_jump_cut(frame1: np.ndarray, frame2: np.ndarray, threshold: float = None
     
     # Calculate all metrics
     combined_sim = _combined_similarity(frame1, frame2)
-    delta_intensity = _delta_intensity(frame1, frame2)
+    delta_intensity = _delta_intensity(frame1, frame2)  # Still calculate for logging
     
-    # Primary check: combined similarity below threshold
-    initial_jump_cut = combined_sim < threshold
-    
-    # Secondary check: delta intensity veto
-    # If delta intensity is > 0.9 (very similar brightness), veto the jump cut
-    # This prevents false positives from subtle lighting changes
-    delta_intensity_veto = delta_intensity > 0.9
-    
-    # Final decision
-    is_jump_cut = initial_jump_cut and not delta_intensity_veto
+    # Simple check: combined similarity below threshold
+    is_jump_cut = combined_sim < threshold
     
     # Compile metrics for debugging
     metrics = {
         'combined_similarity': combined_sim,
         'delta_intensity': delta_intensity,
-        'initial_jump_cut': initial_jump_cut,
-        'delta_intensity_veto': delta_intensity_veto,
+        'initial_jump_cut': is_jump_cut,
+        'delta_intensity_veto': False,  # No longer using veto
         'final_jump_cut': is_jump_cut,
         'threshold': threshold
     }
@@ -194,7 +187,7 @@ class FrameData:
     image: np.ndarray  # Raw image data
     timestamp: float   # Time in video (seconds)
     frame_type: str    # 'interval', 'jump_cut', or 'scene_interval'
-    similarity_score: Optional[float] = None  # Similarity to previous frame
+    similarity_score: Optional[float] = None  # Similarity to previous frame (lower = bigger jump cut)
     duration: Optional[float] = None  # Duration this frame represents
     scene_id: Optional[int] = None  # Scene number this frame belongs to
     
@@ -363,19 +356,21 @@ class ViralFrameExtractor:
             video_length = self.get_video_length(video_path)
             logger.info(f"Video duration: {video_length:.2f}s (limit: {self.max_video_duration}s)")
             
-            # Step 1: Jump cut detection at 6 FPS
-            jump_cut_frames = self.detect_jump_cuts(video_path, video_length)
-            logger.info(f"Detected {len(jump_cut_frames)} jump cuts")
+            # Step 1: Jump cut detection → timestamps only
+            jump_cut_timestamps = self.detect_jump_cut_timestamps(video_path, video_length)
+            print(f"🎬 JUMP CUT DETECTION RESULTS:", flush=True)
+            print(f"   Total jump cuts detected: {len(jump_cut_timestamps)}", flush=True)
+            print(f"   Max frames allowed: {self.max_frames_per_video}", flush=True)
+            print(f"   Target frames to aim for: {self.target_frames_per_video}", flush=True)
             
-            # Step 2: Gap filling to reach target frame count
-            if len(jump_cut_frames) > self.max_frames_per_video:
-                # Too many jump cuts, reduce them evenly
-                frames = self.reduce_frames_evenly(jump_cut_frames, self.target_frames_per_video)
-                logger.info(f"Reduced {len(jump_cut_frames)} jump cuts to {len(frames)} frames")
-            else:
-                # Fill gaps to reach target
-                frames = self.fill_gaps_between_jump_cuts(jump_cut_frames, video_path, video_length, self.target_frames_per_video)
-                logger.info(f"Gap filling: {len(jump_cut_frames)} jump cuts + {len(frames) - len(jump_cut_frames)} interval frames = {len(frames)} total")
+            logger.info(f"🎬 JUMP CUT DETECTION RESULTS:")
+            logger.info(f"   Total jump cuts detected: {len(jump_cut_timestamps)}")
+            logger.info(f"   Max frames allowed: {self.max_frames_per_video}")
+            logger.info(f"   Target frames to aim for: {self.target_frames_per_video}")
+            
+            # Step 2: Timestamp-based frame extraction
+            frames = self.extract_frames_from_timestamps(jump_cut_timestamps, video_path, video_length, self.max_frames_per_video)
+            logger.info(f"🎬 FINAL EXTRACTION: {len(frames)} total frames from timestamp-based approach")
             
             # Calculate frame durations
             frames = self.calculate_frame_durations(frames, video_length)
@@ -389,9 +384,240 @@ class ViralFrameExtractor:
             logger.error(f"Frame extraction failed for {video_path}: {e}")
             raise
     
+    def detect_jump_cut_timestamps(self, video_path: str, video_length: float) -> List[Tuple[float, float]]:
+        """
+        Detect jump cuts and return only timestamps with similarity scores.
+        Returns list of (timestamp, similarity_score) tuples.
+        """
+        logger.info(f"Detecting jump cuts at 6 FPS for {video_length:.2f}s video")
+        
+        fps = 6.0
+        interval = 1.0 / fps  # 1/6 second = ~0.167s
+        
+        jump_cut_timestamps = []
+        
+        # Always include first frame as jump cut
+        jump_cut_timestamps.append((0.0, 0.0))  # First frame gets lowest score
+        logger.debug(f"First frame at 0.0s marked as jump cut")
+        
+        # Extract and compare frames at 6 FPS
+        current_time = interval
+        previous_frame = None
+        
+        # Extract first frame for comparison
+        previous_frame = self.extract_single_frame(video_path, 0.0)
+        if not previous_frame:
+            logger.warning("Could not extract first frame")
+            return jump_cut_timestamps
+        
+        while current_time < video_length:
+            current_frame = self.extract_single_frame(video_path, current_time)
+            if not current_frame:
+                current_time += interval
+                continue
+            
+            # Use intelligent jump cut detection with delta intensity veto
+            is_jump_cut, metrics = _is_jump_cut(previous_frame.image, current_frame.image, self.jump_cut_threshold)
+            
+            if is_jump_cut:
+                jump_cut_timestamps.append((current_time, metrics['combined_similarity']))
+                logger.debug(f"Jump cut detected at {current_time:.3f}s (combined: {metrics['combined_similarity']:.3f})")
+            else:
+                logger.debug(f"No jump cut at {current_time:.3f}s (combined: {metrics['combined_similarity']:.3f})")
+            
+            previous_frame = current_frame
+            current_time += interval
+        
+        logger.info(f"Jump cut detection complete: {len(jump_cut_timestamps)} jump cuts detected")
+        return jump_cut_timestamps
+    
+    def extract_frames_from_timestamps(self, jump_cut_timestamps: List[Tuple[float, float]], video_path: str, video_length: float, max_frames: int) -> List[FrameData]:
+        """
+        Complete timestamp-first frame extraction pipeline.
+        1. Select most significant jump cuts (if > max_frames)
+        2. Define scenes from selected timestamps 
+        3. Allocate and extract frames using positioning strategy
+        """
+        if not jump_cut_timestamps:
+            return self.extract_interval_frames_to_target(video_path, video_length, max_frames)
+        
+        # Step 1: Filter jump cut timestamps if needed
+        if len(jump_cut_timestamps) > max_frames:
+            selected_timestamps = self.select_most_significant_timestamps(jump_cut_timestamps, max_frames)
+            logger.info(f"📉 FILTERED: {len(jump_cut_timestamps)} jump cuts → {len(selected_timestamps)} most significant")
+        else:
+            selected_timestamps = jump_cut_timestamps
+            logger.info(f"✅ USING ALL: {len(selected_timestamps)} jump cuts (within limit)")
+        
+        # Step 2: Define scenes from selected timestamps
+        scenes = self.define_scenes_from_timestamps(selected_timestamps, video_length)
+        logger.info(f"🎬 SCENES: Defined {len(scenes)} scenes from {len(selected_timestamps)} jump cuts")
+        
+        # Step 3: Allocate frames to scenes and extract
+        frames = self.extract_frames_from_scenes(scenes, video_path, max_frames)
+        
+        return frames
+    
+    def select_most_significant_timestamps(self, jump_cut_timestamps: List[Tuple[float, float]], max_count: int) -> List[Tuple[float, float]]:
+        """
+        Select the most significant jump cuts based on similarity scores (lower = more significant).
+        Always keeps the first timestamp.
+        """
+        if len(jump_cut_timestamps) <= max_count:
+            return jump_cut_timestamps
+        
+        # Sort by similarity score (lowest first = biggest jump cuts)
+        sorted_timestamps = sorted(jump_cut_timestamps, key=lambda x: x[1])
+        
+        # Select the max_count most significant jump cuts
+        selected_timestamps = sorted_timestamps[:max_count]
+        
+        # Sort back into chronological order
+        selected_timestamps.sort(key=lambda x: x[0])
+        
+        # Log selected scores
+        scores = [score for _, score in selected_timestamps]
+        logger.info(f"Selected jump cuts with similarity scores: {[f'{s:.3f}' for s in scores]}")
+        
+        return selected_timestamps
+    
+    def define_scenes_from_timestamps(self, timestamps: List[Tuple[float, float]], video_length: float) -> List[Dict]:
+        """
+        Define scenes based on jump cut timestamps.
+        Returns list of scene dictionaries with start, end, duration.
+        """
+        if not timestamps:
+            return []
+        
+        scenes = []
+        
+        # Sort timestamps just to be safe
+        timestamps.sort(key=lambda x: x[0])
+        
+        # Extract just the timestamp values
+        timestamp_values = [t[0] for t in timestamps]
+        
+        # Create scenes between consecutive timestamps
+        for i in range(len(timestamp_values)):
+            if i == len(timestamp_values) - 1:
+                # Last scene: from last jump cut to end of video
+                start_time = timestamp_values[i]
+                end_time = video_length
+            else:
+                # Regular scene: from this jump cut to next
+                start_time = timestamp_values[i]
+                end_time = timestamp_values[i + 1]
+            
+            duration = end_time - start_time
+            
+            # Only include scenes longer than 0.5 seconds
+            if duration > 0.5:
+                scenes.append({
+                    'start': start_time,
+                    'end': end_time,
+                    'duration': duration,
+                    'jump_cut_timestamp': start_time
+                })
+        
+        return scenes
+    
+    def extract_frames_from_scenes(self, scenes: List[Dict], video_path: str, max_frames: int) -> List[FrameData]:
+        """
+        Extract frames from scenes using intelligent positioning strategy.
+        """
+        if not scenes:
+            return []
+        
+        # Allocate frames to scenes
+        frame_allocation = self._allocate_frames_to_scenes(scenes, max_frames)
+        
+        all_frames = []
+        
+        # Extract frames for each scene
+        for i, (scene, frames_for_scene) in enumerate(zip(scenes, frame_allocation)):
+            scene_id = i + 1
+            scene_frames = self._extract_scene_frames(scene, frames_for_scene, scene_id, video_path)
+            all_frames.extend(scene_frames)
+            
+            # Stop if we've reached the max frame limit
+            if len(all_frames) >= max_frames:
+                logger.info(f"Reached max frame limit of {max_frames}, stopping extraction")
+                all_frames = all_frames[:max_frames]
+                break
+            
+            logger.debug(f"Scene {scene_id}: {scene['start']:.1f}s-{scene['end']:.1f}s ({scene['duration']:.1f}s) → {len(scene_frames)} frames")
+        
+        # Sort by timestamp and ensure exact count
+        all_frames.sort(key=lambda f: f.timestamp)
+        
+        if len(all_frames) > max_frames:
+            logger.info(f"Truncating {len(all_frames)} frames to {max_frames} max limit")
+            all_frames = all_frames[:max_frames]
+        
+        logger.info(f"🎬 Frame extraction complete: {len(scenes)} scenes processed, {len(all_frames)} total frames")
+        return all_frames
+    
+    def _extract_scene_frames(self, scene: Dict, frame_count: int, scene_id: int, video_path: str) -> List[FrameData]:
+        """
+        Extract frames within a scene using positioning strategy.
+        Same logic as before but with cleaner separation.
+        """
+        if frame_count <= 0:
+            return []
+        
+        start_time = scene['start']
+        end_time = scene['end']
+        duration = scene['duration']
+        
+        # Calculate frame positions based on count
+        if frame_count == 1:
+            # Middle of scene
+            positions = [0.5]
+        elif frame_count == 2:
+            # 1/3 and 2/3 marks
+            positions = [1/3, 2/3]
+        elif frame_count == 3:
+            # Start, middle, end
+            positions = [0.0, 0.5, 1.0]
+        else:
+            # Start, evenly distributed middle frames, end
+            positions = [0.0]  # Start
+            
+            # Middle frames evenly distributed
+            if frame_count > 2:
+                middle_frames = frame_count - 2
+                for i in range(1, middle_frames + 1):
+                    position = i / (middle_frames + 1)
+                    positions.append(position)
+            
+            positions.append(1.0)  # End
+        
+        # Extract frames at calculated positions
+        scene_frames = []
+        for i, position in enumerate(positions):
+            # Calculate timestamp (avoid exact end to prevent edge cases)
+            if position >= 1.0:
+                timestamp = end_time - 0.1  # Slightly before end
+            else:
+                timestamp = start_time + (duration * position)
+            
+            # Ensure timestamp is within bounds
+            timestamp = max(start_time, min(timestamp, end_time - 0.1))
+            
+            frame = self.extract_single_frame(video_path, timestamp)
+            if frame:
+                # Use proper frame types for analyzer
+                frame.frame_type = 'jump_cut' if i == 0 else 'scene_interval'
+                frame.scene_id = scene_id
+                scene_frames.append(frame)
+                logger.debug(f"  Scene {scene_id} frame {i+1}/{frame_count} at {timestamp:.3f}s (position: {position:.2f})")
+        
+        return scene_frames
+    
     def detect_jump_cuts(self, video_path: str, video_length: float) -> List[FrameData]:
         """
-        Detect jump cuts by sampling at 6 FPS and comparing consecutive frames.
+LEGACY METHOD: Detect jump cuts by sampling at 6 FPS and comparing consecutive frames.
+        This method is replaced by detect_jump_cut_timestamps() but kept for compatibility.
         """
         logger.info(f"Detecting jump cuts at 6 FPS for {video_length:.2f}s video")
         
@@ -415,13 +641,13 @@ class ViralFrameExtractor:
             logger.warning("No frames extracted during jump cut detection")
             return []
         
-        # Always keep first frame as a jump cut
+        # Always keep first frame as a jump cut (with lowest possible score to ensure it's kept)
         frames[0].frame_type = 'jump_cut'
+        frames[0].similarity_score = 0.0  # Ensure first frame is always kept
         jump_cut_frames.append(frames[0])
         logger.debug(f"First frame at {frames[0].timestamp:.3f}s marked as jump cut")
         
         # Compare consecutive frames to detect jump cuts
-        veto_count = 0
         for i in range(1, len(frames)):
             current_frame = frames[i]
             previous_frame = frames[i - 1]
@@ -431,25 +657,64 @@ class ViralFrameExtractor:
             
             if is_jump_cut:
                 current_frame.frame_type = 'jump_cut'
+                current_frame.similarity_score = metrics['combined_similarity']  # Store the similarity score
                 jump_cut_frames.append(current_frame)
-                logger.debug(f"Jump cut detected at {current_frame.timestamp:.3f}s (combined: {metrics['combined_similarity']:.3f}, delta_intensity: {metrics['delta_intensity']:.3f})")
+                logger.debug(f"Jump cut detected at {current_frame.timestamp:.3f}s (combined: {metrics['combined_similarity']:.3f})")
             else:
-                if metrics['initial_jump_cut'] and metrics['delta_intensity_veto']:
-                    veto_count += 1
-                    logger.debug(f"Jump cut VETOED at {current_frame.timestamp:.3f}s (combined: {metrics['combined_similarity']:.3f}, but delta_intensity: {metrics['delta_intensity']:.3f} > 0.9)")
-                else:
-                    logger.debug(f"No jump cut at {current_frame.timestamp:.3f}s (combined: {metrics['combined_similarity']:.3f})")
-        
-        if veto_count > 0:
-            logger.info(f"Delta intensity veto prevented {veto_count} false positive jump cuts")
+                logger.debug(f"No jump cut at {current_frame.timestamp:.3f}s (combined: {metrics['combined_similarity']:.3f})")
         
         logger.info(f"Jump cut detection complete: {len(jump_cut_frames)} jump cuts from {len(frames)} candidates")
         return jump_cut_frames
     
+        """
+        """
+    def _allocate_frames_to_scenes(self, scenes: List[Dict], total_frames: int) -> List[int]:
+        """
+        Allocate frames to scenes proportionally based on duration.
+        Ensures each scene gets at least 1 frame, with longer scenes getting more.
+        """
+        if not scenes:
+            return []
+        
+        # Calculate total scene duration
+        total_duration = sum(scene['duration'] for scene in scenes)
+        
+        # Allocate frames proportionally (now that we have <= total_frames scenes)
+        allocation = []
+        frames_allocated = 0
+        
+        for i, scene in enumerate(scenes):
+            if i == len(scenes) - 1:
+                # Last scene gets remaining frames
+                frames_for_scene = total_frames - frames_allocated
+            else:
+                # Proportional allocation with minimum 1
+                proportion = scene['duration'] / total_duration
+                frames_for_scene = max(1, int(proportion * total_frames))
+            
+            # Cap at reasonable maximum per scene
+            frames_for_scene = min(frames_for_scene, 6)  # Reduced max to allow more scenes
+            allocation.append(frames_for_scene)
+            frames_allocated += frames_for_scene
+        
+        # If we've allocated too many frames, reduce from scenes with most frames
+        while frames_allocated > total_frames:
+            # Find scene with most frames and reduce by 1
+            max_idx = allocation.index(max(allocation))
+            if allocation[max_idx] > 1:  # Don't go below 1
+                allocation[max_idx] -= 1
+                frames_allocated -= 1
+            else:
+                break
+        
+        logger.info(f"Frame allocation: {allocation} (total: {sum(allocation)})")
+        
+        return allocation
+    
     def fill_gaps_between_jump_cuts(self, jump_cut_frames: List[FrameData], video_path: str, video_length: float, target_count: int) -> List[FrameData]:
         """
-        Fill scenes (gaps between jump cuts) with frames to capture movement within each scene.
-        Each scene gets multiple frames including one towards the end.
+LEGACY METHOD: Fill scenes (gaps between jump cuts) with frames to capture movement within each scene.
+        This method is replaced by sample_scenes_intelligently() but kept for compatibility.
         """
         if not jump_cut_frames:
             # No jump cuts, fall back to regular interval extraction
@@ -564,61 +829,30 @@ class ViralFrameExtractor:
     
     def reduce_frames_evenly(self, frames: List[FrameData], target_count: int) -> List[FrameData]:
         """
-        Reduce frames by selecting those with the greatest perceptual hash differences.
-        This preserves the most visually distinct frames.
+        Reduce frames by selecting those with the lowest similarity scores (biggest jump cuts).
+        This preserves the most significant scene changes.
         """
         if len(frames) <= target_count:
             return frames
         
-        # Always keep the first frame
         if target_count == 1:
             return [frames[0]]
-            
-        selected_frames = [frames[0]]  # Always keep first frame
-        remaining_frames = frames[1:]
         
-        # Calculate p-hash differences for each remaining frame compared to selected frames
-        frame_scores = []
+        # Sort frames by similarity score (lowest first = biggest jump cuts)
+        # Frames with similarity_score of None get a high score (1.0) to be deprioritized
+        frames_with_scores = [(frame.similarity_score if frame.similarity_score is not None else 1.0, frame) for frame in frames]
+        frames_with_scores.sort(key=lambda x: x[0])  # Sort by similarity score, lowest first
         
-        for i, candidate_frame in enumerate(remaining_frames):
-            # Calculate minimum p-hash distance to any already selected frame
-            min_distance = float('inf')
-            
-            for selected_frame in selected_frames:
-                # Calculate perceptual hash similarity (0-1, where 1 is identical)
-                similarity = _perceptual_hash(candidate_frame.image, selected_frame.image)
-                # Ensure similarity is a scalar value
-                if hasattr(similarity, 'item'):
-                    similarity = similarity.item()
-                elif isinstance(similarity, (list, np.ndarray)):
-                    similarity = float(similarity[0]) if len(similarity) > 0 else 0.0
-                
-                # Convert to distance (0-1, where 1 is most different)
-                distance = 1 - float(similarity)
-                min_distance = min(min_distance, distance)
-            
-            frame_scores.append((min_distance, i, candidate_frame))
-        
-        # Select frames with highest p-hash differences (most visually distinct)
-        frame_scores.sort(key=lambda x: x[0], reverse=True)  # Sort by distance, highest first
-        
-        frames_needed = target_count - 1  # -1 because we already have first frame
-        for score, original_index, frame in frame_scores[:frames_needed]:
-            selected_frames.append(frame)
+        # Select the target_count frames with lowest similarity scores (biggest jump cuts)
+        selected_frames = [frame for score, frame in frames_with_scores[:target_count]]
         
         # Sort final selection by timestamp to maintain chronological order
         selected_frames.sort(key=lambda f: f.timestamp)
         
-        # Find original indices by timestamp to avoid numpy array comparison issues
-        original_indices = []
-        for selected_frame in selected_frames:
-            for i, frame in enumerate(frames):
-                if frame.timestamp == selected_frame.timestamp:
-                    original_indices.append(i)
-                    break
-        
-        logger.info(f"Selected {len(selected_frames)} most visually distinct frames from {len(frames)} candidates")
-        logger.info(f"Selected frame indices: {original_indices}")
+        # Log which frames were selected with their scores
+        selected_scores = [f.similarity_score for f in selected_frames]
+        logger.info(f"Selected {len(selected_frames)} frames with biggest jump cuts from {len(frames)} candidates")
+        logger.info(f"Selected similarity scores (lower = bigger jump cut): {[f'{s:.3f}' if s is not None else 'N/A' for s in selected_scores]}")
         
         return selected_frames
 

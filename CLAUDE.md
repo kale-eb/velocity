@@ -131,9 +131,10 @@ Three modes (light/dark/experimental) with dynamic styling and consistent color 
 - **Separated Data Storage**: File metadata for UI, extracted text for AI processing
 
 ### Backend Processing Pipeline
-- **Intelligent Jump Cut Detection**: Multi-metric approach with delta intensity veto system
-- **Advanced Frame Extraction**: Scene-based gap filling with perceptual hash prioritization
-- **Debug Interface**: Unified web-based tool for frame analysis and algorithm tuning
+- **Timestamp-First Jump Cut Detection**: Extract timestamps only, then select most significant jump cuts
+- **Scene-Based Frame Sampling**: Intelligent positioning within scenes (1/3, 2/3, start/middle/end)
+- **Simplified Detection**: Removed delta intensity veto for better jump cut detection
+- **30-Frame Target**: Optimized for 30 frames total with proper scene distribution
 - **Video Processing**: Support for Instagram, TikTok, YouTube with automated transcription
 - **Document Processing**: PDF, TXT, CSV, JSON, Markdown with full content extraction
 
