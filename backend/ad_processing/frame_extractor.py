@@ -384,10 +384,10 @@ class ViralFrameExtractor:
             logger.error(f"Frame extraction failed for {video_path}: {e}")
             raise
     
-    def detect_jump_cut_timestamps(self, video_path: str, video_length: float) -> List[Tuple[float, float]]:
+    def detect_jump_cut_timestamps(self, video_path: str, video_length: float) -> List[Tuple[float, Dict]]:
         """
-        Detect jump cuts and return only timestamps with similarity scores.
-        Returns list of (timestamp, similarity_score) tuples.
+        Detect jump cuts and return timestamps with full metrics.
+        Returns list of (timestamp, metrics_dict) tuples.
         """
         logger.info(f"Detecting jump cuts at 6 FPS for {video_length:.2f}s video")
         
@@ -396,8 +396,14 @@ class ViralFrameExtractor:
         
         jump_cut_timestamps = []
         
-        # Always include first frame as jump cut
-        jump_cut_timestamps.append((0.0, 0.0))  # First frame gets lowest score
+        # Always include first frame as jump cut with best possible scores
+        first_metrics = {
+            'combined_similarity': 0.0,
+            'histogram_similarity': 0.0,
+            'delta_intensity': 0.0,
+            'combined_score': 0.0  # histogram + delta for ranking
+        }
+        jump_cut_timestamps.append((0.0, first_metrics))
         logger.debug(f"First frame at 0.0s marked as jump cut")
         
         # Extract and compare frames at 6 FPS
@@ -416,14 +422,25 @@ class ViralFrameExtractor:
                 current_time += interval
                 continue
             
-            # Use intelligent jump cut detection with delta intensity veto
-            is_jump_cut, metrics = _is_jump_cut(previous_frame.image, current_frame.image, self.jump_cut_threshold)
+            # Calculate all similarity metrics
+            hist_sim = _histogram_comparison(previous_frame.image, current_frame.image)
+            delta_int = _delta_intensity(previous_frame.image, current_frame.image)
+            combined_sim = _combined_similarity(previous_frame.image, current_frame.image)
+            
+            # Use combined similarity for jump cut detection threshold
+            is_jump_cut = combined_sim < self.jump_cut_threshold
             
             if is_jump_cut:
-                jump_cut_timestamps.append((current_time, metrics['combined_similarity']))
-                logger.debug(f"Jump cut detected at {current_time:.3f}s (combined: {metrics['combined_similarity']:.3f})")
+                metrics = {
+                    'combined_similarity': combined_sim,
+                    'histogram_similarity': hist_sim,
+                    'delta_intensity': delta_int,
+                    'combined_score': (hist_sim + delta_int) / 2  # Average of histogram and delta for ranking
+                }
+                jump_cut_timestamps.append((current_time, metrics))
+                logger.debug(f"Jump cut detected at {current_time:.3f}s (combined: {combined_sim:.3f}, hist: {hist_sim:.3f}, delta: {delta_int:.3f}, score: {metrics['combined_score']:.3f})")
             else:
-                logger.debug(f"No jump cut at {current_time:.3f}s (combined: {metrics['combined_similarity']:.3f})")
+                logger.debug(f"No jump cut at {current_time:.3f}s (combined: {combined_sim:.3f})")
             
             previous_frame = current_frame
             current_time += interval
@@ -431,7 +448,7 @@ class ViralFrameExtractor:
         logger.info(f"Jump cut detection complete: {len(jump_cut_timestamps)} jump cuts detected")
         return jump_cut_timestamps
     
-    def extract_frames_from_timestamps(self, jump_cut_timestamps: List[Tuple[float, float]], video_path: str, video_length: float, max_frames: int) -> List[FrameData]:
+    def extract_frames_from_timestamps(self, jump_cut_timestamps: List[Tuple[float, Dict]], video_path: str, video_length: float, max_frames: int) -> List[FrameData]:
         """
         Complete timestamp-first frame extraction pipeline.
         1. Select most significant jump cuts (if > max_frames)
@@ -458,16 +475,17 @@ class ViralFrameExtractor:
         
         return frames
     
-    def select_most_significant_timestamps(self, jump_cut_timestamps: List[Tuple[float, float]], max_count: int) -> List[Tuple[float, float]]:
+    def select_most_significant_timestamps(self, jump_cut_timestamps: List[Tuple[float, Dict]], max_count: int) -> List[Tuple[float, Dict]]:
         """
-        Select the most significant jump cuts based on similarity scores (lower = more significant).
+        Select the most significant jump cuts based on histogram + delta intensity scores.
+        Lower combined score = more significant jump cut.
         Always keeps the first timestamp.
         """
         if len(jump_cut_timestamps) <= max_count:
             return jump_cut_timestamps
         
-        # Sort by similarity score (lowest first = biggest jump cuts)
-        sorted_timestamps = sorted(jump_cut_timestamps, key=lambda x: x[1])
+        # Sort by combined score (histogram + delta intensity), lowest first = biggest jump cuts
+        sorted_timestamps = sorted(jump_cut_timestamps, key=lambda x: x[1]['combined_score'])
         
         # Select the max_count most significant jump cuts
         selected_timestamps = sorted_timestamps[:max_count]
@@ -476,12 +494,15 @@ class ViralFrameExtractor:
         selected_timestamps.sort(key=lambda x: x[0])
         
         # Log selected scores
-        scores = [score for _, score in selected_timestamps]
-        logger.info(f"Selected jump cuts with similarity scores: {[f'{s:.3f}' for s in scores]}")
+        logger.info(f"Selected {max_count} jump cuts with lowest histogram+delta scores:")
+        for i, (timestamp, metrics) in enumerate(selected_timestamps[:10]):
+            logger.info(f"  {i+1:2d}. {timestamp:6.2f}s - hist: {metrics['histogram_similarity']:.3f}, delta: {metrics['delta_intensity']:.3f}, combined: {metrics['combined_score']:.3f}")
+        if len(selected_timestamps) > 10:
+            logger.info(f"  ... and {len(selected_timestamps) - 10} more")
         
         return selected_timestamps
     
-    def define_scenes_from_timestamps(self, timestamps: List[Tuple[float, float]], video_length: float) -> List[Dict]:
+    def define_scenes_from_timestamps(self, timestamps: List[Tuple[float, Dict]], video_length: float) -> List[Dict]:
         """
         Define scenes based on jump cut timestamps.
         Returns list of scene dictionaries with start, end, duration.
