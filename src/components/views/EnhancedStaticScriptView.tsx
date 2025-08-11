@@ -16,12 +16,12 @@ import {
   Trash2,
   Check,
   ExternalLink,
-  Play,
   Shield
 } from 'lucide-react';
 import type { Theme } from '../../types';
 import ChatAssistant from '../script/chat/ChatAssistant';
 import { extractTextFromFile, getSupportedFileTypes, getFileTypeDescription } from '../../utils/fileProcessor';
+import { AdStorage } from '../../utils/localStorage';
 
 interface ScriptChunk {
   id: string;
@@ -79,7 +79,6 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
   const [analyzingAds, setAnalyzingAds] = useState<Set<string>>(new Set());
   // adAnalyses is now passed as prop from parent component
   const [showTooltip, setShowTooltip] = useState<{ show: boolean; x: number; y: number; message: string }>({ show: false, x: 0, y: 0, message: '' });
-  const [showingVideoForAd, setShowingVideoForAd] = useState<Set<string>>(new Set());
   const [contextMenu, setContextMenu] = useState<{ show: boolean; x: number; y: number; nodeId: string; nodeType: string } | null>(null);
   const [filePreview, setFilePreview] = useState<{ show: boolean; file: any; content: string } | null>(null);
 
@@ -277,7 +276,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
         preview: inputs.product_specs.substring(0, 200) + (inputs.product_specs.length > 200 ? '...' : ''),
         fullContent: inputs.product_specs
       });
-      console.log('🎥 Ad References:', inputs.ad_refs);
+      console.log('🎥 Video References:', inputs.ad_refs);
       console.log('📌 Extra Instructions:', {
         length: inputs.extra_instructions.length,
         preview: inputs.extra_instructions.substring(0, 200) + (inputs.extra_instructions.length > 200 ? '...' : ''),
@@ -439,27 +438,24 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
         return; // Reuse analysis from different node
       }
 
-      // Check if backend has cached analysis for this URL
+      // Check localStorage for any cached analysis of this URL
       try {
-        const cacheResponse = await fetch('/api/getAnalysis', {
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
-
-        if (cacheResponse.ok) {
-          const cachedResult = await cacheResponse.json();
-          if (cachedResult.analysis) {
-            console.log('✅ Using backend cached analysis for', url);
-            if (onAdAnalyzed) {
-              onAdAnalyzed(nodeId, { ...cachedResult.analysis, url, cached: true });
-            }
-            setSelectedSources(prev => new Set(prev).add(nodeId));
-            return; // Return cached analysis, skip processing
+        const localStorageAds = AdStorage.loadProcessedAds();
+        const cachedAnalysisEntry = Object.entries(localStorageAds).find(([_, analysis]) => 
+          analysis && analysis.url === url
+        );
+        
+        if (cachedAnalysisEntry) {
+          const [_, cachedAnalysis] = cachedAnalysisEntry;
+          console.log('✅ Using localStorage cached analysis for', url);
+          if (onAdAnalyzed) {
+            onAdAnalyzed(nodeId, { ...cachedAnalysis, cached: true });
           }
+          setSelectedSources(prev => new Set(prev).add(nodeId));
+          return; // Return cached analysis from localStorage
         }
-      } catch (cacheError) {
-        console.log('Cache check failed, proceeding with fresh analysis');
+      } catch (localStorageError) {
+        console.log('LocalStorage check failed, proceeding with fresh analysis');
       }
 
       // No cached version found, analyze fresh
@@ -617,7 +613,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
   const handleAddAd = () => {
     if (onAddNode) {
       onAddNode('ad', {
-        title: 'New Ad',
+        title: 'Video Reference',
         url: '',
         status: 'draft'
       });
@@ -638,9 +634,11 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
   // Helper function to get embeddable video URL
   const getEmbeddableUrl = (url: string): string | null => {
     try {
-      // Instagram posts
-      if (url.includes('instagram.com/p/') || url.includes('instagram.com/reel/')) {
-        const postId = url.match(/\/p\/([^\/\?]+)/)?.[1] || url.match(/\/reel\/([^\/\?]+)/)?.[1];
+      // Instagram posts and reels
+      if (url.includes('instagram.com/p/') || url.includes('instagram.com/reel/') || url.includes('instagram.com/reels/')) {
+        const postId = url.match(/\/p\/([^\/\?]+)/)?.[1] || 
+                      url.match(/\/reel\/([^\/\?]+)/)?.[1] || 
+                      url.match(/\/reels\/([^\/\?]+)/)?.[1];
         if (postId) {
           return `https://www.instagram.com/p/${postId}/embed/`;
         }
@@ -675,15 +673,6 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
     }
   };
 
-  const toggleVideoEmbed = (adId: string) => {
-    const newSet = new Set(showingVideoForAd);
-    if (newSet.has(adId)) {
-      newSet.delete(adId);
-    } else {
-      newSet.add(adId);
-    }
-    setShowingVideoForAd(newSet);
-  };
 
   const getWorkspaceClasses = () => {
     if (isExperimental) {
@@ -1061,7 +1050,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                               </button>
                               
                               <div className="flex-1">
-                                <div className="text-sm font-medium">Ad Reference</div>
+                                <div className="text-sm font-medium">Video Reference</div>
                                 <div className={`text-xs ${isDarkMode ? 'text-orange-400' : isExperimental ? 'text-orange-400' : 'text-orange-600'}`}>
                                   Not analyzed yet
                                 </div>
@@ -1084,7 +1073,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                 </button>
                                 
                                 <div className="flex-1">
-                                  <div className="text-sm font-medium">{ad.data?.title || 'Ad Reference'}</div>
+                                  <div className="text-sm font-medium">Video Reference</div>
                                   <div className={`text-xs flex items-center gap-1 ${
                                     isDarkMode ? 'text-green-400' :
                                     isExperimental ? 'text-green-400' :
@@ -1095,74 +1084,52 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                   </div>
                                 </div>
                                 
-                                <div className="flex items-center gap-2">
-                                  {/* Video embed button */}
-                                  {ad.data?.url && getEmbeddableUrl(ad.data.url) && (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleVideoEmbed(ad.id);
-                                      }}
-                                      className={`p-1.5 rounded transition-colors ${
-                                        showingVideoForAd.has(ad.id)
-                                          ? isDarkMode ? 'bg-purple-500 text-white' :
-                                            isExperimental ? 'bg-yellow-400 text-black' :
-                                            'bg-blue-500 text-white'
-                                          : isDarkMode ? 'hover:bg-purple-500/20 text-purple-300' :
-                                            isExperimental ? 'hover:bg-yellow-400/20 text-yellow-300' :
-                                            'hover:bg-gray-200 text-gray-600'
-                                      }`}
-                                      title={showingVideoForAd.has(ad.id) ? "Hide video" : "Watch video"}
-                                    >
-                                      <Play size={12} />
-                                    </button>
-                                  )}
-                                  
-                                  {selectedSources.has(ad.id) && (
-                                    <div className={`p-1 rounded ${
-                                      isDarkMode ? 'bg-purple-400 text-white' :
-                                      isExperimental ? 'bg-yellow-400 text-black' :
-                                      'bg-blue-500 text-white'
-                                    }`}>
-                                      <Check size={12} />
-                                    </div>
-                                  )}
-                                </div>
+                                {selectedSources.has(ad.id) && (
+                                  <div className={`p-1 rounded ${
+                                    isDarkMode ? 'bg-purple-400 text-white' :
+                                    isExperimental ? 'bg-yellow-400 text-black' :
+                                    'bg-blue-500 text-white'
+                                  }`}>
+                                    <Check size={12} />
+                                  </div>
+                                )}
                               </div>
                             </div>
                             
-                            {/* Video Embed */}
-                            {showingVideoForAd.has(ad.id) && ad.data?.url && (
-                              <div className="mt-3 border-t border-black/10 pt-3" onClick={(e) => e.stopPropagation()}>
-                                <div className="relative bg-black rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
-                                  <iframe
-                                    src={getEmbeddableUrl(ad.data.url) || ''}
-                                    className="absolute inset-0 w-full h-full"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                    title="Ad Video"
-                                  />
-                                </div>
-                              </div>
-                            )}
                             
                             {/* Expanded content for analyzed ads */}
                             {expandedCards.has(ad.id) && (
                               <div className="px-2 pb-2 border-t border-black/10 mt-2" onClick={(e) => e.stopPropagation()}>
-                                <div className="pt-2 space-y-2">
-                                  {ad.data?.url && (
-                                    <div className="text-xs opacity-75">
-                                      <div className="font-medium mb-1">URL:</div>
-                                      <div className="break-all">{ad.data.url}</div>
+                                <div className="pt-2 space-y-3">
+                                  {/* Video Embed */}
+                                  {ad.data?.url && getEmbeddableUrl(ad.data.url) && (
+                                    <div className="relative bg-black rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+                                      <iframe
+                                        src={getEmbeddableUrl(ad.data.url) || ''}
+                                        className="absolute inset-0 w-full h-full"
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        title="Ad Video"
+                                      />
                                     </div>
                                   )}
+                                  
+                                  {/* Analysis Summary */}
                                   {adAnalyses[ad.id] && (
                                     <div className="text-xs opacity-75">
                                       <div className="font-medium mb-1">Analysis Summary:</div>
                                       <div className="text-xs">
                                         {adAnalyses[ad.id].chunks?.length || 0} chunks analyzed
                                       </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* URL for non-embeddable content */}
+                                  {ad.data?.url && !getEmbeddableUrl(ad.data.url) && (
+                                    <div className="text-xs opacity-75">
+                                      <div className="font-medium mb-1">URL:</div>
+                                      <div className="break-all">{ad.data.url}</div>
                                     </div>
                                   )}
                                 </div>
@@ -1202,7 +1169,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                   }`}
                                 >
                                   {adAnalyses[ad.id]?.cached ? <Shield size={10} /> : <Sparkles size={10} />}
-                                  {isAnalyzing ? 'Analyzing...' : adAnalyses[ad.id]?.cached ? 'Cached' : 'Analyze Ad'}
+                                  {isAnalyzing ? 'Analyzing...' : adAnalyses[ad.id]?.cached ? 'Cached' : 'Analyze Video'}
                                 </button>
                                 
                                 {ad.data?.url && (
@@ -1433,10 +1400,10 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
         </div>
 
         {/* Script Content */}
-        <div className={`flex-1 p-6 overflow-y-auto bg-black ${
-          isDarkMode ? 'dark-scrollbar' :
-          isExperimental ? 'experimental-scrollbar' :
-          'custom-scrollbar'
+        <div className={`flex-1 p-6 overflow-y-auto ${
+          isDarkMode ? 'bg-black dark-scrollbar' :
+          isExperimental ? 'bg-black experimental-scrollbar' :
+          'bg-gray-50 custom-scrollbar'
         }`}>
           {!script || script.chunks.length === 0 ? (
             <div className="h-full flex items-center justify-center">
@@ -1468,12 +1435,12 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                 <div key={chunk.id} className={`border-2 rounded-lg p-4 ${
                   isDarkMode ? 'bg-black border-purple-400 shadow-lg shadow-purple-500/40' :
                   isExperimental ? 'bg-black border-yellow-400 shadow-lg shadow-yellow-400/40' :
-                  'bg-black border-blue-400 shadow-lg shadow-blue-400/40'
+                  'bg-white border-blue-400 shadow-lg shadow-blue-400/40'
                 }`} style={{
                   boxShadow: isDarkMode ? '0 0 20px rgba(147, 51, 234, 0.4), 0 0 40px rgba(147, 51, 234, 0.2)' :
                     isExperimental ? '0 0 20px rgba(251, 191, 36, 0.4), 0 0 40px rgba(251, 191, 36, 0.2)' :
                     '0 0 20px rgba(96, 165, 250, 0.4), 0 0 40px rgba(96, 165, 250, 0.2)'
-                }`}>
+                }}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
@@ -1563,7 +1530,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                         className={`w-full h-20 p-2 text-sm border rounded resize-none ${
                           isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
                           isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
-                          'bg-gray-50 border-gray-300 text-gray-900'
+                          'bg-white border-gray-300 text-gray-900'
                         }`}
                       />
                     </div>
@@ -1587,7 +1554,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                         className={`w-full p-2 text-sm border rounded ${
                           isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
                           isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
-                          'bg-gray-50 border-gray-300 text-gray-900'
+                          'bg-white border-gray-300 text-gray-900'
                         }`}
                       />
                     </div>
@@ -1642,6 +1609,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
               setPendingActions([]);
             }}
             proposed={pendingActions}
+            colorScheme={colorScheme}
             context={{
               selectedNodes: nodes.filter(node => selectedSources.has(node.id)),
               productSpecs: nodes.filter(node => selectedSources.has(node.id) && node.type === 'productSpec')

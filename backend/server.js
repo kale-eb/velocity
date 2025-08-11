@@ -6,11 +6,23 @@ const fs = require('fs');
 const multer = require('multer');
 require('dotenv').config();
 const { OpenAI } = require('openai');
+const http = require('http');
 
 // Load prompts configuration
 const prompts = JSON.parse(fs.readFileSync(path.join(__dirname, 'prompts.json'), 'utf8'));
 
 const app = express();
+
+// Configure longer timeouts for video processing
+app.use((req, res, next) => {
+  // Increase server timeout for video processing endpoints
+  if (req.path.includes('analyzeAd')) {
+    req.setTimeout(600000); // 10 minutes
+    res.setTimeout(600000); // 10 minutes
+  }
+  next();
+});
+
 app.use(cors({
   origin: true,
   credentials: true
@@ -94,25 +106,6 @@ function applyActionsServer(script, actions) {
   return { ...script, chunks };
 }
 
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, mock: !HAS_KEY });
-});
-
-// Test endpoint to verify proxy is working
-app.get('/api/test', (_req, res) => {
-  console.log('[test] Proxy test endpoint hit');
-  res.json({ message: 'Proxy is working!', timestamp: new Date().toISOString() });
-});
-
-// Proxy health for Python backend
-app.get('/api/adBackendHealth', async (_req, res) => {
-  try {
-    const r = await fetch(`${PY_BACKEND}/health`).then(r => r.json());
-    res.json({ ok: true, backend: r });
-  } catch (e) {
-    res.status(503).json({ ok: false, error: 'PY_BACKEND_UNAVAILABLE', details: String(e) });
-  }
-});
 
 // Generate script via OpenAI or mock
 app.post('/api/generateScript', async (req, res) => {
@@ -567,13 +560,61 @@ app.post('/api/analyzeAd', async (req, res) => {
     
     // Create AbortController for timeout handling
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout for GPT-5 processing
+    const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minute timeout for GPT-5 processing
     
-    const resp = await fetch(`${PY_BACKEND}/analyze-ad`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, content_description }),
-      signal: controller.signal
+    // Use custom HTTP request instead of fetch to avoid Node.js fetch timeout issues
+    const resp = await new Promise((resolve, reject) => {
+      const requestData = JSON.stringify({ url, content_description });
+      
+      const options = {
+        hostname: 'localhost',
+        port: 8000,
+        path: '/analyze-ad',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(requestData),
+          'Connection': 'keep-alive'
+        },
+        timeout: 600000, // 10 minutes
+        agent: false // Don't use connection pooling
+      };
+
+      const req = http.request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            const jsonData = JSON.parse(data);
+            resolve({
+              ok: res.statusCode >= 200 && res.statusCode < 300,
+              status: res.statusCode,
+              json: () => Promise.resolve(jsonData)
+            });
+          } catch (parseError) {
+            resolve({
+              ok: false,
+              status: res.statusCode,
+              json: () => Promise.resolve({ error: 'JSON parse error', details: parseError.message })
+            });
+          }
+        });
+      });
+
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('Request timeout'));
+      });
+      
+      // Handle AbortController signal
+      controller.signal.addEventListener('abort', () => {
+        req.destroy();
+        reject(new Error('Request aborted'));
+      });
+
+      req.write(requestData);
+      req.end();
     });
     
     clearTimeout(timeoutId);
@@ -735,31 +776,13 @@ app.post('/api/chat/stream', async (req, res) => {
       }
     ];
     
-    // System prompt for agentic chat assistant
-    const systemPrompt = `You are a creative video marketing script assistant with access to workspace content. You help users refine and improve short-form video ad scripts.
-
-CRITICAL SCRIPT STRUCTURE RULES:
-- Each chunk represents ONE VISUAL SHOT with ONE camera instruction
-- Never combine multiple shots or camera angles into a single chunk
-- If you need multiple shots, create multiple chunks - this is preferred and expected
-- Each chunk should have focused, single-shot camera instruction (e.g., "Close-up on hands opening product" not "Close-up then wide shot then detail")
-- Break up scripts into as many chunks as needed to accommodate different visual shots
-- Common chunk types: HOOK (attention-grabbing opener), PRODUCT (showing product), CTA (call-to-action)
-
-IMPORTANT BEHAVIOR:
-- Always use tools to access current workspace content before making suggestions
-- Show your thinking process as you analyze the user's request
-- Provide specific, actionable suggestions with clear reasoning
-- When suggesting script changes, always explain why each change improves the script
-- Be helpful and creative while maintaining the script's marketing effectiveness
-- Feel free to add new chunks to break up scenes into distinct visual shots
-
-AVAILABLE CONTEXT:
-- Workspace nodes contain product specs, ad references, and instructions
-- Current script has chunks with script_text and camera_instruction
-- User may ask for multiple changes in one request - handle them systematically
-
-Your goal is to be a helpful creative partner who understands that video is a visual medium where each chunk = one shot.`;
+    // Use configured chat system prompt with streaming enhancements
+    const systemPrompt = prompts.chatActions.system + `\n\nSTREAMING BEHAVIOR:
+- You have access to workspace content via tools
+- Always use tools to access current context before making suggestions
+- Show your analysis as you work through the user's request
+- Be a helpful creative partner who understands video as a visual medium
+- Each chunk = one shot = one video file in the editing system`;
     
     // Build conversation messages
     const messages = [

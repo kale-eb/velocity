@@ -99,12 +99,12 @@ class VideoProcessor:
     
     async def process_video_url(self, video_url: str, content_description: Optional[str] = None) -> Dict:
         """Process video from URL and return structured analysis"""
-        print(f"🎬 Processing Video: {video_url}")
+        print(f"🎬 Processing Video: {video_url}", flush=True)
         
         temp_video_path = None
         try:
             # Step 1: Download video to temp file
-            print("📥 Downloading video...")
+            print("📥 Downloading video...", flush=True)
             
             # Create temp file path
             temp_video_path = tempfile.mktemp(suffix='.mp4')
@@ -115,11 +115,17 @@ class VideoProcessor:
                 'format': 'best[height<=720][ext=mp4]/best[ext=mp4]/best',
                 'outtmpl': temp_video_path,
                 'no_warnings': True,
-                'cookiesfrombrowser': ('chrome', None, None, None),
                 'http_headers': {
                     'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1'
                 },
             }
+            
+            # Try to add Chrome cookies if available, but don't fail if not
+            try:
+                ydl_opts['cookiesfrombrowser'] = ('chrome', None, None, None)
+                print("📥 Using Chrome cookies for download", flush=True)
+            except Exception as cookie_err:
+                print(f"⚠️ Chrome cookies not available, trying without: {cookie_err}", flush=True)
             
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -132,29 +138,35 @@ class VideoProcessor:
                 raise err(400, "DOWNLOAD_FAILED", "Video download failed - file not found or empty")
             
             file_size_mb = Path(temp_video_path).stat().st_size / (1024 * 1024)
-            print(f"✅ Video downloaded successfully ({file_size_mb:.1f} MB)")
+            print(f"✅ Video downloaded successfully ({file_size_mb:.1f} MB)", flush=True)
             
             # Step 2: Extract frames
-            print("🎞️ Extracting frames with scene detection...")
+            print("🎞️ Extracting frames with scene detection...", flush=True)
+            print(f"   Video path: {temp_video_path}", flush=True)
+            print(f"   File size: {file_size_mb:.1f} MB", flush=True)
+            
             frames = self.frame_extractor.extract_frames(temp_video_path)
-            print(f"✅ Extracted {len(frames)} frames from {len(set(f.scene_id for f in frames))} scenes")
+            print(f"✅ Extracted {len(frames)} frames from {len(set(f.scene_id for f in frames))} scenes", flush=True)
             
             # Step 3: Extract audio
-            print("🎤 Extracting and transcribing audio...")
+            print("🎤 Extracting and transcribing audio...", flush=True)
             audio_extraction = self.audio_extractor.extract_audio(temp_video_path)
             if audio_extraction.error:
-                print(f"⚠️ Audio extraction warning: {audio_extraction.error}")
-            print(f"✅ Audio transcribed: {len(audio_extraction.full_transcript)} characters")
+                print(f"⚠️ Audio extraction warning: {audio_extraction.error}", flush=True)
+            print(f"✅ Audio transcribed: {len(audio_extraction.full_transcript)} characters", flush=True)
             
             # Step 4: Analyze with OpenAI
-            print("🤖 Analyzing with OpenAI...")
+            print("🤖 Analyzing with OpenAI...", flush=True)
+            print(f"   Sending {len(frames)} frames to GPT for analysis...", flush=True)
+            print(f"   Audio transcript length: {len(audio_extraction.full_transcript)} characters", flush=True)
+            
             analysis_json = await self.analyzer.analyze_advertisement(
                 frames=frames,
                 audio_extraction=audio_extraction,
                 original_url=str(video_url),
                 content_description=content_description
             )
-            print(f"✅ Analysis complete: {len(analysis_json.get('chunks', []))} chunks identified")
+            print(f"✅ Analysis complete: {len(analysis_json.get('chunks', []))} chunks identified", flush=True)
             
             # Add processing metadata
             analysis_json['processing_info'] = {
@@ -177,7 +189,7 @@ class VideoProcessor:
                 with open(out_path, 'w') as f:
                     json.dump(analysis_json, f, indent=2)
                 analysis_json['processing_info']['saved_json'] = str(out_path)
-                print(f"💾 Saved analysis JSON: {out_path}")
+                print(f"💾 Saved analysis JSON: {out_path}", flush=True)
             except Exception as save_err:
                 print(f"⚠️ Failed to save analysis JSON: {save_err}")
             
