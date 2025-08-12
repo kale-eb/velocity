@@ -7,13 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2025-08-12
+
+### Fixed
+- **Video Analysis Pipeline**: Complete overhaul of frame encoding and API integration
+  - **Frame Encoding**: Switched to viral project approach with direct in-memory conversion
+    - Removed complex disk validation causing PIL image corruption
+    - All 29 frames now encode successfully to base64
+    - Simplified processing reduces failure points
+  - **OpenAI API Parameters**: Fixed incorrect model configuration
+    - Model: `gpt-5` → `gpt-5-mini` (from config)
+    - Temperature: Added required `temperature=1` for gpt-5-mini
+    - Removed `max_tokens` limit per user requirements
+  - **Error Handling**: System now fails fast with proper HTTP error codes
+    - **422 ANALYSIS_PARSING_FAILED**: AI response parsing issues
+    - **422 FRAME_ENCODING_ERROR**: Frame processing failures
+    - **429 RATE_LIMITED**: OpenAI rate limit exceeded
+    - **408 ANALYSIS_TIMEOUT**: Analysis timeout (video too complex)
+    - **500 ANALYSIS_FAILED**: General analysis failures
+    - Removed low-quality fallback data generation
+  - **Chrome Dependencies**: Made Chrome cookies opt-in only
+    - Set `USE_CHROME_COOKIES=true` environment variable to enable
+    - Prevents browser permission popups during testing
+  - **Performance**: API calls now complete in ~3.3 minutes vs hanging indefinitely
+  - **Validation**: ✅ Full Instagram reel analysis successful (29 chunks, 23 scenes, 62s duration)
+
 ### Changed
 - **Frame Extraction**: Implemented timestamp-first approach for jump cut detection
   - Now extracts timestamps only during detection, then selects most significant jump cuts
   - Scene-based intelligent frame sampling with positioning strategy (1/3, 2/3, start/middle/end)
   - Removed delta intensity veto for improved jump cut detection accuracy
   - Optimized for exactly 30 frames per video with proper scene distribution
-- **API Model**: Switched from GPT-5 to GPT-5-Mini for video analysis
 - **UI Improvements**: 
   - Fixed color mode consistency across all components
   - Updated script editor background colors for each theme
@@ -21,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced chat assistant with proper theming
 - **Backend Fixes**:
   - Fixed Python stdout buffering issues causing timeouts
-  - Increased request timeout from 5 to 10 minutes
+  - Increased request timeout from 10 to 15 minutes
   - Fixed frame type handling in analyzer (now processes all frame types)
 
 ### Planned for Phase 1

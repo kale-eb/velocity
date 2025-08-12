@@ -20,13 +20,20 @@ The platform operates through **two main workspaces** that work together:
 - **Home Dashboard** - Project management and quick actions
 - **Content Database** - Centralized media and content management
 - **Shared Infrastructure** - Authentication, storage, and AI services
+- **Script Persistence** - Generated scripts persist across browser sessions
+- **File Preview System** - Click to preview uploaded files with full-screen modal
+- **Enhanced Chat UX** - Modern AI chat interface with real-time feedback
+- **Video Analysis Pipeline** - AI-powered analysis of short-form video ads with frame extraction and OpenAI GPT-5-mini
 
 The platform streamlines the entire process from initial concept to final video export, making professional marketing content creation accessible and efficient.
 
 ## Technology Stack
-- **React 18** + **Vite** + **Tailwind CSS**
-- **Lucide React** for icons, **SVG** for node connections
-- **ESLint** for code quality
+- **Frontend**: React 18 + Vite + Tailwind CSS
+- **Backend**: Express.js + Python FastAPI for video processing
+- **AI Integration**: OpenAI GPT-5-mini for script generation and video analysis
+- **Storage**: localStorage for persistence, file upload processing
+- **Icons**: Lucide React, **Connections**: SVG
+- **Code Quality**: ESLint
 
 ## Project Structure
 ```
