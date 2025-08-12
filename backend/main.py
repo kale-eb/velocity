@@ -120,12 +120,15 @@ class VideoProcessor:
                 },
             }
             
-            # Try to add Chrome cookies if available, but don't fail if not
-            try:
-                ydl_opts['cookiesfrombrowser'] = ('chrome', None, None, None)
-                print("📥 Using Chrome cookies for download", flush=True)
-            except Exception as cookie_err:
-                print(f"⚠️ Chrome cookies not available, trying without: {cookie_err}", flush=True)
+            # Only use Chrome cookies if explicitly enabled (to avoid Chrome popups)
+            if os.getenv('USE_CHROME_COOKIES', 'false').lower() == 'true':
+                try:
+                    ydl_opts['cookiesfrombrowser'] = ('chrome', None, None, None)
+                    print("📥 Using Chrome cookies for download", flush=True)
+                except Exception as cookie_err:
+                    print(f"⚠️ Chrome cookies not available, trying without: {cookie_err}", flush=True)
+            else:
+                print("📥 Skipping Chrome cookies (set USE_CHROME_COOKIES=true to enable)", flush=True)
             
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -145,8 +148,9 @@ class VideoProcessor:
             print(f"   Video path: {temp_video_path}", flush=True)
             print(f"   File size: {file_size_mb:.1f} MB", flush=True)
             
+            print(f"🎬 MAIN: Calling frame_extractor.extract_frames()...", flush=True)
             frames = self.frame_extractor.extract_frames(temp_video_path)
-            print(f"✅ Extracted {len(frames)} frames from {len(set(f.scene_id for f in frames))} scenes", flush=True)
+            print(f"✅ MAIN: Extracted {len(frames)} frames from {len(set(f.scene_id for f in frames))} scenes", flush=True)
             
             # Step 3: Extract audio
             print("🎤 Extracting and transcribing audio...", flush=True)
@@ -160,13 +164,29 @@ class VideoProcessor:
             print(f"   Sending {len(frames)} frames to GPT for analysis...", flush=True)
             print(f"   Audio transcript length: {len(audio_extraction.full_transcript)} characters", flush=True)
             
-            analysis_json = await self.analyzer.analyze_advertisement(
-                frames=frames,
-                audio_extraction=audio_extraction,
-                original_url=str(video_url),
-                content_description=content_description
-            )
-            print(f"✅ Analysis complete: {len(analysis_json.get('chunks', []))} chunks identified", flush=True)
+            try:
+                print(f"🎯 MAIN: Calling analyzer.analyze_advertisement()...", flush=True)
+                analysis_json = await self.analyzer.analyze_advertisement(
+                    frames=frames,
+                    audio_extraction=audio_extraction,
+                    original_url=str(video_url),
+                    content_description=content_description
+                )
+                print(f"✅ MAIN: Analysis complete: {len(analysis_json.get('chunks', []))} chunks identified", flush=True)
+            except Exception as analysis_error:
+                print(f"❌ OpenAI analysis failed: {analysis_error}", flush=True)
+                # Convert analysis failures to specific error codes
+                error_msg = str(analysis_error).lower()
+                if "json parsing" in error_msg or "parsing failed" in error_msg:
+                    raise err(422, "ANALYSIS_PARSING_FAILED", f"AI response could not be parsed: {str(analysis_error)}")
+                elif "image" in error_msg or "unsupported" in error_msg:
+                    raise err(422, "FRAME_ENCODING_ERROR", f"Frame encoding issue: {str(analysis_error)}")
+                elif "rate limit" in error_msg or "quota" in error_msg:
+                    raise err(429, "RATE_LIMITED", "OpenAI rate limit exceeded. Please try again later.")
+                elif "timeout" in error_msg:
+                    raise err(408, "ANALYSIS_TIMEOUT", "Analysis timed out. Video may be too complex.")
+                else:
+                    raise err(500, "ANALYSIS_FAILED", f"Video analysis failed: {str(analysis_error)}")
             
             # Add processing metadata
             analysis_json['processing_info'] = {

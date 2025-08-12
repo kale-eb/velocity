@@ -228,10 +228,20 @@ Token usage calculator for different compression settings:
 
 ## Error Handling
 
+**Analysis Failures**: No longer creates fallback data - returns proper HTTP errors instead:
+- **422 ANALYSIS_PARSING_FAILED**: AI response could not be parsed as JSON
+- **422 FRAME_ENCODING_ERROR**: Frame encoding/image processing issues 
+- **429 RATE_LIMITED**: OpenAI rate limit exceeded
+- **408 ANALYSIS_TIMEOUT**: Analysis timed out (video too complex)
+- **500 ANALYSIS_FAILED**: General analysis failure
+
+**Video Processing Limits**:
 - **Video Duration Limit**: 95 seconds max
 - **File Size Limit**: 5MB after compression
+- **Download Errors**: 400 UNSUPPORTED_URL or DOWNLOAD_FAILED
 - **Retry Logic**: Automatic retries with exponential backoff
-- **Graceful Degradation**: Falls back to fewer frames if needed
+
+**Quality Assurance**: System fails fast rather than producing low-quality fallback data
 
 ## Future Improvements
 

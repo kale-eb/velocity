@@ -1,0 +1,648 @@
+{
+  "id": "ad_analysis_20250812T120000Z",
+  "url": "https://www.instagram.com/reels/DNKaR0Eu2ti/",
+  "summary": "Short personal story / promotional reel following the narrator and a friend over two years of content creation. The video alternates between outdoor bench interviews, candid run/gym footage, late-night editing scenes, and promotional calls-to-action about a growth class. The arc: initial skepticism, months of practice (cold approaches + content grind), doubt and late nights, breakthrough moments with a dedicated friend, and a final CTA to join a class that explains how the friend grew his following.",
+  "visualStyle": "Vertical mobile-first editing with quick jump cuts and occasional longer scene intervals. Mix of handheld POV (running, cold approach), stable interview-style bench shots, and candid behind-the-scenes in a small apartment and a gym. Bright outdoor daylight for bench/running, warm/muted interior lighting for editing/apartment scenes, and high-contrast gym lighting for workout clips.",
+  "audioStyle": "Single dominant narrator voice (conversational, candid, occasionally profane for emphasis) over the full video. Natural ambient audio from street/running/gym scenes layered under narration; energetic exclamations during run/gym moments. The final portion includes direct address CTA with higher urgency.",
+  "duration": 62.3,
+  "entities": {
+    "people": [
+      {
+        "id": "presenter_1",
+        "role": "on-screen narrator / storyteller",
+        "appearance": "young adult male, short dark hair, athletic build; frequently seen wearing a white hoodie or white tee in outdoor bench shots and a tank/top in gym clips.",
+        "demographics": "age: ~20s-30s, gender: male, ethnicity: not specified"
+      },
+      {
+        "id": "friend_1",
+        "role": "collaborator / running/gym buddy",
+        "appearance": "young adult male, athletic, appears alongside presenter in running and event footage, often wearing dark athletic gear or a medal at race scenes.",
+        "demographics": "age: ~20s-30s, gender: male, ethnicity: not specified"
+      }
+    ],
+    "products": [
+      {
+        "id": "phone_1",
+        "name": "mobile phone / screen content",
+        "description": "Smartphone shown with analytics/earnings and social profile overlays (followers count). Used to display earnings and an Instagram profile popup.",
+        "category": "digital device / social media screenshot"
+      }
+    ],
+    "locations": [
+      {
+        "id": "bench_outdoor",
+        "type": "outdoor public bench / street front",
+        "description": "Wooden bench in front of a low planter with yellow flowers; recurring interview-style location used for the narrator's reflective monologue.",
+        "lighting": "bright natural daylight, high contrast shadows"
+      },
+      {
+        "id": "gym_indoor",
+        "type": "indoor gym / training space",
+        "description": "Small gym with mirrors and overhead strip lighting; used for warm-up / candid fit clips.",
+        "lighting": "cool, directional overhead lighting creating highlights and reflections"
+      },
+      {
+        "id": "apartment_living",
+        "type": "small apartment / living room",
+        "description": "Cozy living room with couch, soft lamps and colored accent lighting used for late-night editing and life-changing moment scenes.",
+        "lighting": "low, warm / colored practical lights for mood"
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "startTime": 0.0,
+      "endTime": 1.17,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1"
+        ],
+        "location": "gym_indoor",
+        "description": "Close handheld gym shot: two shirtless men near equipment; energetic laugh from a friend. Introduces characters visually.",
+        "cameraAngle": "tight vertical close / eye-level",
+        "movement": "slight handheld shake, quick jump cut into frame",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "This is Prosper, and when we first spoke two years ago,",
+        "tone": "casual, conversational"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "startTime": 1.17,
+      "endTime": 4.11,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Presenter seated on a bench in daylight in front of flowering shrubs \u2014 direct-address interview shot.",
+        "cameraAngle": "medium vertical, centered framing",
+        "movement": "static / tripod-like stability",
+        "textOverlay": "two years ago,"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "This is Prosper, and when we first spoke two years ago,",
+        "tone": "reflective"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "startTime": 4.11,
+      "endTime": 5.89,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Same bench shot, text overlay emphasizes the line about prior impressions.",
+        "cameraAngle": "medium shot, eye-level",
+        "movement": "cut; slight zoom-in compared to previous",
+        "textOverlay": "I was a cocky prick"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "he told me he used to think I was a cocky prick",
+        "tone": "admitting, candid"
+      }
+    },
+    {
+      "id": "chunk_004",
+      "startTime": 5.89,
+      "endTime": 9.08,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Continuation of monologue on the bench; text overlays line-by-line. Cuts briefly to an indoor classroom-like scene (whiteboard) showing a standing male talking to another.",
+        "cameraAngle": "alternates between medium bench shot and wider two-shot in indoor location",
+        "movement": "jump cuts between scenes",
+        "textOverlay": "if I could help him"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "because I posted videos online. So when he asked me if I could help him",
+        "tone": "informal, explanatory"
+      }
+    },
+    {
+      "id": "chunk_005",
+      "startTime": 9.08,
+      "endTime": 11.83,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Bench close-up \u2014 narrator recounts the request; overlay text mirrors the line 'Only if you help'.",
+        "cameraAngle": "medium close",
+        "movement": "static with small zoom/cut",
+        "textOverlay": "Only if you help"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "start making content, I was like, bitch,",
+        "tone": "playful, blunt"
+      }
+    },
+    {
+      "id": "chunk_006",
+      "startTime": 11.83,
+      "endTime": 13.83,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Bench shot; narrator adds the condition about teaching 'rizz'.",
+        "cameraAngle": "medium",
+        "movement": "cut between takes",
+        "textOverlay": "6 months,"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "only if you help teach me how to riz.",
+        "tone": "light, joking"
+      }
+    },
+    {
+      "id": "chunk_007",
+      "startTime": 13.83,
+      "endTime": 14.83,
+      "visual": {
+        "subjects": [
+          "friend_1"
+        ],
+        "location": "street/outside storefront",
+        "description": "Hand-off style POV shot: friend accepts something (cash or paper) while sitting outside a store; overlay shows '6 months' text.",
+        "cameraAngle": "POV / handheld reaching shot",
+        "movement": "handheld reach/pan",
+        "textOverlay": "we'd hang out"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "So over the next six months, we'd hang out,",
+        "tone": "narrative, pacing"
+      }
+    },
+    {
+      "id": "chunk_008",
+      "startTime": 14.83,
+      "endTime": 15.92,
+      "visual": {
+        "subjects": [
+          "friend_1"
+        ],
+        "location": "indoor cafe / lounge",
+        "description": "Casual hangout shot: two friends seated in a lounge-ish area; overlay text 'we'd hang out'.",
+        "cameraAngle": "medium, two-shot",
+        "movement": "static to slight handheld",
+        "textOverlay": "we'd go cold approach"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "we'd go cold approach half the time,",
+        "tone": "matter-of-fact"
+      }
+    },
+    {
+      "id": "chunk_009",
+      "startTime": 15.92,
+      "endTime": 17.42,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1"
+        ],
+        "location": "bookstore / indoor shop",
+        "description": "POV cold-approach style shot inside a store; two friends walking/looking around while filming.",
+        "cameraAngle": "handheld, mid-wide vertical",
+        "movement": "handheld follow",
+        "textOverlay": "and grind content"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "and grind content the other half.",
+        "tone": "straightforward"
+      }
+    },
+    {
+      "id": "chunk_010",
+      "startTime": 17.42,
+      "endTime": 19.5,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1"
+        ],
+        "location": "outdoor race / event",
+        "description": "Crowded outdoor event / race selfie shots with excited faces and handheld phones capturing the atmosphere; overlay 'and grind content'.",
+        "cameraAngle": "selfie POV, wide-vertical",
+        "movement": "energetic handheld",
+        "textOverlay": "and grind content"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "And if I'm being completely honest,",
+        "tone": "confessional"
+      }
+    },
+    {
+      "id": "chunk_011",
+      "startTime": 19.5,
+      "endTime": 22.39,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Back to bench interview: narrator admits self-doubt about content creation; text overlay 'I always doubted prosper.'",
+        "cameraAngle": "medium",
+        "movement": "static",
+        "textOverlay": "I always doubted prosper."
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "I always doubted Prosper, because content is hard.",
+        "tone": "honest, slightly weary"
+      }
+    },
+    {
+      "id": "chunk_012",
+      "startTime": 22.39,
+      "endTime": 23.94,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "people"
+        ],
+        "location": "apartment_living",
+        "description": "Interior late-night shoot setup: low lighting, laptop, camera on set; narrator references late nights and editing.",
+        "cameraAngle": "wide interior shot showing multiple people and equipment",
+        "movement": "static wide; candid activity in foreground/background",
+        "textOverlay": "it's late nights"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "It's late nights, editing your video,",
+        "tone": "tired, factual"
+      }
+    },
+    {
+      "id": "chunk_013",
+      "startTime": 23.94,
+      "endTime": 27.11,
+      "visual": {
+        "subjects": [
+          "apartment_living"
+        ],
+        "location": "apartment_living",
+        "description": "Continued interior editing/setup shots showing people working on laptops and equipment; overlay describes lack of immediate earnings and exposure to criticism.",
+        "cameraAngle": "mix of medium and close-over-the-shoulder",
+        "movement": "cuts between different angles",
+        "textOverlay": "making no money"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "making no money for months, all while putting yourself out there",
+        "tone": "matter-of-fact, slightly defensive"
+      }
+    },
+    {
+      "id": "chunk_014",
+      "startTime": 27.11,
+      "endTime": 28.72,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Bench shot: narrator references being disliked / cringed at; includes a scooter/e-scooter passing by in framing.",
+        "cameraAngle": "medium shot, slightly wider",
+        "movement": "jump cut into action frame",
+        "textOverlay": "hated and cringed at"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "to be hated and cringed at.",
+        "tone": "resigned"
+      }
+    },
+    {
+      "id": "chunk_015",
+      "startTime": 28.72,
+      "endTime": 30.92,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1"
+        ],
+        "location": "outdoor race / event",
+        "description": "Excited running/race selfie \u2014 two friends mid-run celebrating. Overlay mentions 'now for 2 years'.",
+        "cameraAngle": "selfie POV wide vertical",
+        "movement": "fast handheld running motion",
+        "textOverlay": "now for 2 years,"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "But if there's anything I've learned from being friends with Prosper now for two years,",
+        "tone": "reflective, upbeat"
+      }
+    },
+    {
+      "id": "chunk_016",
+      "startTime": 30.92,
+      "endTime": 32.33,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1"
+        ],
+        "location": "outdoor race / event",
+        "description": "Two-shot close during run: excited faces as they run past colorful buildings; overlay 'when you find a homie'.",
+        "cameraAngle": "close selfie",
+        "movement": "handheld run",
+        "textOverlay": "when you find a homie"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "when you find a homie with an absolute dog inside him,",
+        "tone": "energized"
+      }
+    },
+    {
+      "id": "chunk_017",
+      "startTime": 32.33,
+      "endTime": 33.17,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Return to bench monologue: thoughtful expression as narrator continues the line about a 'dog inside him'.",
+        "cameraAngle": "medium",
+        "movement": "cut-in from run to bench",
+        "textOverlay": "with an absolute"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "with an absolute",
+        "tone": "emphatic"
+      }
+    },
+    {
+      "id": "chunk_018",
+      "startTime": 33.17,
+      "endTime": 34.25,
+      "visual": {
+        "subjects": [
+          "friend_1"
+        ],
+        "location": "outdoor race / event",
+        "description": "Running shot emphasizing the friend's energy \u2014 high-motion frame with hands up and cheering.",
+        "cameraAngle": "selfie POV / angled",
+        "movement": "fast forward handheld movement",
+        "textOverlay": "dog inside him"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "dog inside him, and you spend enough time with them,",
+        "tone": "animated"
+      }
+    },
+    {
+      "id": "chunk_019",
+      "startTime": 34.25,
+      "endTime": 35.5,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1"
+        ],
+        "location": "bench_outdoor / race shots",
+        "description": "Cut between bench monologue and running celebration footage illustrating time spent together.",
+        "cameraAngle": "alternating wide and medium handheld",
+        "movement": "quick cuts",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "and you spend enough time with them,",
+        "tone": "encouraging"
+      }
+    },
+    {
+      "id": "chunk_020",
+      "startTime": 35.5,
+      "endTime": 37.58,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1"
+        ],
+        "location": "indoor classroom / workshop",
+        "description": "Two-person scene at a whiteboard / workshop space \u2014 presenting the collaborative practice/work aspect.",
+        "cameraAngle": "medium two-shot",
+        "movement": "cut-in / static framing",
+        "textOverlay": "enough time with them,"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "life-changing shit happens.",
+        "tone": "revelatory, proud"
+      }
+    },
+    {
+      "id": "chunk_021",
+      "startTime": 37.58,
+      "endTime": 40.83,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1",
+          "phone_1"
+        ],
+        "location": "apartment_living",
+        "description": "Energy shift: person on couch celebrates; phone close-up later shows analytics/earnings. Text overlay highlights 'Life-changing sh*t happens.' then shows earnings.",
+        "cameraAngle": "mix of wide living-room and close phone POV",
+        "movement": "cuts between shots, handheld phone close-up",
+        "textOverlay": "Life-changing sh\ud83d\udca9t happens."
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "You're a good friend, aren't you? Yo, it's 9 a.m., and we've made $5,900.",
+        "tone": "exuberant"
+      }
+    },
+    {
+      "id": "chunk_022",
+      "startTime": 40.83,
+      "endTime": 43.0,
+      "visual": {
+        "subjects": [
+          "phone_1"
+        ],
+        "location": "apartment_living",
+        "description": "Close-up of a phone in-hand showing an app/analytics screen (earnings graphs, $3,917 visible in one frame).",
+        "cameraAngle": "close handheld over-the-shoulder phone POV",
+        "movement": "slight handheld stabilization",
+        "textOverlay": "we've made"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "Yo, it's 9 a.m., and we've made $5,900.",
+        "tone": "excited, triumphant"
+      }
+    },
+    {
+      "id": "chunk_023",
+      "startTime": 43.0,
+      "endTime": 46.08,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "apartment_living",
+        "description": "Presenter celebrating on camera in the living room; cut to exultant gym/locker-room style revelry (laughs / high energy).",
+        "cameraAngle": "selfie-style wide vertical",
+        "movement": "handheld bounce, quick cuts",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "Nine fucking miles.",
+        "tone": "exclaiming"
+      }
+    },
+    {
+      "id": "chunk_024",
+      "startTime": 46.08,
+      "endTime": 48.44,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1"
+        ],
+        "location": "gym_indoor",
+        "description": "Gym choreography / warm-up shots \u2014 presenter addresses the viewer about an upcoming live class; overlay text announces the class breakdown.",
+        "cameraAngle": "medium shots in gym mirrored wall",
+        "movement": "cut between poses and gestures",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "So tomorrow, he's actually doing a live class",
+        "tone": "informative, promotional"
+      }
+    },
+    {
+      "id": "chunk_025",
+      "startTime": 48.44,
+      "endTime": 50.22,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "phone_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Bench shot again with an overlaid graphic showing an Instagram profile popup (username, follower count) floating above the presenter; text overlay reads 'breaking down' and follower count appears later.",
+        "cameraAngle": "medium bench shot with graphic overlay",
+        "movement": "static with overlay pop-in",
+        "textOverlay": "breaking down"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "breaking down how he grew 350,000 followers",
+        "tone": "promotional, authoritative"
+      }
+    },
+    {
+      "id": "chunk_026",
+      "startTime": 50.22,
+      "endTime": 53.44,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "phone_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Combined bench and phone visuals: overlayed IG profile bubble (350k followers) and a return to couch/bedroom celebration imagery.",
+        "cameraAngle": "mix of medium bench shot and phone UI close-up",
+        "movement": "cuts between Bench and phone overlay",
+        "textOverlay": "350,000 followers"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "in a single year. So if you wanna learn how to build dog-like content discipline",
+        "tone": "inviting, promotional"
+      }
+    },
+    {
+      "id": "chunk_027",
+      "startTime": 53.44,
+      "endTime": 54.89,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "friend_1"
+        ],
+        "location": "outdoor event / bleachers",
+        "description": "Race/medal frame: two people showing medals and flexing; overlay uses the phrase 'dog-like'.",
+        "cameraAngle": "low-angle selfie with fence in background",
+        "movement": "handheld selfie",
+        "textOverlay": "dog-like"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "dog-like content discipline from the boyfriend maxer himself,",
+        "tone": "teasing, promotional"
+      }
+    },
+    {
+      "id": "chunk_028",
+      "startTime": 54.89,
+      "endTime": 56.33,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Bench close-up: narrator delivers the CTA 'comment diamond' with encouraged facial expression.",
+        "cameraAngle": "medium close",
+        "movement": "cut-in",
+        "textOverlay": "from the"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "comment diamond, and I'll send you the link",
+        "tone": "direct call-to-action, upbeat"
+      }
+    },
+    {
+      "id": "chunk_029",
+      "startTime": 56.33,
+      "endTime": 62.3,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "bench_outdoor",
+        "description": "Final bench closing shots: presenter smiling, relaxed; the sequence finishes with a friendly sign-off gesture and a closing wide bench shot.",
+        "cameraAngle": "medium to wide",
+        "movement": "slow pullback / cut to final still",
+        "textOverlay": "comment"
+      },
+      "audio": {
+        "speaker": "narrator",
+        "transcript": "to join that class. Yo, shout out to the people who understand that reference. Peace.",
+        "tone": "warm sign-off, casual"
+      }
+    }
+  ]
+}

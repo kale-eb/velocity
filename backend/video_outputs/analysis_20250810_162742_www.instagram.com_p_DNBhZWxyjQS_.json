@@ -1,0 +1,22 @@
+{
+  "id": "ad_analysis_2025-08-10T00:00:00Z",
+  "url": "https://www.instagram.com/p/DNBhZWxyjQS/",
+  "summary": "A creator presents a concise gift-guide style roundup of her favorite content-creation gear: a Canon G7X Mark II for flattering vlogs, an inexpensive but reliable Amazon tripod, a Panasonic S9 DSLR, Hollyland wireless mics, an iPhone tripod, and an Alton selfie light (preferred over the Moa). She closes by encouraging viewers that a phone is enough to build a career, offering motivation and a giveaway call to action.",
+  "visualStyle": "Vertical social-first composition with on-camera presenting and product close-ups; bright, neutral lighting; clean backgrounds; swift pacing with snappy on-screen demonstrations and captions/labels accompanying gear mentions; minimalistic color palette with occasional product color pops.",
+  "audioStyle": "Single energetic female voiceover/dialogue synced to camera; clear, persuasive delivery with upbeat, friendly tone; light background music bed; occasional demonstrative mic check (\u201cHello!\u201d) to showcase audio quality differences.",
+  "duration": 91.2,
+  "entities": {
+    "people": [],
+    "products": [],
+    "locations": []
+  },
+  "chunks": [],
+  "processing_info": {
+    "processed_at": "2025-08-10T16:27:42.571860",
+    "file_size_mb": 12.61,
+    "frames_extracted": 34,
+    "scenes_detected": 27,
+    "audio_segments": 27,
+    "transcript_length": 1580
+  }
+}

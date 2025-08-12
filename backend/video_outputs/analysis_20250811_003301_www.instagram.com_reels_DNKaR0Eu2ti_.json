@@ -1,0 +1,674 @@
+{
+  "id": "ad_analysis_2025-08-11T12:00:00Z",
+  "url": "https://www.instagram.com/reels/DNKaR0Eu2ti/",
+  "summary": "Two young men narrate and show a two\u2011year journey of building content discipline: meeting, practicing social skills, creating videos, late nights, running races, gym training, and eventually monetizing and growing a large following. The reel mixes sit\u2011down narration on an outdoor bench with kinetic b\u2011roll: gym shots, road\u2011race selfies, whiteboard planning, late\u2011night edits, and a morning revenue check. It ends with a promo invite to a live class and a casual sign\u2011off.",
+  "visualStyle": "Vertical, high\u2011contrast social reel with fast jump cuts, on\u2011screen captions, selfie footage, handheld run\u2011and\u2011gun shots, and occasional static wides. Lighting alternates between bright daylight exteriors and moody interiors with practical lights. Frequent subtitle overlays guide the story beats.",
+  "audioStyle": "Single energetic narrator voiceover with conversational, motivational delivery; occasional exclamations during running/gym moments; likely light background music throughout; minimal diegetic room noise.",
+  "duration": 62.3,
+  "entities": {
+    "people": [
+      {
+        "id": "presenter_1",
+        "role": "narrator/on\u2011camera host",
+        "appearance": "Athletic build; short dark hair; often in a light gray hoodie and navy shorts during bench segments; also appears in black running kit with race bib; sometimes shirtless in gym scenes.",
+        "demographics": "approx. mid\u201120s, male, ethnicity unspecified"
+      },
+      {
+        "id": "subject_1",
+        "role": "friend and story subject; the person whose growth/journey is highlighted",
+        "appearance": "Lean, muscular build; short dark hair; appears shirtless in gym segments; wears casual streetwear in indoor scenes; also in black running kit with earbuds during race footage.",
+        "demographics": "approx. mid\u201120s, male, ethnicity unspecified"
+      }
+    ],
+    "products": [
+      {
+        "id": "gym_station_1",
+        "name": "multi\u2011station pull\u2011up/cable rig",
+        "description": "Commercial gym machine with pull\u2011up bar and cable attachments used for core/pull movements.",
+        "category": "fitness equipment"
+      },
+      {
+        "id": "race_medals_1",
+        "name": "race finisher medals",
+        "description": "Metal medals on blue ribbons worn after the run; used as proof of completion/accomplishment.",
+        "category": "event memorabilia"
+      }
+    ],
+    "locations": [
+      {
+        "id": "plaza_bench_1",
+        "type": "urban outdoor plaza",
+        "description": "Modern building frontage with long wooden bench and flowering shrubbery; used for sit\u2011down narration.",
+        "lighting": "bright midday sun, hard shadows"
+      },
+      {
+        "id": "gym_1",
+        "type": "indoor gym",
+        "description": "Dim, high\u2011contrast weight room with machines; dramatic practical lighting.",
+        "lighting": "low key, warm practicals"
+      },
+      {
+        "id": "workshop_1",
+        "type": "industrial workspace",
+        "description": "Open concrete room with exposed wood ceiling and a rolling whiteboard.",
+        "lighting": "soft warm overheads"
+      },
+      {
+        "id": "livingroom_1",
+        "type": "apartment living room",
+        "description": "Cozy room with sofa, curtains, and colored lamp; sometimes morning light through curtains.",
+        "lighting": "moody colored lamp at night; soft daylight in morning"
+      },
+      {
+        "id": "race_course_1",
+        "type": "city street race course",
+        "description": "Urban streets with runners, spectators, and storefronts; captured on the move via selfie cam.",
+        "lighting": "overcast daylight"
+      },
+      {
+        "id": "race_finish_1",
+        "type": "outdoor fenced finish area",
+        "description": "Chain\u2011link fence backdrop with people mingling; medals displayed.",
+        "lighting": "overcast daylight"
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "startTime": 0.0,
+      "endTime": 1.17,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "gym_1",
+        "description": "Cold\u2011open into the story; fast lead\u2011in toward the first gym shot.",
+        "cameraAngle": "establishing medium shot feel, anticipating a cut to gym",
+        "movement": "quick intro cut",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "This is Prosper,",
+        "tone": "confident, opening statement"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "startTime": 1.17,
+      "endTime": 4.11,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "gym_1",
+        "description": "Two shirtless friends at a gym rig; one faces camera while the other laughs in the background.",
+        "cameraAngle": "medium shot, slightly low angle",
+        "movement": "handheld, subtle sway",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "and when we first spoke two years ago,",
+        "tone": "narrative setup"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "startTime": 4.11,
+      "endTime": 5.89,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Presenter seated on an outdoor bench in daylight, addressing camera; caption appears.",
+        "cameraAngle": "medium front\u2011facing",
+        "movement": "mostly static",
+        "textOverlay": "two years ago,"
+      },
+      "audio": {
+        "transcript": "he told me he used to think I was a cocky prick",
+        "tone": "candid, self\u2011aware"
+      }
+    },
+    {
+      "id": "chunk_004",
+      "startTime": 5.89,
+      "endTime": 9.08,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Continuation of sit\u2011down narration; caption updates.",
+        "cameraAngle": "medium static",
+        "movement": "minimal",
+        "textOverlay": "I was a cocky prick"
+      },
+      "audio": {
+        "transcript": "because I posted videos online. So when he asked me if I could help him",
+        "tone": "matter\u2011of\u2011fact, reflective"
+      }
+    },
+    {
+      "id": "chunk_005",
+      "startTime": 9.08,
+      "endTime": 11.83,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "workshop_1",
+        "description": "Wide of an industrial room where the two talk near a whiteboard; caption on screen.",
+        "cameraAngle": "wide, eye level",
+        "movement": "static tripod feel",
+        "textOverlay": "if I could help him"
+      },
+      "audio": {
+        "transcript": "start making content, I was like, bitch,",
+        "tone": "playful, teasing"
+      }
+    },
+    {
+      "id": "chunk_006",
+      "startTime": 11.83,
+      "endTime": 13.83,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Back to bench narration with bright sun; caption reads the response.",
+        "cameraAngle": "medium",
+        "movement": "static",
+        "textOverlay": "Only if you help"
+      },
+      "audio": {
+        "transcript": "only if you help teach me how to riz.",
+        "tone": "joking, upbeat"
+      }
+    },
+    {
+      "id": "chunk_007",
+      "startTime": 13.83,
+      "endTime": 14.83,
+      "visual": {
+        "subjects": [
+          "subject_1",
+          "presenter_1"
+        ],
+        "location": "outdoor store steps (single\u2011use)",
+        "description": "Subject sits on steps outside a storefront as a hand reaches in to hand over a card; caption indicates timeframe.",
+        "cameraAngle": "close medium",
+        "movement": "handheld",
+        "textOverlay": "6 months,"
+      },
+      "audio": {
+        "transcript": "So over the next six months, we'd hang out,",
+        "tone": "casual, explanatory"
+      }
+    },
+    {
+      "id": "chunk_008",
+      "startTime": 14.83,
+      "endTime": 15.92,
+      "visual": {
+        "subjects": [
+          "subject_1",
+          "presenter_1"
+        ],
+        "location": "indoor lounge (single\u2011use)",
+        "description": "They sit in comfy chairs; a friendly handshake and grin; caption reflects hanging out.",
+        "cameraAngle": "medium",
+        "movement": "handheld, slight push\u2011in",
+        "textOverlay": "we'd hang out"
+      },
+      "audio": {
+        "transcript": "we'd go cold approach half the time,",
+        "tone": "matter\u2011of\u2011fact"
+      }
+    },
+    {
+      "id": "chunk_009",
+      "startTime": 15.92,
+      "endTime": 17.42,
+      "visual": {
+        "subjects": [
+          "subject_1"
+        ],
+        "location": "bookstore counter (single\u2011use)",
+        "description": "Subject approaches a bookstore counter while chatting up the clerk; caption describes the activity.",
+        "cameraAngle": "medium",
+        "movement": "handheld",
+        "textOverlay": "we'd go cold approach"
+      },
+      "audio": {
+        "transcript": "and grind content the other half.",
+        "tone": "focused"
+      }
+    },
+    {
+      "id": "chunk_010",
+      "startTime": 17.42,
+      "endTime": 19.5,
+      "visual": {
+        "subjects": [
+          "subject_1",
+          "presenter_1"
+        ],
+        "location": "race_course_1",
+        "description": "Selfie with friends amid a packed race crowd; energetic moment; caption continues the sentence.",
+        "cameraAngle": "close selfie wide",
+        "movement": "bouncy handheld while moving",
+        "textOverlay": "and grind content"
+      },
+      "audio": {
+        "transcript": "And if I'm being completely honest,",
+        "tone": "honest, reflective"
+      }
+    },
+    {
+      "id": "chunk_011",
+      "startTime": 19.5,
+      "endTime": 22.39,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Bench narration emphasizing the difficulty of content creation; caption calls out doubt.",
+        "cameraAngle": "medium front",
+        "movement": "static",
+        "textOverlay": "I always doubted prosper."
+      },
+      "audio": {
+        "transcript": "I always doubted Prosper, because content is hard. It's late nights, editing your video,",
+        "tone": "candid, sober"
+      }
+    },
+    {
+      "id": "chunk_012",
+      "startTime": 22.39,
+      "endTime": 23.94,
+      "visual": {
+        "subjects": [
+          "subject_1",
+          "presenter_1"
+        ],
+        "location": "livingroom_1",
+        "description": "Night editing setup: colored lamp, laptop, gear in living room; caption emphasizes late nights.",
+        "cameraAngle": "wide room view",
+        "movement": "handheld repositioning",
+        "textOverlay": "it's late nights"
+      },
+      "audio": {
+        "transcript": "It's late nights, editing your video, making no money for months,",
+        "tone": "gritty, realistic"
+      }
+    },
+    {
+      "id": "chunk_013",
+      "startTime": 23.94,
+      "endTime": 27.11,
+      "visual": {
+        "subjects": [
+          "subject_1",
+          "presenter_1"
+        ],
+        "location": "livingroom_1",
+        "description": "Subject reacts while standing near the sofa; the grind continues; caption highlights no income.",
+        "cameraAngle": "medium wide",
+        "movement": "handheld, slight pan",
+        "textOverlay": "making no money"
+      },
+      "audio": {
+        "transcript": "making no money for months, all while putting yourself out there",
+        "tone": "empathetic"
+      }
+    },
+    {
+      "id": "chunk_014",
+      "startTime": 27.11,
+      "endTime": 28.72,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Presenter rolls by on an e\u2011scooter then continues bench talk; caption about being hated/cringed at.",
+        "cameraAngle": "medium tracking to static",
+        "movement": "small lateral motion then settle",
+        "textOverlay": "hated and cringed at"
+      },
+      "audio": {
+        "transcript": "to be hated and cringed at. But if there's anything I've learned",
+        "tone": "resolute, transitioning"
+      }
+    },
+    {
+      "id": "chunk_015",
+      "startTime": 28.72,
+      "endTime": 31.17,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Walking past the bench then stopping to speak; caption tees up a lesson.",
+        "cameraAngle": "medium",
+        "movement": "gentle walk\u2011and\u2011talk",
+        "textOverlay": "but if there's anything"
+      },
+      "audio": {
+        "transcript": "from being friends with Prosper now for two years,",
+        "tone": "warm, appreciative"
+      }
+    },
+    {
+      "id": "chunk_016",
+      "startTime": 31.17,
+      "endTime": 32.33,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "race_course_1",
+        "description": "Two friends jog side by side on city streets; caption begins the key takeaway.",
+        "cameraAngle": "tight selfie wide",
+        "movement": "running, bouncy",
+        "textOverlay": "now for 2 years,"
+      },
+      "audio": {
+        "transcript": "when you find a homie with an absolute",
+        "tone": "motivational"
+      }
+    },
+    {
+      "id": "chunk_017",
+      "startTime": 32.33,
+      "endTime": 33.17,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "race_course_1",
+        "description": "Continuing the run, animated expressions as they talk.",
+        "cameraAngle": "selfie medium",
+        "movement": "running",
+        "textOverlay": "when you find a homie"
+      },
+      "audio": {
+        "transcript": "dog inside him,",
+        "tone": "amped"
+      }
+    },
+    {
+      "id": "chunk_018",
+      "startTime": 33.17,
+      "endTime": 34.25,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Cut back to bench for emphasis; caption continues phrase.",
+        "cameraAngle": "medium static",
+        "movement": "still",
+        "textOverlay": "with an absolute"
+      },
+      "audio": {
+        "transcript": "dog inside him,",
+        "tone": "emphatic"
+      }
+    },
+    {
+      "id": "chunk_019",
+      "startTime": 34.25,
+      "endTime": 35.5,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "race_course_1",
+        "description": "Back to the street run with cheering bystanders; caption completes the clause.",
+        "cameraAngle": "selfie wide",
+        "movement": "running",
+        "textOverlay": "dog inside him"
+      },
+      "audio": {
+        "transcript": "and you spend enough time with them,",
+        "tone": "assured"
+      }
+    },
+    {
+      "id": "chunk_020",
+      "startTime": 35.5,
+      "endTime": 37.58,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "workshop_1",
+        "description": "Both stand by the whiteboard discussing plans; caption reinforces the payoff.",
+        "cameraAngle": "wide",
+        "movement": "static",
+        "textOverlay": "enough time with them,"
+      },
+      "audio": {
+        "transcript": "life\u2011changing shit happens.",
+        "tone": "punchy, declarative"
+      }
+    },
+    {
+      "id": "chunk_021",
+      "startTime": 37.58,
+      "endTime": 41.08,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "livingroom_1",
+        "description": "Morning scene: one is on the couch under a blanket while the other films excitedly; large caption across the frame.",
+        "cameraAngle": "selfie wide, slight top\u2011down",
+        "movement": "handheld, animated",
+        "textOverlay": "Life-changing sh\ud83d\udca9t happens."
+      },
+      "audio": {
+        "transcript": "You're a good friend, aren't you? Yo, it's 9 a.m., and we've made $5,900.",
+        "tone": "playful then excited"
+      }
+    },
+    {
+      "id": "chunk_022",
+      "startTime": 41.08,
+      "endTime": 43.0,
+      "visual": {
+        "subjects": [
+          "subject_1"
+        ],
+        "location": "livingroom_1",
+        "description": "Close view of hands holding a smartphone showing an earnings dashboard; figure sits on sofa with rug and side table in background.",
+        "cameraAngle": "top\u2011down close\u2011up (POV)",
+        "movement": "handheld micro\u2011movements",
+        "textOverlay": "$5,900"
+      },
+      "audio": {
+        "transcript": "and we've made $5,900.",
+        "tone": "thrilled"
+      }
+    },
+    {
+      "id": "chunk_023",
+      "startTime": 43.0,
+      "endTime": 45.08,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "livingroom_1",
+        "description": "Back to the excited selfie in the room; curtain glows with daylight behind.",
+        "cameraAngle": "handheld selfie",
+        "movement": "bouncy",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "Nine fucking miles.",
+        "tone": "breathless, triumphant"
+      }
+    },
+    {
+      "id": "chunk_024",
+      "startTime": 45.08,
+      "endTime": 45.83,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "race_course_1",
+        "description": "Quick running close\u2011up with both in frame; caption reiterates distance.",
+        "cameraAngle": "tight selfie",
+        "movement": "rapid motion",
+        "textOverlay": "9 f'king miles"
+      },
+      "audio": {
+        "transcript": "Nine fucking miles.",
+        "tone": "hyped"
+      }
+    },
+    {
+      "id": "chunk_025",
+      "startTime": 45.83,
+      "endTime": 48.44,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "gym_1",
+        "description": "One hangs from the pull\u2011up bar while the other spots and jabs the core for fun; laughter and energy.",
+        "cameraAngle": "medium",
+        "movement": "handheld",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "So tomorrow, he's actually doing a live class breaking down\u2014",
+        "tone": "informative, promotional"
+      }
+    },
+    {
+      "id": "chunk_026",
+      "startTime": 48.44,
+      "endTime": 50.22,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Return to bench with promo explanation; caption begins the breakdown line.",
+        "cameraAngle": "medium static",
+        "movement": "still",
+        "textOverlay": "breaking down"
+      },
+      "audio": {
+        "transcript": "breaking down how he grew 350,000 followers",
+        "tone": "clear, instructive"
+      }
+    },
+    {
+      "id": "chunk_027",
+      "startTime": 50.22,
+      "endTime": 53.44,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Bench shot with a pop\u2011up UI of a social profile overlaying the frame; caption shows follower count.",
+        "cameraAngle": "medium",
+        "movement": "static",
+        "textOverlay": "350,000 followers"
+      },
+      "audio": {
+        "transcript": "in a single year. So if you wanna learn how to build",
+        "tone": "credible, enticing"
+      }
+    },
+    {
+      "id": "chunk_028",
+      "startTime": 53.44,
+      "endTime": 54.89,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "race_finish_1",
+        "description": "Two friends show off finisher medals by a chain\u2011link fence; one flexes while the other talks.",
+        "cameraAngle": "selfie medium",
+        "movement": "handheld",
+        "textOverlay": "dog-like"
+      },
+      "audio": {
+        "transcript": "dog\u2011like content discipline from the boyfriend maxer himself,",
+        "tone": "playful, confident"
+      }
+    },
+    {
+      "id": "chunk_029",
+      "startTime": 54.89,
+      "endTime": 58.37,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "subject_1"
+        ],
+        "location": "race_finish_1",
+        "description": "Continuation at the fence with medals visible; caption continues mid\u2011sentence.",
+        "cameraAngle": "selfie medium",
+        "movement": "handheld",
+        "textOverlay": "from the"
+      },
+      "audio": {
+        "transcript": "comment diamond, and I'll send you the link",
+        "tone": "call\u2011to\u2011action"
+      }
+    },
+    {
+      "id": "chunk_030",
+      "startTime": 58.37,
+      "endTime": 62.3,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "plaza_bench_1",
+        "description": "Bench close\u2011up with bold pink caption inviting comments; final shot transitions to a friendly sign\u2011off as the presenter gets up.",
+        "cameraAngle": "medium to medium\u2011close",
+        "movement": "static then slight rise",
+        "textOverlay": "comment DIAMOND \u2014 the link to join"
+      },
+      "audio": {
+        "transcript": "to join that class. Yo, shout out to the people who understand that reference. Peace.",
+        "tone": "friendly sign\u2011off"
+      }
+    }
+  ],
+  "processing_info": {
+    "processed_at": "2025-08-11T00:33:01.892499",
+    "file_size_mb": 14.37,
+    "frames_extracted": 30,
+    "scenes_detected": 24,
+    "audio_segments": 33,
+    "transcript_length": 1224
+  }
+}

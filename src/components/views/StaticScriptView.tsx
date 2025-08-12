@@ -65,7 +65,7 @@ const StaticScriptView: React.FC<StaticScriptViewProps> = ({
   const handleAddAd = () => {
     if (onAddNode) {
       const nodeId = onAddNode('ad', {
-        title: 'New Ad',
+        title: 'Video Reference',
         url: '',
         status: 'draft'
       });

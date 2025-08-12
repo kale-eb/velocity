@@ -1,0 +1,664 @@
+{
+  "id": "ad_analysis_2025-08-11T00:00:00Z",
+  "url": "https://www.instagram.com/reels/DNEgqLpyF1M/",
+  "summary": "Presenter compares GPT-5 to Claude Opus 4.1 for coding, citing benchmarks, pricing, context window size, and tool-use performance, then gives a pragmatic recommendation favoring GPT-5 while cautioning about higher token usage for a reasoning model.",
+  "visualStyle": "Two-camera setup alternating between a living-room couch close-up and a standing presentation beside a wall-mounted TV. Clean, bright natural lighting, minimal color grading, prominent on-screen captions, and static shots with light handheld micro-movements.",
+  "audioStyle": "Single-speaker direct-to-camera narration with clear, even pacing. Captions mirror the speech. Tone is confident, informative, and conversational with brief rhetorical questions and caveats.",
+  "duration": 70.5,
+  "entities": {
+    "people": [
+      {
+        "id": "presenter_1",
+        "role": "host/presenter",
+        "appearance": "Adult man with short dark hair, trimmed facial hair, light patterned short-sleeve button-up shirt, khaki pants; often seated on a light sofa holding a small handheld mic, or standing near a TV.",
+        "demographics": "Adult male, mid-20s to early-30s"
+      }
+    ],
+    "products": [
+      {
+        "id": "product_gpt5",
+        "name": "GPT-5",
+        "description": "General-purpose large reasoning model discussed for coding assistance, pricing, token context window, and tool use.",
+        "category": "AI model"
+      },
+      {
+        "id": "product_opus41",
+        "name": "Claude Opus 4.1",
+        "description": "Anthropic\u2019s advanced coding-capable model used as the comparison baseline for benchmarks, cost, and context window.",
+        "category": "AI model"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living_couch",
+        "type": "living room (couch)",
+        "description": "Bright living room with a light-colored sofa in the foreground, open-plan kitchen and dining area in the background; plants and kitchenware visible.",
+        "lighting": "Natural daylight with even exposure"
+      },
+      {
+        "id": "tv_wall",
+        "type": "living room (TV wall)",
+        "description": "Wall-mounted flat-screen TV above a mid-century wooden console; slides/graphs shown on screen; tiled rug/flooring visible.",
+        "lighting": "Natural daylight, soft ambient fill"
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "startTime": 0.0,
+      "endTime": 1.25,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_couch",
+        "description": "Presenter seated on the couch, addressing camera directly and raising the topic.",
+        "cameraAngle": "Eye-level medium close-up, centered framing",
+        "movement": "Static with slight handheld micro-shake",
+        "textOverlay": "SHOULD I START CODING"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "Should I start coding with GPT-5",
+        "tone": "curious, direct"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "startTime": 1.25,
+      "endTime": 2.58,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "Cut to presenter standing beside TV showing a title slide about GPT-5; he gestures toward the screen.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "WITH GPT5 INSTEAD OF"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "instead of Cloud Opus 4.1?",
+        "tone": "inquisitive"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "startTime": 2.58,
+      "endTime": 5.22,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_couch",
+        "description": "Back on the couch as he sets up the discussion.",
+        "cameraAngle": "Eye-level medium close-up",
+        "movement": "Static",
+        "textOverlay": "CLAUDE OPUS 4.1"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "Well, things look interesting.",
+        "tone": "measured, optimistic"
+      }
+    },
+    {
+      "id": "chunk_004",
+      "startTime": 5.22,
+      "endTime": 7.11,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5"
+        ],
+        "location": "tv_wall",
+        "description": "Presenter stands by TV displaying a performance plot; he points to lines on the screen.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "THE CEO OF CURSOR"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "The CEO of Cursor has said that GPT-5 is the smartest coding model that they've ever used.",
+        "tone": "reporting"
+      }
+    },
+    {
+      "id": "chunk_005",
+      "startTime": 7.11,
+      "endTime": 9.5,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5"
+        ],
+        "location": "tv_wall",
+        "description": "Same TV-wall angle; the graph remains on screen as he finishes the claim.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "IS THE SMARTEST CODING"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "[continuing] ...they've ever used.",
+        "tone": "matter-of-fact"
+      }
+    },
+    {
+      "id": "chunk_006",
+      "startTime": 9.5,
+      "endTime": 11.61,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_couch",
+        "description": "Couch view; he shifts forward slightly, cueing analysis.",
+        "cameraAngle": "Eye-level medium close-up",
+        "movement": "Minimal",
+        "textOverlay": "SOME BENCHMARKS"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "But let's look at some benchmarks.",
+        "tone": "analytical"
+      }
+    },
+    {
+      "id": "chunk_007",
+      "startTime": 11.61,
+      "endTime": 13.22,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "Standing by TV as a benchmark slide appears.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "BENCHMARK THAT MEASURES"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "SweetBench is a benchmark that measures",
+        "tone": "informative"
+      }
+    },
+    {
+      "id": "chunk_008",
+      "startTime": 13.22,
+      "endTime": 15.5,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "He continues describing the benchmark beside the graph.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "CODING PROBLEMS"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "performance on real-world coding problems.",
+        "tone": "informative"
+      }
+    },
+    {
+      "id": "chunk_009",
+      "startTime": 15.5,
+      "endTime": 18.33,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_couch",
+        "description": "Couch shot; serious expression as he cites source caveat.",
+        "cameraAngle": "Eye-level medium close-up",
+        "movement": "Static",
+        "textOverlay": "ACCORDING TO OPEN AI"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "So far, GPT-5, according to OpenAI, so take it with a grain of salt, is performing slightly",
+        "tone": "cautious"
+      }
+    },
+    {
+      "id": "chunk_010",
+      "startTime": 18.33,
+      "endTime": 20.5,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_opus41",
+          "product_gpt5"
+        ],
+        "location": "tv_wall",
+        "description": "Back to TV; he gestures to indicate a narrow performance gap.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "IS PERFORMING SLIGHTLY BETTER"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "better than Opus 4.1, which is currently",
+        "tone": "neutral"
+      }
+    },
+    {
+      "id": "chunk_011",
+      "startTime": 20.5,
+      "endTime": 23.42,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "He underscores the current leader while standing by the chart.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "WHICH IS CURRENTLY THE"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "the leading coding model made by Anthropic.",
+        "tone": "objective"
+      }
+    },
+    {
+      "id": "chunk_012",
+      "startTime": 23.42,
+      "endTime": 25.92,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_couch",
+        "description": "Couch close-up; he pivots to pricing.",
+        "cameraAngle": "Eye-level medium close-up",
+        "movement": "Static",
+        "textOverlay": "ON PRICE"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "How do they compare on price?",
+        "tone": "inquisitive"
+      }
+    },
+    {
+      "id": "chunk_013",
+      "startTime": 25.92,
+      "endTime": 28.33,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "TV shows a cost bar chart; he points to lower bars for GPT-5.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "GPT5 IS BOTH MUCH"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "Right now, GPT-5 is both much cheaper for input and output compared to Opus, and with",
+        "tone": "analytical"
+      }
+    },
+    {
+      "id": "chunk_014",
+      "startTime": 28.33,
+      "endTime": 31.17,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_couch",
+        "description": "Couch view; he emphasizes implications for users.",
+        "cameraAngle": "Eye-level medium close-up",
+        "movement": "Static",
+        "textOverlay": "ANTHROPIC CRACKING DOWN / OUTPUT COMPARED TO OPUS"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "Anthropic cracking down on their unlimited plans, this could make a big difference for",
+        "tone": "cautionary"
+      }
+    },
+    {
+      "id": "chunk_015",
+      "startTime": 31.17,
+      "endTime": 34.75,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "TV-wall shot; he wraps the pricing impact point.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "THIS COULD MAKE A"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "software developers.",
+        "tone": "pragmatic"
+      }
+    },
+    {
+      "id": "chunk_016",
+      "startTime": 34.75,
+      "endTime": 38.08,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_couch",
+        "description": "Couch view; he introduces other potential advances and context window.",
+        "cameraAngle": "Eye-level medium close-up",
+        "movement": "Static",
+        "textOverlay": "HOW BIG IS THE"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "Are there any other major advancements? How big is the context window?",
+        "tone": "probing"
+      }
+    },
+    {
+      "id": "chunk_017",
+      "startTime": 38.08,
+      "endTime": 40.67,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "TV shows a magenta bar chart; he explains context window numbers.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "A LARGER CONTEXT WINDOW"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "Well, GPT-5 does have a larger context window at 400,000 tokens compared to Opus 4.1's 200,000",
+        "tone": "informative"
+      }
+    },
+    {
+      "id": "chunk_018",
+      "startTime": 40.67,
+      "endTime": 41.33,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_couch",
+        "description": "Brief couch cut-in as he finishes the context figure.",
+        "cameraAngle": "Eye-level medium close-up",
+        "movement": "Static",
+        "textOverlay": "COMPARED TO OPUS 4.1"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "tokens.",
+        "tone": "neutral"
+      }
+    },
+    {
+      "id": "chunk_019",
+      "startTime": 41.33,
+      "endTime": 44.79,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5"
+        ],
+        "location": "tv_wall",
+        "description": "Back to TV; he notes another advantage category.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "USAGE CATEGORY"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "but the other win it seems to be claiming is in the tool usage category.",
+        "tone": "analytical"
+      }
+    },
+    {
+      "id": "chunk_020",
+      "startTime": 44.79,
+      "endTime": 48.25,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5"
+        ],
+        "location": "tv_wall",
+        "description": "He elaborates on tool usage while gesturing with both hands.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "GPT5 IS REALLY REALLY"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "According to user reports, GPT-5 is really, really good at parallel tool usage, which",
+        "tone": "confident"
+      }
+    },
+    {
+      "id": "chunk_021",
+      "startTime": 48.25,
+      "endTime": 51.71,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5"
+        ],
+        "location": "tv_wall",
+        "description": "Same position; continues the claim and evidence.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "WHICH OPENAI HAS PROVIDED"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "OpenAI has provided some internal benchmarks to correlate, but I always take these with",
+        "tone": "balanced"
+      }
+    },
+    {
+      "id": "chunk_022",
+      "startTime": 51.71,
+      "endTime": 55.07,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "TV-wall shot as he adds a caveat.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "OF SALT"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "a grain of salt.",
+        "tone": "cautious"
+      }
+    },
+    {
+      "id": "chunk_023",
+      "startTime": 55.07,
+      "endTime": 56.33,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "He transitions toward a personal recommendation prompt.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "[transition]"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "All right, given all that, which one are you going to be using tomorrow?",
+        "tone": "engaging"
+      }
+    },
+    {
+      "id": "chunk_024",
+      "startTime": 56.33,
+      "endTime": 57.5,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_couch",
+        "description": "Couch angle returns for the rhetorical question close-up.",
+        "cameraAngle": "Eye-level medium close-up",
+        "movement": "Static",
+        "textOverlay": "WHICH ONE ARE YOU"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "[reiterating] Which one are you going to be using tomorrow?",
+        "tone": "inquisitive"
+      }
+    },
+    {
+      "id": "chunk_025",
+      "startTime": 57.5,
+      "endTime": 60.13,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5"
+        ],
+        "location": "tv_wall",
+        "description": "Back to TV with cost chart visible as he gives his recommendation.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "GIVEN THIS PRICING I'D"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "Given this pricing, I'd probably be using GPT-5 for most things, but keep in mind that",
+        "tone": "practical"
+      }
+    },
+    {
+      "id": "chunk_026",
+      "startTime": 60.13,
+      "endTime": 62.75,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_gpt5",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "He adds a caution about token usage while gesturing to the chart.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "FOR MOST THINGS"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "it is a reasoning model, so on average, it's probably going to be using more tokens than",
+        "tone": "cautionary"
+      }
+    },
+    {
+      "id": "chunk_027",
+      "startTime": 62.75,
+      "endTime": 65.38,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "product_opus41"
+        ],
+        "location": "tv_wall",
+        "description": "He references Opus 4.1 in comparison.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "REASONING MODEL"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "a model like Opus 4.1, so we'll see how this pricing plays out for",
+        "tone": "measured"
+      }
+    },
+    {
+      "id": "chunk_028",
+      "startTime": 65.38,
+      "endTime": 68.01,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "tv_wall",
+        "description": "Closing thought while standing beside the TV; hands emphasize the point.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "BE USING MORE TOKENS"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "real-world application",
+        "tone": "speculative"
+      }
+    },
+    {
+      "id": "chunk_029",
+      "startTime": 68.01,
+      "endTime": 70.5,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "tv_wall",
+        "description": "Final beat; he wraps the statement.",
+        "cameraAngle": "Eye-level medium full shot",
+        "movement": "Static",
+        "textOverlay": "SO WE'LL SEE HOW"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "building.",
+        "tone": "concluding"
+      }
+    }
+  ],
+  "processing_info": {
+    "processed_at": "2025-08-10T18:06:32.986115",
+    "file_size_mb": 9.25,
+    "frames_extracted": 29,
+    "scenes_detected": 18,
+    "audio_segments": 23,
+    "transcript_length": 1487
+  }
+}

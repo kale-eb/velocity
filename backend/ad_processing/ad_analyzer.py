@@ -110,19 +110,44 @@ class AdAnalyzer:
         Uses system + user message structure with better frame preprocessing.
         """
         
-        # Build content array with all frames
-        content = self._build_single_call_content(
-            frames=frames,
-            audio_extraction=audio_extraction,
-            original_url=original_url,
-            content_description=content_description
-        )
+        print(f"🔧 ANALYZER: Building content for {len(frames)} frames...", flush=True)
+        
+        # Create temporary directory for frame validation
+        import tempfile
+        import os
+        temp_dir = tempfile.mkdtemp(prefix="frames_validation_")
+        print(f"🔧 ANALYZER: Created temp directory for frame validation: {temp_dir}", flush=True)
+        
+        try:
+            # Build content array with all frames
+            content = self._build_single_call_content(
+                frames=frames,
+                audio_extraction=audio_extraction,
+                original_url=original_url,
+                content_description=content_description,
+                temp_dir=temp_dir
+            )
+        finally:
+            # Cleanup temp directory
+            import shutil
+            try:
+                shutil.rmtree(temp_dir)
+                print(f"🔧 ANALYZER: Cleaned up temp directory", flush=True)
+            except:
+                pass
+        
+        print(f"🔧 ANALYZER: Content built successfully. Making OpenAI API call...", flush=True)
         
         # Make single API call with all frames
         try:
+            import time
+            start_time = time.time()
+            print(f"🚀 ANALYZER: Starting OpenAI API call NOW ({len(frames)} frames)...", flush=True)
+            
             # Use structured outputs to force valid JSON response
             response = await self.openai_client.chat.completions.create(
-                model="gpt-5",  # Use GPT-5 for better analysis
+                model=self.model,  # Use configured model (gpt-5-mini)
+                temperature=1,     # gpt-5-mini requires temperature=1
                 messages=[
                     {
                         "role": "system",
@@ -197,6 +222,9 @@ class AdAnalyzer:
                 }
             )
             
+            elapsed = time.time() - start_time
+            print(f"✅ ANALYZER: OpenAI API call completed! ({elapsed:.1f}s)", flush=True)
+            
             response_text = response.choices[0].message.content.strip()
             
             # Debug: Show first 500 chars of response
@@ -215,14 +243,15 @@ class AdAnalyzer:
             
         except Exception as e:
             print(f"❌ Single call analysis failed: {e}")
-            return self._create_fallback_analysis(original_url, audio_extraction.duration)
+            raise Exception(f"Video analysis failed: {str(e)}")
     
     def _build_single_call_content(
         self, 
         frames: List[FrameData], 
         audio_extraction: AudioExtraction, 
         original_url: str,
-        content_description: Optional[str] = None
+        content_description: Optional[str] = None,
+        temp_dir: Optional[str] = None
     ) -> List[Dict]:
         """Build content array for single API call with all frames (viral analyzer style)"""
         content = []
@@ -259,8 +288,8 @@ class AdAnalyzer:
             })
             
             try:
-                # Use better frame preprocessing (viral analyzer settings)
-                base64_image = self._prepare_frame_for_api_viral_style(frame)
+                # Use better frame preprocessing with disk validation
+                base64_image = self._prepare_frame_for_api_viral_style(frame, temp_dir)
                 print(f"🔍 Frame {i+1} encoded successfully ({len(base64_image)} chars)")
                 
                 content.append({
@@ -293,18 +322,28 @@ class AdAnalyzer:
         
         return content
     
-    def _prepare_frame_for_api_viral_style(self, frame: FrameData) -> str:
-        """Convert frame to base64 using viral analyzer settings (1024px, 85% quality)"""
+    def _prepare_frame_for_api_viral_style(self, frame: FrameData, temp_dir: Optional[str] = None) -> str:
+        """Convert frame to base64 using simplified viral analyzer approach."""
         try:
+            # Check if frame has valid image data first
+            if frame.image is None:
+                raise ValueError(f"Frame has no image data")
+            
+            if not hasattr(frame.image, 'shape') or len(frame.image.shape) < 2:
+                raise ValueError(f"Invalid frame image shape: {getattr(frame.image, 'shape', 'no shape')}")
+            
+            # Simple direct conversion like viral project
             pil_img = frame.to_pil()
+            if pil_img is None:
+                raise ValueError(f"Failed to convert frame to PIL image")
             
             # Always convert to RGB mode for JPEG compatibility
             if pil_img.mode != 'RGB':
                 pil_img = pil_img.convert('RGB')
             
-            # Use 512px max, 70% quality (our working settings)
+            # Use viral project settings: 512px max, 85% quality (simpler approach)
             max_size = 512
-            quality = 70
+            quality = 85
             
             # Resize if needed
             width, height = pil_img.size
@@ -314,48 +353,24 @@ class AdAnalyzer:
                 new_height = max(1, int(height * scale))
                 pil_img = pil_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
             
-            # Save to temporary JPEG file first (our proven approach)
-            timestamp_str = f"{frame.timestamp:.2f}".replace('.', '_')
-            temp_filename = f"temp_frame_{timestamp_str}_{int(time.time())}.jpg"
-            temp_path = os.path.join(tempfile.gettempdir(), temp_filename)
+            # Direct in-memory conversion (viral project style)
+            buffer = io.BytesIO()
+            pil_img.save(buffer, format='JPEG', quality=quality, optimize=True)
+            buffer.seek(0)
             
-            try:
-                # Step 1: Save to temporary JPEG file
-                pil_img.save(temp_path, format='JPEG', quality=quality, optimize=True)
-                
-                # Step 2: Load the JPEG file back
-                saved_img = Image.open(temp_path)
-                saved_img.load()
-                
-                # Step 3: Convert to base64
-                buffer = io.BytesIO()
-                saved_img.save(buffer, format='JPEG', quality=quality, optimize=True)
-                buffer.seek(0)
-                
-                image_data = buffer.read()
-                if len(image_data) == 0:
-                    raise ValueError("Generated empty image data")
-                
-                # Step 4: Validate the JPEG data
-                test_buffer = io.BytesIO(image_data)
-                test_img = Image.open(test_buffer)
-                test_img.verify()
-                
-                base64_str = base64.b64encode(image_data).decode('utf-8')
-                return f"data:image/jpeg;base64,{base64_str}"
+            image_data = buffer.read()
+            if len(image_data) == 0:
+                raise ValueError("Generated empty image data")
             
-            finally:
-                # Clean up temporary file
-                if os.path.exists(temp_path):
-                    try:
-                        os.remove(temp_path)
-                    except Exception as cleanup_error:
-                        logger.warning(f"Failed to cleanup temp file {temp_path}: {cleanup_error}")
+            # Convert to base64
+            base64_str = base64.b64encode(image_data).decode('utf-8')
+            return f"data:image/jpeg;base64,{base64_str}"
             
         except Exception as e:
             logger.error(f"Error converting frame to base64: {e}")
             logger.error(f"Frame timestamp: {frame.timestamp}, type: {frame.frame_type}")
-            raise
+            logger.error(f"Frame image info: {type(frame.image)}, shape: {getattr(frame.image, 'shape', 'no shape')}")
+            raise ValueError(f"Frame encoding failed: {str(e)}")
     
     async def _analyze_single_pass(
         self, 
@@ -407,7 +422,7 @@ class AdAnalyzer:
             
         except Exception as e:
             print(f"❌ Single pass analysis failed: {e}")
-            return self._create_fallback_analysis(original_url, audio_extraction.duration)
+            raise Exception(f"Video analysis failed: {str(e)}")
     
     async def _analyze_multi_pass(
         self, 
@@ -531,14 +546,14 @@ class AdAnalyzer:
                     
             except Exception as e:
                 print(f"❌ Batch {batch_num + 1} failed: {e}")
-                # Continue with next batch or return fallback if final
+                # Continue with next batch or raise error if final
                 if is_final:
-                    return self._create_fallback_analysis(original_url, audio_extraction.duration)
+                    raise Exception(f"Final batch analysis failed: {str(e)}")
                 else:
                     previous_context = f"Previous batch analysis failed at {batch_frames[0].timestamp:.1f}s"
         
-        # Should not reach here
-        return self._create_fallback_analysis(original_url, audio_extraction.duration)
+        # Should not reach here - raise error instead of fallback
+        raise Exception("Multi-pass analysis completed without returning results")
     
     def _build_analysis_content(
         self, 
@@ -815,17 +830,32 @@ Create one chunk per jump cut frame, reference entities by ID, and include conte
             print(f"⚠️ JSON parsing failed at line {e.lineno}, column {e.colno}: {e.msg}")
             print(f"📝 Response preview (first 500 chars): {response_text[:500]}")
             print(f"📝 Cleaned response preview (chars around error): {cleaned_response[max(0, e.pos-100):e.pos+100]}")
-            return self._create_fallback_analysis(original_url, duration)
+            raise Exception(f"JSON parsing failed: {e.msg} at line {e.lineno}")
         except Exception as e:
             print(f"⚠️ JSON parsing failed: {e}")
             print(f"📝 Response preview: {response_text[:500]}")
-            return self._create_fallback_analysis(original_url, duration)
+            raise Exception(f"Analysis parsing failed: {str(e)}")
     
     def _fix_json_formatting(self, json_str: str) -> str:
         """Fix common JSON formatting issues that cause parsing errors"""
         try:
-            # Remove any trailing commas before closing braces/brackets
             import re
+            
+            # Remove markdown code block formatting if present
+            # Pattern: ```json\n{...}\n``` or ```\n{...}\n```
+            if '```' in json_str:
+                # Find content between code block markers
+                code_block_pattern = r'```(?:json)?\s*\n?(.*?)\n?```'
+                match = re.search(code_block_pattern, json_str, re.DOTALL)
+                if match:
+                    json_str = match.group(1).strip()
+            
+            # Remove any leading/trailing text that's not part of JSON
+            # Find the JSON object boundaries
+            first_brace = json_str.find('{')
+            last_brace = json_str.rfind('}')
+            if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+                json_str = json_str[first_brace:last_brace + 1]
             
             # Fix trailing comma before closing brace
             json_str = re.sub(r',(\s*})', r'\1', json_str)
@@ -936,35 +966,3 @@ Create one chunk per jump cut frame, reference entities by ID, and include conte
         
         return scenes
     
-    def _create_fallback_analysis(self, original_url: str, duration: float) -> Dict:
-        """Create fallback analysis structure"""
-        return {
-            "id": f"ad_fallback_{int(time.time())}",
-            "url": original_url,
-            "summary": "Analysis parsing failed - manual review required",
-            "visualStyle": "Unable to determine visual style",
-            "audioStyle": "Unable to determine audio style",
-            "duration": duration,
-            "chunks": [
-                {
-                    "id": "chunk_001",
-                    "type": "hook",
-                    "startTime": 0,
-                    "endTime": min(5, duration),
-                    "visual": {
-                        "description": "Analysis failed - manual review needed",
-                        "cameraAngle": "unknown",
-                        "lighting": "unknown",
-                        "movement": "unknown",
-                        "textOverlay": "",
-                        "background": "unknown"
-                    },
-                    "audio": {
-                        "transcript": "Analysis failed",
-                        "tone": "unknown",
-                        "backgroundMusic": "unknown",
-                        "volume": "unknown"
-                    }
-                }
-            ]
-        }

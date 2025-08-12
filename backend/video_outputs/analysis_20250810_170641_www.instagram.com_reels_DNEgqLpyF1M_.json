@@ -1,0 +1,132 @@
+{
+  "id": "ad_analysis_20250811_001",
+  "url": "https://www.instagram.com/reels/DNEgqLpyF1M/",
+  "summary": "A single presenter delivers a fast, jump-cut comparison of GPT-5 vs Opus 4.1 for coding: pricing, benchmarks, context window, and tool usage. He references a benchmark slide on a TV mid-video, then concludes with practical guidance on which model he\u2019d use given current pricing and behavior.",
+  "visualStyle": "Vertical phone-shot Reel with talking-head composition, quick jump cuts, bold mid-frame caption cards, and one cutaway to a TV slide with charts. Clean, bright home setting, steady camera on tripod.",
+  "audioStyle": "Single male-presenting narrator on a close handheld mic; clear, conversational, analytical delivery with steady pace; minimal to no background noise or music.",
+  "duration": 70.5,
+  "entities": {
+    "people": [
+      {
+        "id": "presenter_1",
+        "role": "host/narrator",
+        "appearance": "Male-presenting adult with short dark hair, trimmed facial hair, light patterned short-sleeve button-up shirt and khaki pants; seated on a light couch for most shots, occasionally stands near a TV; speaks into a small handheld mic with expressive hand gestures.",
+        "demographics": "adult (approx 20s\u201330s), male-presenting; ethnicity not specified"
+      }
+    ],
+    "products": [
+      {
+        "id": "gpt5",
+        "name": "GPT-5",
+        "description": "AI coding/reasoning model discussed as slightly outperforming on a coding benchmark, priced lower for input/output vs Opus, with a larger ~400k-token context window and strong parallel tool usage per user reports (as stated by the narrator).",
+        "category": "AI model"
+      },
+      {
+        "id": "opus41",
+        "name": "Opus 4.1",
+        "description": "Anthropic\u2019s coding-focused model; described as the current leading coding model, with ~200k-token context window and higher relative pricing vs GPT-5 (as stated by the narrator).",
+        "category": "AI model"
+      }
+    ],
+    "locations": [
+      {
+        "id": "living_room_main",
+        "type": "home living room (open-plan)",
+        "description": "Bright living room with a light-colored couch in the foreground and a modern kitchen with white cabinets, island stools, and houseplants visible in the background; also includes a section with a wall-mounted TV and media console.",
+        "lighting": "soft natural daylight, even exposure"
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "startTime": 0.0,
+      "endTime": 22.67,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_room_main",
+        "description": "Presenter sits centered on a light couch, holding a small mic, speaking directly to camera. Kitchen and plants are visible behind. On-screen caption appears early to emphasize the question.",
+        "cameraAngle": "eye-level, medium shot, straight-on framing",
+        "movement": "static locked-off camera; presenter gestures subtly; jump-cut pacing within segment",
+        "textOverlay": "\u201cSHOULD I START CODING\u201d (bold mid-frame caption)"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "Should I start coding with GPT-5 instead of Cloud Opus 4.1? Well, things look interesting. The CEO of Cursor has said that GPT-5 is the smartest coding model that they've ever used. But let's look at some benchmarks. SweetBench is a benchmark that measures performance on real-world coding problems. So far, GPT-5, according to OpenAI, so take it with a grain of salt, is performing slightly better than Opus 4.1, which is currently the leading coding model made by Anthropic.",
+        "tone": "curious, informative, analytical"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "startTime": 22.67,
+      "endTime": 36.17,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_room_main",
+        "description": "Same couch setup. Presenter leans forward slightly as the topic shifts to pricing and broader implications for developers.",
+        "cameraAngle": "eye-level, medium shot",
+        "movement": "static camera with jump cuts to tighten delivery",
+        "textOverlay": "\u201cHOW DO THEY COMPARE\u201d (bold mid-frame caption)"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "How do they compare on price? Right now, GPT-5 is both much cheaper for input and output compared to Opus, and with Anthropic cracking down on their unlimited plans, this could make a big difference for software developers. Are there any other major advancements? How big is the context window?",
+        "tone": "matter-of-fact, comparative"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "startTime": 36.17,
+      "endTime": 55.17,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "gpt5",
+          "opus41"
+        ],
+        "location": "living_room_main",
+        "description": "Cut to the TV area of the same living room. Presenter stands beside a wall-mounted TV showing a slide with pink/magenta bar charts comparing models. He gestures to the slide while explaining context window and tools.",
+        "cameraAngle": "eye-level, medium-wide shot showing presenter and TV",
+        "movement": "static camera; presenter gestures toward the screen; quick jump cuts for clarity",
+        "textOverlay": "\u201cWELL GPT5 DOES HAVE\u201d (bold mid-frame caption)"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "Well, GPT-5 does have a larger context window at 400,000 tokens compared to Opus 4.1's 200,000 tokens, but the other win it seems to be claiming is in the tool usage category. According to user reports, GPT-5 is really, really good at parallel tool usage, which OpenAI has provided some internal benchmarks to correlate, but I always take these with a grain of salt.",
+        "tone": "explanatory, cautiously optimistic"
+      }
+    },
+    {
+      "id": "chunk_004",
+      "startTime": 55.17,
+      "endTime": 70.5,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "living_room_main",
+        "description": "Back to the couch. Presenter leans in for the take-away, speaking directly to camera and wrapping up with practical guidance.",
+        "cameraAngle": "eye-level, medium shot",
+        "movement": "static camera; minimal hand gestures; closing beat",
+        "textOverlay": "\u201cALRIGHT GIVEN ALL THAT\u201d (bold mid-frame caption)"
+      },
+      "audio": {
+        "speaker": "presenter_1",
+        "transcript": "All right, given all that, which one are you going to be using tomorrow? Given this pricing, I'd probably be using GPT-5 for most things, but keep in mind that it is a reasoning model, so on average, it's probably going to be using more tokens than a model like Opus 4.1, so we'll see how this pricing plays out for real-world application building.",
+        "tone": "pragmatic, advisory, forward-looking"
+      }
+    }
+  ],
+  "processing_info": {
+    "processed_at": "2025-08-10T17:06:41.368933",
+    "file_size_mb": 9.25,
+    "frames_extracted": 22,
+    "scenes_detected": 4,
+    "audio_segments": 23,
+    "transcript_length": 1487
+  }
+}

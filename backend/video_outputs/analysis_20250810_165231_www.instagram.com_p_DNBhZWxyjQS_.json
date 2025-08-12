@@ -1,0 +1,546 @@
+{
+  "id": "ad_analysis_2025-08-10T00:00:00Z",
+  "url": "https://www.instagram.com/p/DNBhZWxyjQS/",
+  "summary": "Creator showcases her go-to content-creation gear in a bright kitchen with fast jump cuts: a compact Canon camera, a Panasonic Lumix S9 mirrorless, a budget smartphone tripod, wireless mics, and a clip-on selfie light. She demos each item with close-ups and quick explanations, includes a brief on-screen cutaway about lights, then ends with motivation and a giveaway call-to-action while presenting a pink gift box.",
+  "visualStyle": "Vertical 9:16, bright natural light, warm wood kitchen backdrop. Rapid jump cuts, alternating medium shots, selfie POVs, and macro product close-ups. Clean countertops, branded boxes in frame, occasional cat cameo. Smooth handheld plus static tripod framing.",
+  "audioStyle": "Single-speaker upbeat narration with clear, engaging delivery and light background music. Occasional emphasis for product highlights and a brief 'with mic' A/B moment.",
+  "duration": 91.2,
+  "entities": {
+    "people": [
+      {
+        "id": "presenter_1",
+        "role": "host/presenter",
+        "appearance": "Young adult woman with long dark brown hair, white sleeveless top, navy skirt; natural glam makeup.",
+        "demographics": "young adult female; ethnicity not specified"
+      }
+    ],
+    "products": [
+      {
+        "id": "canon_g7x_mk2",
+        "name": "Canon G7X Mark II",
+        "description": "Compact point-and-shoot camera praised for flattering vlogging footage and bright flash photos.",
+        "category": "compact camera"
+      },
+      {
+        "id": "lumix_s9",
+        "name": "Panasonic Lumix S9 (pink)",
+        "description": "Full-frame mirrorless camera in a compact body; shown in pink colorway with interchangeable lens.",
+        "category": "mirrorless camera"
+      },
+      {
+        "id": "hollyland_mics",
+        "name": "Hollyland wireless mics",
+        "description": "Tiny wireless lavalier microphone kit with charging case and receiver.",
+        "category": "wireless microphone kit"
+      },
+      {
+        "id": "iphone_tripod",
+        "name": "Budget smartphone tripod/selfie stick",
+        "description": "Lightweight, purse-friendly extendable tripod with phone clamp; emphasized as ~$20 and highly portable.",
+        "category": "smartphone tripod"
+      },
+      {
+        "id": "clip_light",
+        "name": "Alton clip-on selfie light",
+        "description": "Pocket-sized LED panel with sturdy clip and adjustable warmth/brightness settings.",
+        "category": "clip-on LED light"
+      }
+    ],
+    "locations": [
+      {
+        "id": "kitchen_main",
+        "type": "home kitchen",
+        "description": "Modern kitchen with warm wood cabinetry, open upper shelf decor, and white marble-veined backsplash; white waterfall island countertop.",
+        "lighting": "bright diffuse daylight; occasional flash for selfie shots"
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "startTime": 0.0,
+      "endTime": 11.83,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "kitchen_main",
+        "description": "Presenter stands behind the kitchen island holding a green drink, introducing the video and giveaways.",
+        "cameraAngle": "medium, straight-on from countertop level",
+        "movement": "static locked-off shot",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "I've been making content for over 10 years. Here is all the equipment I swear by. And don't worry, for 31 days of giveaways, I got these all for you! Starting off strong, the Canon G7X Mark II...",
+        "tone": "confident, upbeat"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "startTime": 11.83,
+      "endTime": 13.0,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "canon_g7x_mk2"
+        ],
+        "location": "kitchen_main",
+        "description": "She holds up a Canon G7X Mark II box among other gear on the counter and gestures to the camera.",
+        "cameraAngle": "medium shot, eye level",
+        "movement": "subtle hand gestures; static camera",
+        "textOverlay": "Canon G7X Mark II branding visible on box"
+      },
+      "audio": {
+        "transcript": "...Canon G7X Mark II. This bad boy has gone viral for the beautiful flash photos it takes, but I've personally...",
+        "tone": "excited"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "startTime": 13.0,
+      "endTime": 14.42,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "kitchen_main",
+        "description": "She raises a phone as if taking a selfie, smiling while standing by the gear boxes.",
+        "cameraAngle": "medium to medium-wide, slight angle",
+        "movement": "handheld phone lift; static main camera",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "This bad boy has gone viral for the beautiful flash photos it takes, but I've personally...",
+        "tone": "enthusiastic"
+      }
+    },
+    {
+      "id": "chunk_004",
+      "startTime": 14.42,
+      "endTime": 16.42,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "kitchen_main",
+        "description": "Close-up selfie POV of the presenter with bright flash lighting her face against the kitchen backdrop.",
+        "cameraAngle": "tight close-up, selfie POV",
+        "movement": "handheld micro-movements",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "This bad boy has gone viral for the beautiful flash photos it takes, but I've personally...",
+        "tone": "emphatic"
+      }
+    },
+    {
+      "id": "chunk_005",
+      "startTime": 16.42,
+      "endTime": 18.83,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "canon_g7x_mk2"
+        ],
+        "location": "kitchen_main",
+        "description": "She demonstrates the compact camera, posing as if filming with it over the island.",
+        "cameraAngle": "medium shot, centered",
+        "movement": "static camera; subject raises camera to face",
+        "textOverlay": "G7X body visible"
+      },
+      "audio": {
+        "transcript": "...loved it for a strong 8 years because it is such a flattering camera for vlogging.",
+        "tone": "warm, personal"
+      }
+    },
+    {
+      "id": "chunk_006",
+      "startTime": 18.83,
+      "endTime": 21.0,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "kitchen_main",
+        "description": "Cut to a playful moment kissing a fluffy orange-and-white cat nearby before returning to the talk.",
+        "cameraAngle": "close-up, off-center",
+        "movement": "handheld lean-in to the cat",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "...such a flattering camera for vlogging.",
+        "tone": "friendly"
+      }
+    },
+    {
+      "id": "chunk_007",
+      "startTime": 21.0,
+      "endTime": 23.0,
+      "visual": {
+        "subjects": [
+          "presenter_1"
+        ],
+        "location": "kitchen_main",
+        "description": "Selfie-lean toward lens, wink and blowing a kiss to camera.",
+        "cameraAngle": "tight selfie POV",
+        "movement": "handheld micro-movements",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "...such a flattering camera for vlogging. That camera may not be cheap, but my favorite tripod is...",
+        "tone": "playful to informative"
+      }
+    },
+    {
+      "id": "chunk_008",
+      "startTime": 23.0,
+      "endTime": 25.83,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "canon_g7x_mk2"
+        ],
+        "location": "kitchen_main",
+        "description": "Back to presenting the Canon box; she pivots to discussing a budget-friendly tripod.",
+        "cameraAngle": "medium, straight-on",
+        "movement": "static camera; gesturing",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "That camera may not be cheap, but my favorite tripod is. I've tried almost every other tripod on the market, and I still keep going back to...",
+        "tone": "assured"
+      }
+    },
+    {
+      "id": "chunk_009",
+      "startTime": 25.83,
+      "endTime": 27.83,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "canon_g7x_mk2"
+        ],
+        "location": "kitchen_main",
+        "description": "She holds the compact camera again, smiling as the cat watches from the counter foreground.",
+        "cameraAngle": "medium with foreground cat over-shoulder",
+        "movement": "static",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "I've tried almost every other tripod on the market, and I still keep going back to...",
+        "tone": "convincing"
+      }
+    },
+    {
+      "id": "chunk_010",
+      "startTime": 27.83,
+      "endTime": 39.83,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "iphone_tripod"
+        ],
+        "location": "kitchen_main",
+        "description": "She raises and extends a slim smartphone tripod/selfie stick high above the counter while explaining why it's her favorite.",
+        "cameraAngle": "medium-wide to medium, eye level",
+        "movement": "subject extends tripod upward; camera static",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "I've tried almost every other tripod on the market, and I still keep going back to this $20 one-off Amazon. It's lightweight, extends so far, and most importantly, it fits in all my purses. What more could a girl need? When I want to use a DSLR, my go-to has been this sleeper pick from Panasonic...",
+        "tone": "practical, enthusiastic"
+      }
+    },
+    {
+      "id": "chunk_011",
+      "startTime": 39.83,
+      "endTime": 45.33,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "lumix_s9"
+        ],
+        "location": "kitchen_main",
+        "description": "She opens the Lumix S9 box on the island, pulling out the camera and components.",
+        "cameraAngle": "medium, overhead-lean toward box",
+        "movement": "unboxing motions; static camera",
+        "textOverlay": "Box branding visible: LUMIX S9"
+      },
+      "audio": {
+        "transcript": "When I want to use a DSLR, my go-to has been this sleeper pick from Panasonic. It's called the S9, it's high quality, full frame, and it comes in so many pretty...",
+        "tone": "admiring"
+      }
+    },
+    {
+      "id": "chunk_012",
+      "startTime": 45.33,
+      "endTime": 47.75,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "lumix_s9"
+        ],
+        "location": "kitchen_main",
+        "description": "Close-up of the pink Lumix S9 with lens showcased in hand.",
+        "cameraAngle": "macro close-up on camera",
+        "movement": "slow handheld reveal/tilt",
+        "textOverlay": "LUMIX logo on body"
+      },
+      "audio": {
+        "transcript": "...It's called the S9, it's high quality, full frame, and it comes in so many pretty colors.",
+        "tone": "impressed"
+      }
+    },
+    {
+      "id": "chunk_013",
+      "startTime": 47.75,
+      "endTime": 52.0,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "lumix_s9"
+        ],
+        "location": "kitchen_main",
+        "description": "Another close-up angle of the pink S9, now with the body cap visible while rotating it in both hands.",
+        "cameraAngle": "tight product close-up",
+        "movement": "gentle handheld rotation",
+        "textOverlay": "LUMIX on lens cap"
+      },
+      "audio": {
+        "transcript": "As for filming on your phone, here are my must-have accessories.",
+        "tone": "transitioning, upbeat"
+      }
+    },
+    {
+      "id": "chunk_014",
+      "startTime": 52.0,
+      "endTime": 55.58,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "hollyland_mics",
+          "lumix_s9"
+        ],
+        "location": "kitchen_main",
+        "description": "She cuddles a small mic box to her cheek while the S9 sits on a mini tripod nearby; cat peeks into frame.",
+        "cameraAngle": "medium shot",
+        "movement": "static with subtle posing",
+        "textOverlay": "Box branding visible: Hollyland/Lark"
+      },
+      "audio": {
+        "transcript": "For crispy audio, the new Hollyland mics are incredible. They're the smallest mics I've ever seen, and you can really hear the difference...",
+        "tone": "endorsing"
+      }
+    },
+    {
+      "id": "chunk_015",
+      "startTime": 55.58,
+      "endTime": 57.25,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "hollyland_mics"
+        ],
+        "location": "kitchen_main",
+        "description": "Macro on the charging case opened to reveal two tiny transmitters and a receiver.",
+        "cameraAngle": "macro overhead close-up",
+        "movement": "hand opens case; small tilt",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "They're the smallest mics I've ever seen, and you can really hear the difference.",
+        "tone": "demonstrative"
+      }
+    },
+    {
+      "id": "chunk_016",
+      "startTime": 57.25,
+      "endTime": 59.08,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "hollyland_mics"
+        ],
+        "location": "kitchen_main",
+        "description": "Close-up fingers holding one mic unit, pointing out its tiny size and clip.",
+        "cameraAngle": "tight macro",
+        "movement": "steady handheld",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "...and you can really hear the difference.",
+        "tone": "matter-of-fact"
+      }
+    },
+    {
+      "id": "chunk_017",
+      "startTime": 59.08,
+      "endTime": 60.92,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "hollyland_mics"
+        ],
+        "location": "kitchen_main",
+        "description": "Presenter back on camera wearing a lav mic; she waves during an A/B moment.",
+        "cameraAngle": "medium, eye level",
+        "movement": "static camera; light hand waves",
+        "textOverlay": "with mic:"
+      },
+      "audio": {
+        "transcript": "Hello! This is my go-to tripod for iPhones...",
+        "tone": "breezy"
+      }
+    },
+    {
+      "id": "chunk_018",
+      "startTime": 60.92,
+      "endTime": 63.58,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "iphone_tripod"
+        ],
+        "location": "kitchen_main",
+        "description": "She unfolds and shows a white telescoping iPhone tripod, demonstrating the clamp.",
+        "cameraAngle": "medium, three-quarter",
+        "movement": "prop handling; static camera",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "This is my go-to tripod for iPhones. My favorite selfie light is actually not the new Moa, sorry Alex Earl...",
+        "tone": "informative"
+      }
+    },
+    {
+      "id": "chunk_019",
+      "startTime": 63.58,
+      "endTime": 66.08,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "clip_light"
+        ],
+        "location": "kitchen_main",
+        "description": "She picks up a small light product box while the cat sits in the foreground; preparing to demo the light.",
+        "cameraAngle": "medium with foreground cat",
+        "movement": "static camera; light handling",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "My favorite selfie light is actually not the new Moa, sorry Alex Earl.",
+        "tone": "opinionated"
+      }
+    },
+    {
+      "id": "chunk_020",
+      "startTime": 66.08,
+      "endTime": 67.33,
+      "visual": {
+        "subjects": [
+          "clip_light"
+        ],
+        "location": "kitchen_main",
+        "description": "Quick cutaway to a screen showing another creator and product images while she states her preferred light.",
+        "cameraAngle": "screen capture overlay",
+        "movement": "static overlay",
+        "textOverlay": "Product images and price UI"
+      },
+      "audio": {
+        "transcript": "I find the Alton light is 10 times better.",
+        "tone": "assertive"
+      }
+    },
+    {
+      "id": "chunk_021",
+      "startTime": 67.33,
+      "endTime": 69.5,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "clip_light"
+        ],
+        "location": "kitchen_main",
+        "description": "Handheld close-up: she holds the compact LED panel while the cat stands on the counter.",
+        "cameraAngle": "close-up on light in hand",
+        "movement": "steady handheld",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "I find the Alton light is 10 times better. It has such a sturdy clip, and there are so many warmth...",
+        "tone": "demonstrative"
+      }
+    },
+    {
+      "id": "chunk_022",
+      "startTime": 69.5,
+      "endTime": 72.83,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "clip_light"
+        ],
+        "location": "kitchen_main",
+        "description": "She attaches a clip/mount to the light; the cat's fur fills the foreground humorously.",
+        "cameraAngle": "tight product close-up",
+        "movement": "hands assembly; static camera",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "It has such a sturdy clip, and there are so many warmth settings and brightness settings...",
+        "tone": "enthusiastic"
+      }
+    },
+    {
+      "id": "chunk_023",
+      "startTime": 72.83,
+      "endTime": 74.67,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "clip_light"
+        ],
+        "location": "kitchen_main",
+        "description": "She powers on the light, LEDs glow in a bright grid while holding it near camera.",
+        "cameraAngle": "macro front view of lit LEDs",
+        "movement": "static hold",
+        "textOverlay": ""
+      },
+      "audio": {
+        "transcript": "It has such a sturdy clip, and there are so many warmth settings and brightness settings.",
+        "tone": "satisfied"
+      }
+    },
+    {
+      "id": "chunk_024",
+      "startTime": 74.67,
+      "endTime": 91.2,
+      "visual": {
+        "subjects": [
+          "presenter_1",
+          "lumix_s9",
+          "hollyland_mics",
+          "iphone_tripod",
+          "clip_light"
+        ],
+        "location": "kitchen_main",
+        "description": "Wide shot: gear arranged on the island as she carries in a large pink gift box. She closes with encouragement and a giveaway CTA.",
+        "cameraAngle": "medium-wide, eye level",
+        "movement": "gentle walk-in with box; static camera",
+        "textOverlay": "Gift box visible; assorted product branding on boxes"
+      },
+      "audio": {
+        "transcript": "Although I love all this equipment for content creation, the truth is, you can make an entire career with the phone you're watching this on. All it takes is a bit of belief and a lot of action. Everything else is just extra. But, if you'd like some help along the way, comment below for a chance to win this gift box.",
+        "tone": "motivational, inviting"
+      }
+    }
+  ],
+  "processing_info": {
+    "processed_at": "2025-08-10T16:52:31.119388",
+    "file_size_mb": 12.61,
+    "frames_extracted": 30,
+    "scenes_detected": 24,
+    "audio_segments": 27,
+    "transcript_length": 1580
+  }
+}

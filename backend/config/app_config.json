@@ -14,7 +14,7 @@
     "temperature": 0.2,
     "max_frames_per_batch": 6,
     "frame_image_max_size": 512,
-    "frame_image_quality": 70
+    "frame_image_quality": 60
   },
   "logging": {
     "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",

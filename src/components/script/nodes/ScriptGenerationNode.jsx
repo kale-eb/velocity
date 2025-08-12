@@ -22,7 +22,7 @@ export default function ScriptGenerationNode({ node, onUpdate, onConnect }) {
   };
 
   const handleAddAdRef = () => {
-    const url = prompt('Enter ad reference URL:');
+    const url = prompt('Enter video reference URL:');
     if (url && inputs.ad_refs.length < 4) {
       const newRefs = [...inputs.ad_refs, url];
       handleInputChange('ad_refs', newRefs);
@@ -229,10 +229,10 @@ export default function ScriptGenerationNode({ node, onUpdate, onConnect }) {
             </div>
           </div>
 
-          {/* Ad References */}
+          {/* Video References */}
           <div>
             <label style={{ display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 500 }}>
-              Ad References ({inputs.ad_refs.length}/4)
+              Video References ({inputs.ad_refs.length}/4)
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {inputs.ad_refs.map((url, index) => (

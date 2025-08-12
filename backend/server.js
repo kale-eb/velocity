@@ -17,8 +17,8 @@ const app = express();
 app.use((req, res, next) => {
   // Increase server timeout for video processing endpoints
   if (req.path.includes('analyzeAd')) {
-    req.setTimeout(600000); // 10 minutes
-    res.setTimeout(600000); // 10 minutes
+    req.setTimeout(900000); // 15 minutes
+    res.setTimeout(900000); // 15 minutes
   }
   next();
 });
@@ -560,7 +560,7 @@ app.post('/api/analyzeAd', async (req, res) => {
     
     // Create AbortController for timeout handling
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minute timeout for GPT-5 processing
+    const timeoutId = setTimeout(() => controller.abort(), 900000); // 15 minute timeout for GPT-5 processing
     
     // Use custom HTTP request instead of fetch to avoid Node.js fetch timeout issues
     const resp = await new Promise((resolve, reject) => {
@@ -576,7 +576,7 @@ app.post('/api/analyzeAd', async (req, res) => {
           'Content-Length': Buffer.byteLength(requestData),
           'Connection': 'keep-alive'
         },
-        timeout: 600000, // 10 minutes
+        timeout: 900000, // 15 minutes
         agent: false // Don't use connection pooling
       };
 

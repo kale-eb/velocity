@@ -7,7 +7,8 @@ export default function ChatAssistant({
   onPropose, 
   onApply, 
   proposed, 
-  context = {} 
+  context = {},
+  colorScheme = 'light'
 }) {
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,8 @@ export default function ChatAssistant({
   const inputContainerRef = useRef(null);
 
   const isDisabled = disabled || loading;
+  const isDarkMode = colorScheme === 'dark';
+  const isExperimental = colorScheme === 'experimental';
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -644,24 +647,46 @@ export default function ChatAssistant({
             display: 'flex', 
             alignItems: 'flex-end', 
             gap: 8,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            border: '2px solid #8b5cf6',
+            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 
+                           isExperimental ? 'rgba(0, 0, 0, 0.9)' : 
+                           'rgba(255, 255, 255, 0.95)',
+            border: isDarkMode ? '2px solid #8b5cf6' :
+                   isExperimental ? '2px solid #eab308' :
+                   '2px solid #3b82f6',
             borderRadius: 16,
             padding: '12px 16px',
-            boxShadow: '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)',
+            boxShadow: isDarkMode ? '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)' :
+                      isExperimental ? '0 0 20px rgba(234, 179, 8, 0.6), inset 0 0 10px rgba(234, 179, 8, 0.1)' :
+                      '0 0 15px rgba(59, 130, 246, 0.3)',
             backdropFilter: 'blur(8px)',
             transition: 'all 0.2s ease'
           }}
           onMouseEnter={(e) => {
             if (!isDisabled) {
-              e.currentTarget.style.borderColor = '#7c3aed';
-              e.currentTarget.style.boxShadow = '0 0 25px rgba(124, 58, 237, 0.8), inset 0 0 15px rgba(124, 58, 237, 0.2)';
+              if (isDarkMode) {
+                e.currentTarget.style.borderColor = '#7c3aed';
+                e.currentTarget.style.boxShadow = '0 0 25px rgba(124, 58, 237, 0.8), inset 0 0 15px rgba(124, 58, 237, 0.2)';
+              } else if (isExperimental) {
+                e.currentTarget.style.borderColor = '#d97706';
+                e.currentTarget.style.boxShadow = '0 0 25px rgba(217, 119, 6, 0.8), inset 0 0 15px rgba(217, 119, 6, 0.2)';
+              } else {
+                e.currentTarget.style.borderColor = '#2563eb';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.5)';
+              }
             }
           }}
           onMouseLeave={(e) => {
             if (!isDisabled && document.activeElement !== textareaRef.current) {
-              e.currentTarget.style.borderColor = '#8b5cf6';
-              e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)';
+              if (isDarkMode) {
+                e.currentTarget.style.borderColor = '#8b5cf6';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)';
+              } else if (isExperimental) {
+                e.currentTarget.style.borderColor = '#eab308';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(234, 179, 8, 0.6), inset 0 0 10px rgba(234, 179, 8, 0.1)';
+              } else {
+                e.currentTarget.style.borderColor = '#3b82f6';
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.3)';
+              }
             }
           }}
         >
@@ -675,14 +700,30 @@ export default function ChatAssistant({
             onKeyDown={handleKeyDown}
             onFocus={() => {
               if (inputContainerRef.current) {
-                inputContainerRef.current.style.borderColor = '#7c3aed';
-                inputContainerRef.current.style.boxShadow = '0 0 30px rgba(124, 58, 237, 1), inset 0 0 20px rgba(124, 58, 237, 0.3)';
+                if (isDarkMode) {
+                  inputContainerRef.current.style.borderColor = '#7c3aed';
+                  inputContainerRef.current.style.boxShadow = '0 0 30px rgba(124, 58, 237, 1), inset 0 0 20px rgba(124, 58, 237, 0.3)';
+                } else if (isExperimental) {
+                  inputContainerRef.current.style.borderColor = '#d97706';
+                  inputContainerRef.current.style.boxShadow = '0 0 30px rgba(217, 119, 6, 1), inset 0 0 20px rgba(217, 119, 6, 0.3)';
+                } else {
+                  inputContainerRef.current.style.borderColor = '#1d4ed8';
+                  inputContainerRef.current.style.boxShadow = '0 0 25px rgba(29, 78, 216, 0.6)';
+                }
               }
             }}
             onBlur={() => {
               if (inputContainerRef.current) {
-                inputContainerRef.current.style.borderColor = '#8b5cf6';
-                inputContainerRef.current.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)';
+                if (isDarkMode) {
+                  inputContainerRef.current.style.borderColor = '#8b5cf6';
+                  inputContainerRef.current.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)';
+                } else if (isExperimental) {
+                  inputContainerRef.current.style.borderColor = '#eab308';
+                  inputContainerRef.current.style.boxShadow = '0 0 20px rgba(234, 179, 8, 0.6), inset 0 0 10px rgba(234, 179, 8, 0.1)';
+                } else {
+                  inputContainerRef.current.style.borderColor = '#3b82f6';
+                  inputContainerRef.current.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.3)';
+                }
               }
             }}
             placeholder={disabled ? 'Generate a script first to enable the assistant.' : loading ? 'AI is thinking...' : 'Type a command (Shift+Enter for newline)'}
@@ -697,7 +738,7 @@ export default function ChatAssistant({
               lineHeight: 1.4,
               backgroundColor: 'transparent',
               fontFamily: 'inherit',
-              color: 'white'
+              color: (isDarkMode || isExperimental) ? 'white' : '#1f2937'
             }}
           />
           
