@@ -123,18 +123,48 @@ class VideoProcessor:
             # Only use Chrome cookies if explicitly enabled (to avoid Chrome popups)
             if os.getenv('USE_CHROME_COOKIES', 'false').lower() == 'true':
                 try:
+                    # Try different cookie extraction methods for encrypted Chrome cookies
+                    # Method 1: Default profile with keychain access
                     ydl_opts['cookiesfrombrowser'] = ('chrome', None, None, None)
                     print("📥 Using Chrome cookies for download", flush=True)
                 except Exception as cookie_err:
-                    print(f"⚠️ Chrome cookies not available, trying without: {cookie_err}", flush=True)
+                    print(f"⚠️ Chrome cookies not available: {cookie_err}", flush=True)
+                    try:
+                        # Method 2: Try with explicit profile path
+                        ydl_opts['cookiesfrombrowser'] = ('chrome', 'Default', None, None)
+                        print("📥 Trying Chrome cookies with Default profile", flush=True)
+                    except Exception as profile_err:
+                        print(f"⚠️ Chrome Default profile cookies failed: {profile_err}", flush=True)
             else:
                 print("📥 Skipping Chrome cookies (set USE_CHROME_COOKIES=true to enable)", flush=True)
             
+            download_success = False
+            
+            # Try downloading with cookies first (if enabled)
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([video_url])
+                download_success = True
+                print("✅ Download successful with cookies", flush=True)
             except Exception as dl_err:
-                raise err(400, "UNSUPPORTED_URL", f"Unsupported or restricted URL: {video_url}")
+                print(f"⚠️ Download failed with cookies: {dl_err}", flush=True)
+                
+                # Fallback: Try without cookies if cookies were enabled
+                if 'cookiesfrombrowser' in ydl_opts:
+                    print("🔄 Retrying download without cookies...", flush=True)
+                    fallback_opts = ydl_opts.copy()
+                    del fallback_opts['cookiesfrombrowser']  # Remove cookies
+                    
+                    try:
+                        with yt_dlp.YoutubeDL(fallback_opts) as ydl:
+                            ydl.download([video_url])
+                        download_success = True
+                        print("✅ Download successful without cookies", flush=True)
+                    except Exception as fallback_err:
+                        print(f"❌ Download also failed without cookies: {fallback_err}", flush=True)
+                
+                if not download_success:
+                    raise err(400, "UNSUPPORTED_URL", f"Unsupported or restricted URL: {video_url}")
             
             # Check if file was downloaded
             if not Path(temp_video_path).exists() or Path(temp_video_path).stat().st_size == 0:

@@ -49,6 +49,91 @@ button {
   cursor: pointer;
 }
 
+/* Global scrollbar styles for light theme (default) - Blue accent */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #60a5fa; /* Blue-400 */
+  border-radius: 5px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6; /* Blue-500 */
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #2563eb; /* Blue-600 */
+}
+
+::-webkit-scrollbar-corner {
+  background: #f3f4f6;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #60a5fa #f3f4f6;
+}
+
+/* Dark theme scrollbar styles - Purple accent */
+.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #a78bfa; /* Purple-400 */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #8b5cf6; /* Purple-500 */
+}
+
+.dark ::-webkit-scrollbar-thumb:active {
+  background: #7c3aed; /* Purple-600 */
+}
+
+.dark ::-webkit-scrollbar-corner {
+  background: #1f2937;
+}
+
+.dark * {
+  scrollbar-color: #a78bfa #1f2937;
+}
+
+/* Experimental theme scrollbar styles - Yellow accent */
+.experimental ::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+.experimental ::-webkit-scrollbar-thumb {
+  background: #fbbf24; /* Yellow-400 */
+}
+
+.experimental ::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b; /* Yellow-500 */
+}
+
+.experimental ::-webkit-scrollbar-thumb:active {
+  background: #d97706; /* Yellow-600 */
+}
+
+.experimental ::-webkit-scrollbar-corner {
+  background: #18181b;
+}
+
+.experimental * {
+  scrollbar-color: #fbbf24 #18181b;
+}
+
 .slider::-moz-range-thumb {
   width: 0;
   height: 0;
@@ -90,10 +175,10 @@ button {
   height: 24px;
 }
 
-/* Custom Neon Purple Scrollbars */
+/* Light Mode Blue Scrollbars */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #8b5cf6 rgba(0, 0, 0, 0.1);
+  scrollbar-color: #60a5fa rgba(0, 0, 0, 0.1);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -107,15 +192,15 @@ button {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, #8b5cf6, #a855f7);
+  background: linear-gradient(45deg, #60a5fa, #3b82f6);
   border-radius: 4px;
-  border: 1px solid #7c3aed;
-  box-shadow: 0 0 6px rgba(139, 92, 246, 0.4);
+  border: 1px solid #2563eb;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, #7c3aed, #8b5cf6);
-  box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+  background: linear-gradient(45deg, #3b82f6, #2563eb);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
 }
 
 .custom-scrollbar::-webkit-scrollbar-corner {

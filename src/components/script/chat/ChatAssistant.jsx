@@ -300,7 +300,7 @@ export default function ChatAssistant({
     }
   }
 
-  // Add CSS animation to document if not already present
+  // Add CSS animation and scrollbar styles to document
   React.useEffect(() => {
     if (!document.querySelector('#chat-spinner-animation')) {
       const style = document.createElement('style');
@@ -313,7 +313,80 @@ export default function ChatAssistant({
       `;
       document.head.appendChild(style);
     }
-  }, []);
+    
+    // Update scrollbar styles based on color scheme
+    let scrollbarStyleId = 'chat-scrollbar-styles';
+    let existingStyle = document.querySelector(`#${scrollbarStyleId}`);
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    
+    const scrollbarStyle = document.createElement('style');
+    scrollbarStyle.id = scrollbarStyleId;
+    
+    // Define scrollbar colors based on theme (matching accent colors)
+    const scrollbarColors = {
+      light: {
+        track: '#f3f4f6',
+        thumb: '#60a5fa',  // Blue-400
+        thumbHover: '#3b82f6',  // Blue-500
+        thumbActive: '#2563eb'  // Blue-600
+      },
+      dark: {
+        track: '#1f2937',
+        thumb: '#a78bfa',  // Purple-400
+        thumbHover: '#8b5cf6',  // Purple-500
+        thumbActive: '#7c3aed'  // Purple-600
+      },
+      experimental: {
+        track: '#18181b',
+        thumb: '#fbbf24',  // Yellow-400
+        thumbHover: '#f59e0b',  // Yellow-500
+        thumbActive: '#d97706'  // Yellow-600
+      }
+    };
+    
+    const colors = scrollbarColors[colorScheme] || scrollbarColors.light;
+    
+    scrollbarStyle.textContent = `
+      .chat-messages-container::-webkit-scrollbar {
+        width: 10px;
+      }
+      
+      .chat-messages-container::-webkit-scrollbar-track {
+        background: ${colors.track};
+        border-radius: 5px;
+      }
+      
+      .chat-messages-container::-webkit-scrollbar-thumb {
+        background: ${colors.thumb};
+        border-radius: 5px;
+        transition: background 0.2s;
+      }
+      
+      .chat-messages-container::-webkit-scrollbar-thumb:hover {
+        background: ${colors.thumbHover};
+      }
+      
+      .chat-messages-container::-webkit-scrollbar-thumb:active {
+        background: ${colors.thumbActive};
+      }
+      
+      /* Firefox scrollbar */
+      .chat-messages-container {
+        scrollbar-width: thin;
+        scrollbar-color: ${colors.thumb} ${colors.track};
+      }
+    `;
+    
+    document.head.appendChild(scrollbarStyle);
+    
+    return () => {
+      // Cleanup on unmount
+      const style = document.querySelector(`#${scrollbarStyleId}`);
+      if (style) style.remove();
+    };
+  }, [colorScheme]);
 
   return (
     <div style={{ 
@@ -389,7 +462,9 @@ export default function ChatAssistant({
       </div>
 
       {/* Messages */}
-      <div style={{
+      <div 
+        className="chat-messages-container"
+        style={{
         flex: 1,
         overflowY: 'auto',
         padding: '16px 20px',
@@ -424,15 +499,15 @@ export default function ChatAssistant({
               padding: '12px 16px',
               borderRadius: 16,
               backgroundColor: message.role === 'user' 
-                ? 'var(--color-accent-primary)' 
+                ? (isDarkMode ? '#8b5cf6' : isExperimental ? '#eab308' : '#3b82f6')  // Purple/Yellow/Blue based on theme
                 : message.error
-                ? 'var(--color-error-bg)'
-                : 'var(--color-bg-secondary)',
+                ? (isDarkMode || isExperimental ? '#7f1d1d' : '#fee2e2')
+                : (isDarkMode || isExperimental ? '#1f2937' : '#f9fafb'),
               color: message.role === 'user' 
-                ? 'white' 
+                ? 'white'  // White text on colored background for all themes
                 : message.error
-                ? 'var(--color-error-text)'
-                : 'var(--color-text-primary)',
+                ? (isDarkMode || isExperimental ? '#fca5a5' : '#dc2626')
+                : (isDarkMode || isExperimental ? '#e5e7eb' : '#111827'),
               fontSize: 14,
               lineHeight: 1.4,
               whiteSpace: 'pre-wrap'
@@ -652,7 +727,7 @@ export default function ChatAssistant({
                            'rgba(255, 255, 255, 0.95)',
             border: isDarkMode ? '2px solid #8b5cf6' :
                    isExperimental ? '2px solid #eab308' :
-                   '2px solid #3b82f6',
+                   '2px solid #93c5fd',
             borderRadius: 16,
             padding: '12px 16px',
             boxShadow: isDarkMode ? '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)' :
@@ -670,8 +745,8 @@ export default function ChatAssistant({
                 e.currentTarget.style.borderColor = '#d97706';
                 e.currentTarget.style.boxShadow = '0 0 25px rgba(217, 119, 6, 0.8), inset 0 0 15px rgba(217, 119, 6, 0.2)';
               } else {
-                e.currentTarget.style.borderColor = '#2563eb';
-                e.currentTarget.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.5)';
+                e.currentTarget.style.borderColor = '#60a5fa';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(96, 165, 250, 0.5)';
               }
             }
           }}
@@ -684,8 +759,8 @@ export default function ChatAssistant({
                 e.currentTarget.style.borderColor = '#eab308';
                 e.currentTarget.style.boxShadow = '0 0 20px rgba(234, 179, 8, 0.6), inset 0 0 10px rgba(234, 179, 8, 0.1)';
               } else {
-                e.currentTarget.style.borderColor = '#3b82f6';
-                e.currentTarget.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.3)';
+                e.currentTarget.style.borderColor = '#93c5fd';
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(147, 197, 253, 0.3)';
               }
             }
           }}
@@ -707,8 +782,8 @@ export default function ChatAssistant({
                   inputContainerRef.current.style.borderColor = '#d97706';
                   inputContainerRef.current.style.boxShadow = '0 0 30px rgba(217, 119, 6, 1), inset 0 0 20px rgba(217, 119, 6, 0.3)';
                 } else {
-                  inputContainerRef.current.style.borderColor = '#1d4ed8';
-                  inputContainerRef.current.style.boxShadow = '0 0 25px rgba(29, 78, 216, 0.6)';
+                  inputContainerRef.current.style.borderColor = '#60a5fa';
+                  inputContainerRef.current.style.boxShadow = '0 0 25px rgba(96, 165, 250, 0.6)';
                 }
               }
             }}
@@ -721,8 +796,8 @@ export default function ChatAssistant({
                   inputContainerRef.current.style.borderColor = '#eab308';
                   inputContainerRef.current.style.boxShadow = '0 0 20px rgba(234, 179, 8, 0.6), inset 0 0 10px rgba(234, 179, 8, 0.1)';
                 } else {
-                  inputContainerRef.current.style.borderColor = '#3b82f6';
-                  inputContainerRef.current.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.3)';
+                  inputContainerRef.current.style.borderColor = '#93c5fd';
+                  inputContainerRef.current.style.boxShadow = '0 0 15px rgba(147, 197, 253, 0.3)';
                 }
               }
             }}

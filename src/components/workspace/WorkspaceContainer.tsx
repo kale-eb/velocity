@@ -344,6 +344,14 @@ const WorkspaceContainer: React.FC = () => {
   const isDarkMode = theme === 'dark';
   const isExperimental = theme === 'experimental';
 
+  // Apply theme class to document for global scrollbar styles
+  React.useEffect(() => {
+    // Remove all theme classes
+    document.documentElement.classList.remove('light', 'dark', 'experimental');
+    // Add current theme class
+    document.documentElement.classList.add(theme);
+  }, [theme]);
+
   // Data management functions
   const updateStorageInfo = React.useCallback(() => {
     const info = storage.getStorageInfo();

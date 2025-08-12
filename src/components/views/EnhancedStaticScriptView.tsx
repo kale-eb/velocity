@@ -825,7 +825,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                         ? isDarkMode ? 'bg-purple-500/20 border-purple-400 ring-1 ring-purple-400' :
                           isExperimental ? 'bg-yellow-400/20 border-yellow-400 ring-1 ring-yellow-400' :
                           'bg-blue-50 border-blue-300 ring-1 ring-blue-300'
-                        : isDarkMode ? 'bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/15' : 
+                        : isDarkMode ? 'bg-purple-500/10 border-purple-500/40 hover:bg-purple-500/15' : 
                           isExperimental ? 'bg-yellow-400/10 border-yellow-400/20 hover:bg-yellow-400/15' : 
                           'bg-gray-100 border-gray-200 hover:bg-gray-150'
                     }`}
@@ -877,7 +877,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                             <button
                               onClick={() => fileInputRefs.current[spec.id]?.click()}
                               className={`flex items-center gap-1 px-2 py-1 text-xs border rounded ${
-                                isDarkMode ? 'border-purple-500/20 hover:bg-purple-500/10 text-purple-300' :
+                                isDarkMode ? 'border-purple-500/40 hover:bg-purple-500/10 text-purple-300' :
                                 isExperimental ? 'border-yellow-400/30 hover:bg-yellow-400/10 text-yellow-300' :
                                 'border-gray-300 hover:bg-gray-100 text-gray-600'
                               }`}
@@ -915,7 +915,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                   key={file.id}
                                   className={`p-2 border rounded text-xs cursor-pointer transition-colors hover:bg-opacity-75 ${
                                     file.success
-                                      ? isDarkMode ? 'bg-purple-500/5 border-purple-500/20 hover:bg-purple-500/10' :
+                                      ? isDarkMode ? 'bg-purple-500/5 border-purple-500/40 hover:bg-purple-500/10' :
                                         isExperimental ? 'bg-yellow-400/5 border-yellow-400/20 hover:bg-yellow-400/10' :
                                         'bg-green-50 border-green-200 hover:bg-green-100'
                                       : isDarkMode ? 'bg-red-500/5 border-red-500/20' :
@@ -1149,7 +1149,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                 })}
                                 placeholder="Paste ad URL (Instagram, TikTok, YouTube)..."
                                 className={`w-full p-2 text-xs border rounded ${
-                                  isDarkMode ? 'bg-black border-purple-500/20 text-purple-100 placeholder-purple-400/50' :
+                                  isDarkMode ? 'bg-black border-purple-500/40 text-purple-100 placeholder-purple-400/50' :
                                   isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100 placeholder-yellow-400/50' :
                                   'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                                 }`}
@@ -1239,7 +1239,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                         ? isDarkMode ? 'bg-purple-500/20 border-purple-400 ring-1 ring-purple-400' :
                           isExperimental ? 'bg-yellow-400/20 border-yellow-400 ring-1 ring-yellow-400' :
                           'bg-blue-50 border-blue-300 ring-1 ring-blue-300'
-                        : isDarkMode ? 'bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/15' : 
+                        : isDarkMode ? 'bg-purple-500/10 border-purple-500/40 hover:bg-purple-500/15' : 
                           isExperimental ? 'bg-yellow-400/10 border-yellow-400/20 hover:bg-yellow-400/15' : 
                           'bg-gray-100 border-gray-200 hover:bg-gray-150'
                     }`}
@@ -1293,7 +1293,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                             })}
                             placeholder="Add instructions for tone, target audience, requirements..."
                             className={`w-full h-20 p-2 text-xs border rounded resize-none ${
-                              isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
+                              isDarkMode ? 'bg-black border-purple-500/40 text-purple-100' :
                               isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
                               'bg-white border-gray-300 text-gray-900'
                             }`}
@@ -1435,11 +1435,11 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                 <div key={chunk.id} className={`border-2 rounded-lg p-4 ${
                   isDarkMode ? 'bg-black border-purple-400 shadow-lg shadow-purple-500/40' :
                   isExperimental ? 'bg-black border-yellow-400 shadow-lg shadow-yellow-400/40' :
-                  'bg-white border-blue-400 shadow-lg shadow-blue-400/40'
+                  'bg-white border-blue-400 shadow-lg shadow-blue-400/20'
                 }`} style={{
                   boxShadow: isDarkMode ? '0 0 20px rgba(147, 51, 234, 0.4), 0 0 40px rgba(147, 51, 234, 0.2)' :
                     isExperimental ? '0 0 20px rgba(251, 191, 36, 0.4), 0 0 40px rgba(251, 191, 36, 0.2)' :
-                    '0 0 20px rgba(96, 165, 250, 0.4), 0 0 40px rgba(96, 165, 250, 0.2)'
+                    '0 0 12px rgba(96, 165, 250, 0.2), 0 0 24px rgba(96, 165, 250, 0.1)'
                 }}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
