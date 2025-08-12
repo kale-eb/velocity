@@ -1,0 +1,12 @@
+{
+  "marketing_app_workspace_ui_state": {
+    "data": {
+      "currentView": "static",
+      "theme": "dark",
+      "sidebarOpen": true,
+      "chatOpen": false
+    },
+    "timestamp": 1754825090176,
+    "version": "1.0"
+  }
+}

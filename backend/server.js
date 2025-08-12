@@ -797,6 +797,7 @@ app.post('/api/chat/stream', async (req, res) => {
     let conversationMessages = [...messages];
     let iterationCount = 0;
     const maxIterations = 5; // Reduced safety limit
+    let announcedTools = new Set(); // Track announced tools across ALL iterations to prevent duplicates
     
     while (iterationCount < maxIterations) {
       iterationCount++;
@@ -817,7 +818,6 @@ app.post('/api/chat/stream', async (req, res) => {
         });
         
         let assistantMessage = { role: 'assistant', content: '', tool_calls: [] };
-        let announcedTools = new Set(); // Track announced tools to prevent duplicates
         
         // Process streaming response
         for await (const chunk of stream) {
