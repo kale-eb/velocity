@@ -9,7 +9,10 @@ const { OpenAI } = require('openai');
 const http = require('http');
 
 // Load prompts configuration
-const prompts = JSON.parse(fs.readFileSync(path.join(__dirname, 'prompts.json'), 'utf8'));
+const prompts = JSON.parse(fs.readFileSync(path.join(__dirname, 'config/prompts.json'), 'utf8'));
+
+// Load new tools system
+const tools = require('./tools');
 
 const app = express();
 
@@ -505,6 +508,7 @@ app.post('/api/chatActions', async (req, res) => {
   }
 });
 
+
 // Process file via Python backend
 app.post('/api/process-file', upload.single('file'), async (req, res) => {
   try {
@@ -670,7 +674,363 @@ app.post('/api/getAnalysis', async (req, res) => {
   }
 });
 
-// Streaming Chat Endpoint with Agentic Behavior
+// Responses API Endpoint with Tool-Based Reference System
+app.post('/api/chat/responses', async (req, res) => {
+  try {
+    const { prompt, selectedReferences = [], script, chatHistory = [], previousResponseId, previousToolOutputs = [] } = req.body || {};
+    
+    console.log('\n🚀 [RESPONSES API] Starting...');
+    console.log('📊 Request Summary:', {
+      prompt_length: (prompt || '').length,
+      selected_references: selectedReferences.length,
+      script_chunks: script?.chunks?.length || 0,
+      chat_history: chatHistory.length,
+      has_previous_response: !!previousResponseId,
+      has_tool_outputs: previousToolOutputs.length,
+      model: CHAT_MODEL
+    });
+    
+    if (!HAS_KEY) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Headers', 'Cache-Control');
+      
+      res.write(`data: ${JSON.stringify({type: "content", content: prompts.mock_responses.responses_api_mock})}\n\n`);
+      res.write(`data: ${JSON.stringify({type: "done", response_id: "mock_response_123"})}\n\n`);
+      return res.end();
+    }
+    
+    // Setup SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Cache-Control');
+    
+    // Use smart tool loading from new tools system
+    const { tools: loadedTools, categories, reasoning } = tools.getSmartTools(
+      prompt,
+      'responses',
+      { selectedReferences, script, chatHistory }
+    );
+    
+    console.log('🔧 Tool loading reasoning:', reasoning);
+    console.log('🛠️ Loaded tools:', JSON.stringify(loadedTools, null, 2));
+    
+    // Build minimal system prompt with tool-based instruction loading
+    let systemPrompt = prompts.base_system.core + prompts.base_system.tool_aware_extension.replace(
+      '{{selectedReferences}}', 
+      selectedReferences.length > 0 ? selectedReferences.join(', ') : 'none'
+    );
+
+    // Build input for Responses API - always include full context
+    const input = [{
+      role: "system",
+      content: systemPrompt
+    }];
+    
+    // Add recent chat history for context
+    if (chatHistory.length > 0) {
+      chatHistory.slice(-6).forEach(msg => {
+        input.push({
+          role: msg.role,
+          content: msg.content
+        });
+      });
+    }
+    
+    // Add current user message
+    let inputContent = prompt;
+    if (selectedReferences.length > 0) {
+      inputContent += `\n\nNote: Please pay special attention to these selected references: ${selectedReferences.join(', ')}`;
+    }
+    
+    input.push({
+      role: "user",
+      content: inputContent
+    });
+    
+    console.log('🤖 Creating Responses API call...');
+    
+    try {
+      // Build API request with proper continuation support
+      const apiRequest = {
+        model: CHAT_MODEL, // gpt-5-mini
+        input: input,
+        tools: loadedTools,
+        stream: true
+      };
+      
+      // Add previous response context if available
+      if (previousResponseId && previousToolOutputs.length > 0) {
+        apiRequest.previous_response_id = previousResponseId;
+        apiRequest.tool_outputs = previousToolOutputs;
+      } else if (previousResponseId) {
+        // If we have a previous response but no tool outputs, skip the previous_response_id
+        // to avoid the "No tool output found" error
+        console.log('⚠️ Skipping previous_response_id due to missing tool outputs');
+      }
+      
+      const response = await openai.responses.create(apiRequest);
+      
+      let assistantMessage = { role: 'assistant', content: '', tool_calls: [] };
+      let announcedTools = new Set();
+      let finalActions = [];
+      let responseId = null;
+      
+      // Process streaming response
+      let currentToolCall = null;
+      let toolCallArgs = '';
+      let toolOutputs = []; // Store tool outputs for potential continuation
+      let hasStreamedContent = false; // Track if we've already sent content
+      
+      for await (const chunk of response) {
+        // Minimal logging for non-delta chunks
+        if (!chunk.type.includes('delta') && chunk.type === 'response.created') {
+          console.log('🚀 Responses API started');
+        }
+        
+        // Handle different chunk types from Responses API
+        if (chunk.type === 'response.output_item.added') {
+          // New output item (could be text or tool call)
+          if (chunk.item?.type === 'function_call') {
+            // Extract the tool name - it's in chunk.item.name
+            const toolName = chunk.item.name;
+            console.log('🔨 Starting tool call:', toolName);
+            
+            currentToolCall = {
+              id: chunk.item.call_id || chunk.item.id, // Try call_id first, fallback to id
+              type: 'function',
+              function: {
+                name: toolName,
+                arguments: ''
+              }
+            };
+            
+            // Only announce if we have a valid tool name
+            if (toolName) {
+              const displayName = tools.getDisplayName(toolName);
+              res.write(`data: ${JSON.stringify({
+                type: "tool_status", 
+                content: `🔧 ${displayName}`
+              })}\n\n`);
+            }
+          } else if (chunk.item?.type === 'message') {
+            // Message output item - might contain content
+            console.log('📝 Message item added');
+          }
+          
+        } else if (chunk.type === 'response.function_call_arguments.delta') {
+          // Building tool call arguments
+          if (currentToolCall && chunk.delta) {
+            toolCallArgs += chunk.delta;
+          }
+          
+        } else if (chunk.type === 'response.function_call_arguments.done') {
+          // Tool call arguments complete - only execute once!
+          if (currentToolCall && toolCallArgs) {
+            console.log('🔧 Executing tool:', currentToolCall.function.name, 'with args:', toolCallArgs);
+            
+            // Execute tool ONCE
+            try {
+              const toolArgs = JSON.parse(toolCallArgs);
+              const context = {
+                workspaceNodes: req.body.workspaceNodes || [],
+                script: script,
+                prompts: prompts
+              };
+              
+              const result = tools.execute(currentToolCall.function.name, toolArgs, context);
+              console.log('📊 Tool result:', JSON.stringify(result).substring(0, 200));
+              
+              // Store tool output for potential future use - make sure we use the right call ID
+              console.log('🔗 Storing tool output for call_id:', currentToolCall.id);
+              toolOutputs.push({
+                tool_call_id: currentToolCall.id,
+                tool_name: currentToolCall.function.name,
+                output: JSON.stringify(result)
+              });
+              
+              // Handle suggest_script_changes specially
+              if (currentToolCall.function.name === 'suggest_script_changes' && result.actions) {
+                finalActions = result.actions;
+                
+                res.write(`data: ${JSON.stringify({
+                  type: "suggestions",
+                  content: {
+                    explanation: result.explanation,
+                    actions: result.actions
+                  }
+                })}\n\n`);
+              } else {
+                // Don't send tool results as content - let the AI process them
+                // The AI will generate its own response based on the tool results
+                console.log('Tool executed, awaiting AI response...');
+              }
+              
+            } catch (error) {
+              console.error(`Tool execution error:`, error);
+              res.write(`data: ${JSON.stringify({
+                type: "content",
+                content: `Error executing tool: ${error.message}`
+              })}\n\n`);
+            }
+            
+            // Reset for next tool
+            currentToolCall = null;
+            toolCallArgs = '';
+          }
+          
+        } else if (chunk.type === 'response.content.delta' || chunk.type === 'response.output_text.delta') {
+          // Text content (handle both possible chunk types)
+          const content = chunk.delta || chunk.content;
+          if (content) {
+            hasStreamedContent = true; // Mark that we've sent content
+            res.write(`data: ${JSON.stringify({
+              type: "content", 
+              content: content
+            })}\n\n`);
+          }
+          
+        } else if (chunk.type === 'response.completed') {
+          responseId = chunk.response?.id;
+          console.log(`✅ Responses API complete with ID: ${responseId}`);
+          
+          // Debug: log the response structure
+          console.log('🔍 Response output structure:');
+          if (chunk.response?.output) {
+            chunk.response.output.forEach((item, i) => {
+              console.log(`  [${i}] type: ${item.type}, content length: ${item.content?.length || 0}`);
+              if (item.content) {
+                item.content.forEach((c, j) => {
+                  console.log(`    [${j}] content type: ${c.type}, text length: ${c.text?.length || 0}`);
+                  if (c.text) console.log(`        text preview: "${c.text.substring(0, 100)}..."`);
+                });
+              }
+            });
+          }
+          console.log(`🏁 hasStreamedContent: ${hasStreamedContent}`);
+          
+          // Extract content from completed response ONLY if we haven't streamed any yet
+          let foundTextContent = false;
+          if (!hasStreamedContent && chunk.response?.output) {
+            for (const outputItem of chunk.response.output) {
+              if (outputItem.type === 'message' && outputItem.content) {
+                for (const contentPart of outputItem.content) {
+                  if (contentPart.type === 'output_text' && contentPart.text) {
+                    console.log('📤 Sending final content:', contentPart.text.substring(0, 100));
+                    res.write(`data: ${JSON.stringify({
+                      type: "content", 
+                      content: contentPart.text
+                    })}\n\n`);
+                    foundTextContent = true;
+                  }
+                }
+              }
+            }
+          }
+          
+          // If no text content was found but tools were executed, make a continuation call
+          // Unless suggest_script_changes was called (it provides complete response via suggestions)
+          const calledSuggestScriptChanges = toolOutputs.some(t => 
+            t.tool_name === 'suggest_script_changes'
+          );
+          if (!foundTextContent && !hasStreamedContent && toolOutputs.length > 0 && !calledSuggestScriptChanges) {
+            console.log('🔄 Making continuation call...');
+            
+            try {
+              // Build continuation input with function call outputs
+              const continuationInput = [...input];
+              
+              // Add function call outputs to input
+              toolOutputs.forEach((output, idx) => {
+                const outputItem = {
+                  type: "function_call_output",
+                  call_id: output.tool_call_id,
+                  output: output.output
+                };
+                continuationInput.push(outputItem);
+              });
+              
+              const continuationResponse = await openai.responses.create({
+                model: CHAT_MODEL,
+                input: continuationInput,
+                previous_response_id: responseId,
+                stream: true
+              });
+              
+              let continuationStreamed = false;
+              for await (const chunk of continuationResponse) {
+                if (chunk.type === 'response.content.delta' || chunk.type === 'response.output_text.delta') {
+                  const content = chunk.delta || chunk.content;
+                  if (content) {
+                    continuationStreamed = true;
+                    res.write(`data: ${JSON.stringify({
+                      type: "content",
+                      content: content
+                    })}\n\n`);
+                  }
+                } else if (chunk.type === 'response.completed') {
+                  // Only handle final content if we haven't streamed any
+                  if (!continuationStreamed && chunk.response?.output) {
+                    for (const outputItem of chunk.response.output) {
+                      if (outputItem.type === 'message' && outputItem.content) {
+                        for (const contentPart of outputItem.content) {
+                          if (contentPart.type === 'output_text' && contentPart.text) {
+                            res.write(`data: ${JSON.stringify({
+                              type: "content", 
+                              content: contentPart.text
+                            })}\n\n`);
+                          }
+                        }
+                      }
+                    }
+                  }
+                  break;
+                }
+              }
+              
+              console.log('✅ Continuation completed');
+              
+            } catch (error) {
+              console.error('❌ Continuation call failed:', error);
+              res.write(`data: ${JSON.stringify({
+                type: "content",
+                content: `I can see your script "${script?.title || 'current script'}" with ${script?.chunks?.length || 0} chunks. It looks like it's about ${script?.chunks?.[0]?.script_text?.substring(0, 50) || 'your video content'}... How can I help you improve it?`
+              })}\n\n`);
+            }
+          }
+          break;
+        }
+      }
+      
+      // The Responses API should automatically provide the final response after tool execution
+      
+      // Send final done message
+      res.write(`data: ${JSON.stringify({
+        type: "done", 
+        response_id: responseId
+      })}\n\n`);
+      res.end();
+      
+    } catch (error) {
+      console.error('[Responses API] error:', error);
+      res.write(`data: ${JSON.stringify({
+        type: "error", 
+        content: `Responses API error: ${error.message}`
+      })}\n\n`);
+      res.end();
+    }
+    
+  } catch (error) {
+    console.error('[Responses API setup] error:', error);
+    res.status(500).json({ error: 'RESPONSES_FAIL' });
+  }
+});
+
+// Streaming Chat Endpoint with Agentic Behavior (Legacy)
 app.post('/api/chat/stream', async (req, res) => {
   try {
     const { prompt, workspaceNodes = [], script, chatHistory = [] } = req.body || {};
@@ -696,9 +1056,9 @@ app.post('/api/chat/stream', async (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', 'Cache-Control');
     
     if (!HAS_KEY) {
-      res.write(`data: ${JSON.stringify({type: "thinking", content: "Mock mode: Analyzing your request..."})}\n\n`);
-      res.write(`data: ${JSON.stringify({type: "tool_status", content: "🔧 Reading script content"})}\n\n`);
-      res.write(`data: ${JSON.stringify({type: "content", content: "I would help you improve your script, but I'm in mock mode. Please add your OpenAI API key to enable real functionality."})}\n\n`);
+      res.write(`data: ${JSON.stringify({type: "thinking", content: prompts.mock_responses.thinking})}\n\n`);
+      res.write(`data: ${JSON.stringify({type: "tool_status", content: prompts.mock_responses.tool_status})}\n\n`);
+      res.write(`data: ${JSON.stringify({type: "content", content: prompts.mock_responses.streaming_mock})}\n\n`);
       res.write(`data: ${JSON.stringify({type: "done"})}\n\n`);
       return res.end();
     }
@@ -776,13 +1136,8 @@ app.post('/api/chat/stream', async (req, res) => {
       }
     ];
     
-    // Use configured chat system prompt with streaming enhancements
-    const systemPrompt = prompts.chatActions.system + `\n\nSTREAMING BEHAVIOR:
-- You have access to workspace content via tools
-- Always use tools to access current context before making suggestions
-- Show your analysis as you work through the user's request
-- Be a helpful creative partner who understands video as a visual medium
-- Each chunk = one shot = one video file in the editing system`;
+    // Use minimal base prompt for streaming API
+    const systemPrompt = prompts.base_system.core;
     
     // Build conversation messages
     const messages = [
@@ -869,9 +1224,7 @@ app.post('/api/chat/stream', async (req, res) => {
                 if (tc.function.name && !announcedTools.has(tc.function.name)) {
                   announcedTools.add(tc.function.name);
                   
-                  const displayName = tc.function.name === 'get_workspace_content' ? 'Reading workspace content' : 
-                                     tc.function.name === 'get_script_content' ? 'Analyzing current script' :
-                                     tc.function.name === 'suggest_script_changes' ? 'Preparing script suggestions' : tc.function.name;
+                  const displayName = tools.getDisplayName(tc.function.name);
                   
                   res.write(`data: ${JSON.stringify({
                     type: "tool_status", 

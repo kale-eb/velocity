@@ -14,12 +14,12 @@ export default function ChatAssistant({
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [aborter, setAborter] = useState(null);
-  const [actionStates, setActionStates] = useState({}); // Track accept/reject state for each message
-  const [currentStream, setCurrentStream] = useState(null);
-  // Removed thinking dropdown - just show spinner while processing
+  const [actionStates, setActionStates] = useState({});
+  
   const textareaRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputContainerRef = useRef(null);
+  const currentMessageRef = useRef(null);
 
   const isDisabled = disabled || loading;
   const isDarkMode = colorScheme === 'dark';
@@ -43,12 +43,6 @@ export default function ChatAssistant({
         return `Remove ${action.targetId}`;
       case 'move':
         return `Move ${action.targetId} ${action.position} ${action.refId}`;
-      case 'rewrite_batch':
-        return `Batch rewrite (${action.edits?.length || 0} chunks)`;
-      case 'add_batch':
-        return `Batch add (${action.items?.length || 0} chunks)`;
-      case 'remove_batch':
-        return `Batch remove (${action.targetIds?.length || 0} chunks)`;
       default:
         return action.type || 'Unknown action';
     }
@@ -76,49 +70,36 @@ export default function ChatAssistant({
   }
 
   async function sendMessage() {
-    if (!prompt.trim() || disabled) return;
+    if (!prompt.trim() || isDisabled) return;
 
-    // Auto-reject any pending actions from previous messages
-    const updatedStates = {};
-    messages.forEach((msg, index) => {
-      if (msg.actions && msg.actions.length > 0 && !actionStates[index]) {
-        updatedStates[index] = 'rejected';
-      }
-    });
-    if (Object.keys(updatedStates).length > 0) {
-      setActionStates(prev => ({ ...prev, ...updatedStates }));
-      onPropose([]); // Clear any pending proposals
-    }
-
-    // Show user message immediately
     const userMessage = { role: 'user', content: prompt, timestamp: Date.now() };
-    const streamingMessage = { 
+    const assistantMessage = { 
       role: 'assistant', 
       content: '', 
       streaming: true, 
       toolStatuses: [],
-      timestamp: Date.now() 
+      timestamp: Date.now(),
+      id: Date.now() // Add unique ID
     };
     
-    setMessages(prev => [...prev, userMessage, streamingMessage]);
+    // Store the assistant message in ref for direct manipulation
+    currentMessageRef.current = assistantMessage;
+    setMessages(prev => [...prev, userMessage, assistantMessage]);
     
     const controller = new AbortController();
     setAborter(controller);
     setLoading(true);
-    setPrompt(''); // Clear input immediately
+    setPrompt('');
     autoResize();
 
     try {
-      // Prepare workspace nodes data
-      const workspaceNodes = context.selectedNodes || [];
-      
-      // Call streaming endpoint
-      const response = await fetch('/api/chat/stream', {
+      const response = await fetch('/api/chat/responses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: prompt,
-          workspaceNodes: workspaceNodes,
+          selectedReferences: [],
+          workspaceNodes: context.selectedNodes || [],
           script: script,
           chatHistory: toChatHistory()
         }),
@@ -134,131 +115,95 @@ export default function ChatAssistant({
       let buffer = '';
       let finalActions = [];
       
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        
+        for (const line of lines) {
+          if (line.trim() === '' || !line.startsWith('data: ')) continue;
           
-          if (done) {
-            console.log('Stream complete');
-            break;
-          }
-          
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || ''; // Keep incomplete line in buffer
-          
-          for (const line of lines) {
-            if (line.trim() === '') continue;
-            if (!line.startsWith('data: ')) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
             
-            try {
-              const data = JSON.parse(line.slice(6));
-              
-              // Remove thinking processing - not using fake simulation
-              
-              if (data.type === 'content') {
-                // Append content to streaming message
-                setMessages(prev => {
-                  const updated = [...prev];
-                  const lastMessage = updated[updated.length - 1];
-                  if (lastMessage.streaming) {
-                    lastMessage.content += data.content;
-                  }
-                  return updated;
-                });
-                
-              } else if (data.type === 'tool_status') {
-                // Add permanent tool status line
-                setMessages(prev => {
-                  const updated = [...prev];
-                  const lastMessage = updated[updated.length - 1];
-                  if (lastMessage.streaming) {
-                    if (!lastMessage.toolStatuses) {
-                      lastMessage.toolStatuses = [];
-                    }
-                    lastMessage.toolStatuses.push(data.content);
-                  }
-                  return updated;
-                });
-                
-              } else if (data.type === 'suggestions') {
-                // Handle suggestions with proper action format
-                finalActions = data.content.actions || [];
-                const explanation = data.content.explanation || 'Here are the suggested changes:';
-                
-                setMessages(prev => {
-                  const updated = [...prev];
-                  const lastMessage = updated[updated.length - 1];
-                  if (lastMessage.streaming) {
-                    lastMessage.content = explanation; // Replace content with explanation
-                    lastMessage.actions = finalActions;
-                  }
-                  return updated;
-                });
-                
-              } else if (data.type === 'error') {
-                console.error('Stream error:', data.content);
-                setMessages(prev => {
-                  const updated = [...prev];
-                  const lastMessage = updated[updated.length - 1];
-                  if (lastMessage.streaming) {
-                    lastMessage.content = data.content;
-                    lastMessage.error = true;
-                  }
-                  return updated;
-                });
-                
-              } else if (data.type === 'done') {
-                console.log('Stream done');
-                // Finalize the streaming message
-                setMessages(prev => {
-                  const updated = [...prev];
-                  const lastMessage = updated[updated.length - 1];
-                  if (lastMessage.streaming) {
-                    lastMessage.streaming = false;
-                    if (!lastMessage.content.trim()) {
-                      lastMessage.content = 'I\'ve analyzed your request and prepared some suggestions.';
-                    }
-                  }
-                  return updated;
-                });
-                
-                if (finalActions.length > 0) {
-                  onPropose(finalActions);
-                }
-                break;
+            if (data.type === 'content') {
+              // Update the ref directly
+              if (currentMessageRef.current && currentMessageRef.current.streaming) {
+                currentMessageRef.current.content += data.content;
+                // Trigger re-render by updating messages with the same reference
+                setMessages(prev => [...prev]);
               }
-            } catch (parseError) {
-              console.warn('Failed to parse SSE data:', line, parseError);
+              
+            } else if (data.type === 'tool_status') {
+              if (currentMessageRef.current && currentMessageRef.current.streaming) {
+                if (!currentMessageRef.current.toolStatuses) {
+                  currentMessageRef.current.toolStatuses = [];
+                }
+                currentMessageRef.current.toolStatuses.push(data.content);
+                setMessages(prev => [...prev]);
+              }
+              
+            } else if (data.type === 'suggestions') {
+              finalActions = data.content.actions || [];
+              const explanation = data.content.explanation || 'Here are the suggested changes:';
+              
+              if (currentMessageRef.current && currentMessageRef.current.streaming) {
+                currentMessageRef.current.content = explanation;
+                currentMessageRef.current.actions = finalActions;
+                setMessages(prev => [...prev]);
+              }
+              
+            } else if (data.type === 'error') {
+              if (currentMessageRef.current && currentMessageRef.current.streaming) {
+                currentMessageRef.current.content = data.content;
+                currentMessageRef.current.error = true;
+                setMessages(prev => [...prev]);
+              }
+              
+            } else if (data.type === 'done') {
+              if (currentMessageRef.current && currentMessageRef.current.streaming) {
+                currentMessageRef.current.streaming = false;
+                if (!currentMessageRef.current.content.trim()) {
+                  currentMessageRef.current.content = 'I\'ve analyzed your request and prepared some suggestions.';
+                }
+                setMessages(prev => [...prev]);
+                currentMessageRef.current = null; // Clear the ref
+              }
+              
+              if (finalActions.length > 0) {
+                onPropose(finalActions);
+              }
+              break;
             }
+          } catch (parseError) {
+            console.warn('Failed to parse response data:', line, parseError);
           }
         }
-      } finally {
-        reader.releaseLock();
       }
-
+      
+      reader.releaseLock();
     } catch (error) {
       if (error.name !== 'AbortError') {
-        console.error('Chat streaming error:', error);
-        const errorMessage = {
-          role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.',
-          error: true,
-          timestamp: Date.now()
-        };
-        // Replace the streaming message with error message
-        setMessages(prev => {
-          const withoutStreaming = prev.slice(0, -1);
-          return [...withoutStreaming, errorMessage];
-        });
+        console.error('Chat error:', error);
+        // Replace the streaming message with an error message
+        if (currentMessageRef.current) {
+          currentMessageRef.current.content = 'Sorry, I encountered an error. Please try again.';
+          currentMessageRef.current.error = true;
+          currentMessageRef.current.streaming = false;
+          setMessages(prev => [...prev]);
+        }
       } else {
-        // If aborted, remove the streaming message
+        // Remove the streaming message on abort
         setMessages(prev => prev.slice(0, -1));
       }
+      currentMessageRef.current = null;
     } finally {
       setLoading(false);
       setAborter(null);
-      setCurrentStream(null);
     }
   }
 
@@ -294,99 +239,12 @@ export default function ChatAssistant({
     setMessages([]);
     setActionStates({});
     setPrompt('');
-    onPropose([]); // Clear any pending proposals
+    onPropose([]);
+    currentMessageRef.current = null;
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
   }
-
-  // Add CSS animation and scrollbar styles to document
-  React.useEffect(() => {
-    if (!document.querySelector('#chat-spinner-animation')) {
-      const style = document.createElement('style');
-      style.id = 'chat-spinner-animation';
-      style.textContent = `
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    
-    // Update scrollbar styles based on color scheme
-    let scrollbarStyleId = 'chat-scrollbar-styles';
-    let existingStyle = document.querySelector(`#${scrollbarStyleId}`);
-    if (existingStyle) {
-      existingStyle.remove();
-    }
-    
-    const scrollbarStyle = document.createElement('style');
-    scrollbarStyle.id = scrollbarStyleId;
-    
-    // Define scrollbar colors based on theme (matching accent colors)
-    const scrollbarColors = {
-      light: {
-        track: '#f3f4f6',
-        thumb: '#60a5fa',  // Blue-400
-        thumbHover: '#3b82f6',  // Blue-500
-        thumbActive: '#2563eb'  // Blue-600
-      },
-      dark: {
-        track: '#1f2937',
-        thumb: '#a78bfa',  // Purple-400
-        thumbHover: '#8b5cf6',  // Purple-500
-        thumbActive: '#7c3aed'  // Purple-600
-      },
-      experimental: {
-        track: '#18181b',
-        thumb: '#fbbf24',  // Yellow-400
-        thumbHover: '#f59e0b',  // Yellow-500
-        thumbActive: '#d97706'  // Yellow-600
-      }
-    };
-    
-    const colors = scrollbarColors[colorScheme] || scrollbarColors.light;
-    
-    scrollbarStyle.textContent = `
-      .chat-messages-container::-webkit-scrollbar {
-        width: 10px;
-      }
-      
-      .chat-messages-container::-webkit-scrollbar-track {
-        background: ${colors.track};
-        border-radius: 5px;
-      }
-      
-      .chat-messages-container::-webkit-scrollbar-thumb {
-        background: ${colors.thumb};
-        border-radius: 5px;
-        transition: background 0.2s;
-      }
-      
-      .chat-messages-container::-webkit-scrollbar-thumb:hover {
-        background: ${colors.thumbHover};
-      }
-      
-      .chat-messages-container::-webkit-scrollbar-thumb:active {
-        background: ${colors.thumbActive};
-      }
-      
-      /* Firefox scrollbar */
-      .chat-messages-container {
-        scrollbar-width: thin;
-        scrollbar-color: ${colors.thumb} ${colors.track};
-      }
-    `;
-    
-    document.head.appendChild(scrollbarStyle);
-    
-    return () => {
-      // Cleanup on unmount
-      const style = document.querySelector(`#${scrollbarStyleId}`);
-      if (style) style.remove();
-    };
-  }, [colorScheme]);
 
   return (
     <div style={{ 
@@ -440,31 +298,10 @@ export default function ChatAssistant({
             New Chat
           </button>
         </div>
-        
-        {/* Context Indicator */}
-        {context.selectedNodes && context.selectedNodes.length > 0 && (
-          <div style={{
-            marginTop: 8,
-            padding: '4px 8px',
-            backgroundColor: 'var(--color-accent-bg)',
-            color: 'var(--color-accent-text)',
-            borderRadius: 12,
-            fontSize: 11,
-            fontWeight: 500
-          }}>
-            Context: {[
-              context.productSpecs && 'Product specs',
-              context.extraInstructions && 'Instructions', 
-              context.selectedAds?.length > 0 && `${context.selectedAds.length} ad${context.selectedAds.length > 1 ? 's' : ''}`
-            ].filter(Boolean).join(' + ')}
-          </div>
-        )}
       </div>
 
       {/* Messages */}
-      <div 
-        className="chat-messages-container"
-        style={{
+      <div style={{
         flex: 1,
         overflowY: 'auto',
         padding: '16px 20px',
@@ -499,12 +336,12 @@ export default function ChatAssistant({
               padding: '12px 16px',
               borderRadius: 16,
               backgroundColor: message.role === 'user' 
-                ? (isDarkMode ? '#8b5cf6' : isExperimental ? '#eab308' : '#3b82f6')  // Purple/Yellow/Blue based on theme
+                ? (isDarkMode ? '#8b5cf6' : isExperimental ? '#eab308' : '#3b82f6')
                 : message.error
                 ? (isDarkMode || isExperimental ? '#7f1d1d' : '#fee2e2')
                 : (isDarkMode || isExperimental ? '#1f2937' : '#f9fafb'),
               color: message.role === 'user' 
-                ? 'white'  // White text on colored background for all themes
+                ? 'white'
                 : message.error
                 ? (isDarkMode || isExperimental ? '#fca5a5' : '#dc2626')
                 : (isDarkMode || isExperimental ? '#e5e7eb' : '#111827'),
@@ -514,7 +351,6 @@ export default function ChatAssistant({
             }}>
               {message.streaming ? (
                 <div>
-                  {/* Tool statuses */}
                   {message.toolStatuses && message.toolStatuses.map((status, idx) => (
                     <div key={idx} style={{
                       fontSize: 12,
@@ -526,12 +362,10 @@ export default function ChatAssistant({
                     </div>
                   ))}
                   
-                  {/* Content */}
                   <div style={{ whiteSpace: 'pre-wrap' }}>
                     {message.content}
                   </div>
                   
-                  {/* Simple thinking spinner */}
                   {!message.content && (!message.toolStatuses || message.toolStatuses.length === 0) && (
                     <div style={{ 
                       display: 'flex', 
@@ -553,7 +387,6 @@ export default function ChatAssistant({
                 </div>
               ) : (
                 <div>
-                  {/* Show final tool statuses */}
                   {message.toolStatuses && message.toolStatuses.map((status, idx) => (
                     <div key={idx} style={{
                       fontSize: 12,
@@ -565,7 +398,6 @@ export default function ChatAssistant({
                     </div>
                   ))}
                   
-                  {/* Final content */}
                   <div style={{ whiteSpace: 'pre-wrap' }}>
                     {message.content}
                   </div>
@@ -578,9 +410,9 @@ export default function ChatAssistant({
               <div style={{
                 maxWidth: '80%',
                 backgroundColor: actionStates[index] === 'accepted' 
-                  ? 'rgba(34, 197, 94, 0.1)' // Green tint for accepted
+                  ? 'rgba(34, 197, 94, 0.1)'
                   : actionStates[index] === 'rejected'
-                  ? 'rgba(239, 68, 68, 0.1)' // Red tint for rejected
+                  ? 'rgba(239, 68, 68, 0.1)'
                   : 'var(--color-bg-tertiary)',
                 border: actionStates[index] === 'accepted'
                   ? '1px solid rgba(34, 197, 94, 0.3)'
@@ -589,9 +421,7 @@ export default function ChatAssistant({
                   : '1px solid var(--color-border-secondary)',
                 borderRadius: 12,
                 padding: 16,
-                marginTop: 4,
-                opacity: actionStates[index] ? 0.8 : 1,
-                transition: 'all 0.3s ease'
+                marginTop: 4
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                   <MessageSquare size={14} />
@@ -653,10 +483,10 @@ export default function ChatAssistant({
                         fontSize: 12,
                         fontWeight: 500,
                         cursor: 'pointer'
-                    }}
-                  >
-                    Reject
-                  </button>
+                      }}
+                    >
+                      Reject
+                    </button>
                   </div>
                 )}
               </div>
@@ -665,50 +495,6 @@ export default function ChatAssistant({
         ))}
         <div ref={messagesEndRef} />
       </div>
-
-      {/* Pending Actions Preview */}
-      {proposed && proposed.length > 0 && (
-        <div style={{
-          margin: '0 20px 16px',
-          padding: 12,
-          backgroundColor: 'var(--color-warning-bg)',
-          border: '1px solid var(--color-warning-border)',
-          borderRadius: 8,
-          fontSize: 12
-        }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>Pending: {summarizeActions(proposed)}</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={() => onApply()}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: 'var(--color-success-primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: 4,
-                fontSize: 11,
-                cursor: 'pointer'
-              }}
-            >
-              Apply Now
-            </button>
-            <button
-              onClick={() => onPropose([])}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: 'transparent',
-                color: 'var(--color-text-secondary)',
-                border: '1px solid var(--color-border-secondary)',
-                borderRadius: 4,
-                fontSize: 11,
-                cursor: 'pointer'
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Input */}
       <div style={{
@@ -729,40 +515,7 @@ export default function ChatAssistant({
                    isExperimental ? '2px solid #eab308' :
                    '2px solid #93c5fd',
             borderRadius: 16,
-            padding: '12px 16px',
-            boxShadow: isDarkMode ? '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)' :
-                      isExperimental ? '0 0 20px rgba(234, 179, 8, 0.6), inset 0 0 10px rgba(234, 179, 8, 0.1)' :
-                      '0 0 15px rgba(59, 130, 246, 0.3)',
-            backdropFilter: 'blur(8px)',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            if (!isDisabled) {
-              if (isDarkMode) {
-                e.currentTarget.style.borderColor = '#7c3aed';
-                e.currentTarget.style.boxShadow = '0 0 25px rgba(124, 58, 237, 0.8), inset 0 0 15px rgba(124, 58, 237, 0.2)';
-              } else if (isExperimental) {
-                e.currentTarget.style.borderColor = '#d97706';
-                e.currentTarget.style.boxShadow = '0 0 25px rgba(217, 119, 6, 0.8), inset 0 0 15px rgba(217, 119, 6, 0.2)';
-              } else {
-                e.currentTarget.style.borderColor = '#60a5fa';
-                e.currentTarget.style.boxShadow = '0 0 20px rgba(96, 165, 250, 0.5)';
-              }
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isDisabled && document.activeElement !== textareaRef.current) {
-              if (isDarkMode) {
-                e.currentTarget.style.borderColor = '#8b5cf6';
-                e.currentTarget.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)';
-              } else if (isExperimental) {
-                e.currentTarget.style.borderColor = '#eab308';
-                e.currentTarget.style.boxShadow = '0 0 20px rgba(234, 179, 8, 0.6), inset 0 0 10px rgba(234, 179, 8, 0.1)';
-              } else {
-                e.currentTarget.style.borderColor = '#93c5fd';
-                e.currentTarget.style.boxShadow = '0 0 15px rgba(147, 197, 253, 0.3)';
-              }
-            }
+            padding: '12px 16px'
           }}
         >
           <textarea
@@ -773,34 +526,6 @@ export default function ChatAssistant({
               autoResize();
             }}
             onKeyDown={handleKeyDown}
-            onFocus={() => {
-              if (inputContainerRef.current) {
-                if (isDarkMode) {
-                  inputContainerRef.current.style.borderColor = '#7c3aed';
-                  inputContainerRef.current.style.boxShadow = '0 0 30px rgba(124, 58, 237, 1), inset 0 0 20px rgba(124, 58, 237, 0.3)';
-                } else if (isExperimental) {
-                  inputContainerRef.current.style.borderColor = '#d97706';
-                  inputContainerRef.current.style.boxShadow = '0 0 30px rgba(217, 119, 6, 1), inset 0 0 20px rgba(217, 119, 6, 0.3)';
-                } else {
-                  inputContainerRef.current.style.borderColor = '#60a5fa';
-                  inputContainerRef.current.style.boxShadow = '0 0 25px rgba(96, 165, 250, 0.6)';
-                }
-              }
-            }}
-            onBlur={() => {
-              if (inputContainerRef.current) {
-                if (isDarkMode) {
-                  inputContainerRef.current.style.borderColor = '#8b5cf6';
-                  inputContainerRef.current.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.6), inset 0 0 10px rgba(139, 92, 246, 0.1)';
-                } else if (isExperimental) {
-                  inputContainerRef.current.style.borderColor = '#eab308';
-                  inputContainerRef.current.style.boxShadow = '0 0 20px rgba(234, 179, 8, 0.6), inset 0 0 10px rgba(234, 179, 8, 0.1)';
-                } else {
-                  inputContainerRef.current.style.borderColor = '#93c5fd';
-                  inputContainerRef.current.style.boxShadow = '0 0 15px rgba(147, 197, 253, 0.3)';
-                }
-              }
-            }}
             placeholder={disabled ? 'Generate a script first to enable the assistant.' : loading ? 'AI is thinking...' : 'Type a command (Shift+Enter for newline)'}
             disabled={disabled || loading}
             rows={1}
@@ -860,7 +585,6 @@ export default function ChatAssistant({
             </button>
           )}
         </div>
-
       </div>
     </div>
   );

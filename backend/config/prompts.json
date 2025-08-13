@@ -1,6 +1,293 @@
 {
-  "video_analysis": {
-    "system_prompt": "You are a professional video analyzer. You must create a comprehensive temporal breakdown of the entire video with complete coverage from start to end.",
-    "user_prompt": "TASK: Analyze frames and audio from a video and create chunks that cover the ENTIRE video duration with NO gaps.\n\nCRITICAL REQUIREMENTS:\n1. MANDATORY FULL COVERAGE: Your chunks MUST span from 0 seconds to the full video duration (shown in metadata)\n2. ONE CHUNK PER FRAME PROVIDED: Create exactly as many chunks as frames I send you\n3. SEQUENTIAL CHUNKS: Each chunk ends where the next begins, with NO time gaps\n4. TEMPORAL ACCURACY: Use the exact timestamps from the frame data I provide\n\nFRAME-TO-CHUNK MAPPING:\n- I will provide frames with timestamps like: 0.0s, 8.67s, 15.0s, 23.0s, etc.\n- You must create chunks that start/end at these exact times\n- First chunk: startTime=0.0, endTime=8.67\n- Second chunk: startTime=8.67, endTime=15.0\n- Third chunk: startTime=15.0, endTime=23.0\n- Continue until you reach the full video duration\n\nJSON OUTPUT STRUCTURE:\n{\n  \"id\": \"ad_analysis_[timestamp]\",\n  \"url\": \"[video_url]\",\n  \"summary\": \"Complete overview of the entire video content\",\n  \"visualStyle\": \"Overall visual approach and cinematography\",\n  \"audioStyle\": \"Overall audio and narration style\",\n  \"duration\": [total_seconds],\n  \"entities\": {\n    \"people\": [\n      {\n        \"id\": \"person_id\",\n        \"role\": \"their role\",\n        \"appearance\": \"detailed physical description\",\n        \"demographics\": \"age, gender, ethnicity\"\n      }\n    ],\n    \"products\": [\n      {\n        \"id\": \"product_id\",\n        \"name\": \"product name\",\n        \"description\": \"detailed product description\",\n        \"category\": \"product category\"\n      }\n    ],\n    \"locations\": [\n      {\n        \"id\": \"location_id\",\n        \"type\": \"location type\",\n        \"description\": \"detailed setting description\",\n        \"lighting\": \"lighting conditions\"\n      }\n    ]\n  },\n  \"chunks\": [\n    {\n      \"id\": \"chunk_001\",\n      \"startTime\": 0.0,\n      \"endTime\": 8.67,\n      \"visual\": {\n        \"subjects\": [\"person_id\"],\n        \"location\": \"location_id\",\n        \"description\": \"What happens in this specific time segment\",\n        \"cameraAngle\": \"camera angle and framing\",\n        \"movement\": \"camera or subject movement\",\n        \"textOverlay\": \"any visible text\"\n      },\n      \"audio\": {\n        \"transcript\": \"exact words spoken during this time segment\",\n        \"tone\": \"vocal delivery style\"\n      }\n    },\n    {\n      \"id\": \"chunk_002\",\n      \"startTime\": 8.67,\n      \"endTime\": 15.0,\n      \"visual\": {\n        \"subjects\": [\"person_id\", \"product_id\"],\n        \"location\": \"location_id\",\n        \"description\": \"What happens in this next time segment\",\n        \"cameraAngle\": \"different camera setup\",\n        \"movement\": \"any movement or cuts\",\n        \"textOverlay\": \"any text overlays\"\n      },\n      \"audio\": {\n        \"transcript\": \"words spoken in this segment\",\n        \"tone\": \"tone for this part\"\n      }\n    }\n  ]\n}\n\nENTITY MANAGEMENT RULES:\n• ONLY CREATE ENTITIES FOR RECURRING ELEMENTS: If a person, product, or location appears in 2+ chunks, create an entity\n• REUSE ENTITIES BY ID: In chunks, reference entities using their IDs (e.g., \"presenter_1\", \"kitchen_main\")\n• DETAILED ENTITY DESCRIPTIONS: Provide comprehensive details in the entities section to avoid repetition\n• NO SINGLE-USE ENTITIES: If something appears in only one chunk, describe it directly in that chunk's visual description\n• ENTITY EFFICIENCY: This reduces output size and improves data structure\n\nVALIDATION CHECKLIST:\n✓ Does chunk count match frame count?\n✓ Do chunks cover 0s to full duration?\n✓ Are there any time gaps between chunks?\n✓ Does each chunk have a unique time segment?\n✓ Do startTime/endTime values match frame timestamps?\n✓ Are entities only created for recurring elements (2+ chunks)?\n✓ Do chunks reference entities by ID instead of re-describing them?\n\nFAILURE EXAMPLES TO AVOID:\n❌ Creating only 1-2 chunks for a 90+ second video\n❌ Chunks that don't cover the full duration\n❌ Time gaps between chunks\n❌ Ignoring provided frame timestamps\n❌ Chunks shorter than 5 seconds (unless at video end)\n\nReturn ONLY the JSON with complete temporal coverage."
+  "base_system": {
+    "core": "You are a helpful assistant inside a social media scripting app for creating short-form video advertisements (TikTok, Instagram Reels, Facebook).\n\nWhen the user asks about editing the actual script:\n- Call ALL necessary tools in a SINGLE response: get_script_editing_context, get_current_script, AND suggest_script_changes\n- You must call suggest_script_changes in the SAME tool calling phase as the other tools\n- Put your explanation in the suggest_script_changes 'explanation' parameter\n- The UI will handle displaying suggestions - you don't need to generate additional text\n\nIMPORTANT: You cannot call tools after generating text. All tool calls must happen together.\n\nFor general conversation, just be helpful and friendly. Try to keep responses on the shorter side, unless necessary to explain something.",
+    
+    "tool_aware_extension": "\n\nSelected references for focus: {{selectedReferences}}"
+  },
+  
+  "script_editing_context": {
+    "title": "Script System Context",
+    "content": "context for understanding the scripting sytem:\n\nThis app uses a chunk-based approach for short-form video scripts. Each chunk represents one shot/scene with two parts: script_text (what's said) and camera_instruction (how it's filmed).\n\nChunk types include HOOK, PRODUCT, BENEFIT, SOCIAL, and CTA. Users can rewrite, add, remove, or move chunks.\n\nCamera instructions use conversational language (\"close-up of the bottle\" not \"ECU\") and describe placement, angle, movement, and framing in layman's terms.\n\nDifferent platforms have different styles - TikTok tends toward fast, authentic content while Instagram leans more polished and aesthetic.\n\nThis is just background context to help you understand the system. Only provide detailed analysis or suggestions if the user explicitly asks for editing help or improvements."
+  },
+  
+  "scriptGeneration": {
+    "system": [
+      "You are an expert script writer for successful short-form videos on instagram and tiktok.",
+      "You MUST use the given product specs and extra instructions. When available, use provided video JSON analyses to guide tone, structure, and pacing. These are the videos that the user wants to reference in terms of style, pacing, and structure.",
+      "Output JSON only with shape: { id, title, chunks: Chunk[] } where Chunk={ id, type:'HOOK'|'BODY'|'CTA', script_text, camera_instruction }. Use whatever type of chunk is needed to best fit the video, and multiple chunks of the same type are allowed.",
+      "CRITICAL SCRIPT STRUCTURE RULES:",
+      "- Each chunk represents ONE VISUAL SHOT with ONE camera instruction",
+      "- Never combine multiple shots or camera angles into a single chunk",
+      "- If you need multiple visual cuts, create multiple separate chunks",
+      "- Each chunk = 1 video file that will be uploaded separately",
+      "- Split sentences across chunks if the visual shot changes mid-sentence",
+      "- Camera instructions must describe exactly ONE shot (e.g., 'Close-up of product' NOT 'Wide shot, then close-up')",
+      "Generate up to 20 chunks that use the reference ads as a guide for the tone, style, and structure of the script and camera directions. You will provide very detailed camera directions for each chunk to produce the best quality video.",
+      "Prefer camera directions that use more colloquial language and less technical jargon, so anyone can understand placement, angle, framing, and movement."
+    ],
+    "userNote": "In order to generate the best script, you will need to use the tools to get the product specs, extra instructions, and the reference ads to understand the style of the ad that the user wants."
+  },
+  
+  "tools": {
+    "get_product_specs": {
+      "name": "get_product_specs",
+      "description": "Return product information about the product being advertised.",
+      "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    "get_extra_instructions": {
+      "name": "get_extra_instructions", 
+      "description": "Return the extra instructions string (tone/CTA/target).",
+      "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    "get_ad_jsons": {
+      "name": "get_ad_jsons",
+      "description": "Return a detailed analysis of the given ad reference. This is CRUCIAL in understanding the style of ad that the user wants.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "urls": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["urls"]
+      }
+    },
+    "rewrite_chunk": {
+      "name": "rewrite_chunk",
+      "description": "Edit the script text and/or camera instructions for a single chunk",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "targetId": { "type": "string", "description": "The ID of the chunk to edit" },
+          "script_text": { "type": "string", "description": "New script text (optional if only updating camera instructions)" },
+          "camera_instruction": { "type": "string", "description": "New camera instruction (optional if only updating script text)" }
+        },
+        "required": ["targetId"],
+        "additionalProperties": false
+      }
+    },
+    "add_chunk": {
+      "name": "add_chunk",
+      "description": "Add a new chunk before or after an existing chunk",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the new chunk" },
+          "targetId": { "type": "string", "description": "The ID of the existing chunk to position relative to" },
+          "chunk": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Unique ID for the new chunk" },
+              "type": { "type": "string", "enum": ["HOOK", "PRODUCT", "CTA"], "description": "Type of chunk" },
+              "script_text": { "type": "string", "description": "Script text for the new chunk" },
+              "camera_instruction": { "type": "string", "description": "Camera instruction for the new chunk" }
+            },
+            "required": ["id", "type", "script_text", "camera_instruction"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["position", "targetId", "chunk"],
+        "additionalProperties": false
+      }
+    },
+    "remove_chunk": {
+      "name": "remove_chunk", 
+      "description": "Delete a chunk from the script",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "targetId": { "type": "string", "description": "The ID of the chunk to remove" }
+        },
+        "required": ["targetId"],
+        "additionalProperties": false
+      }
+    },
+    "move_chunk": {
+      "name": "move_chunk",
+      "description": "Move a chunk to a different position in the script",
+      "parameters": {
+        "type": "object", 
+        "properties": {
+          "targetId": { "type": "string", "description": "The ID of the chunk to move" },
+          "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the moved chunk" },
+          "refId": { "type": "string", "description": "The ID of the chunk to position relative to" }
+        },
+        "required": ["targetId", "position", "refId"],
+        "additionalProperties": false
+      }
+    },
+    "rewrite_chunks_batch": {
+      "name": "rewrite_chunks_batch",
+      "description": "Edit multiple chunks at once for efficiency",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "edits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "targetId": { "type": "string", "description": "The ID of the chunk to edit" },
+                "script_text": { "type": "string", "description": "New script text (optional)" },
+                "camera_instruction": { "type": "string", "description": "New camera instruction (optional)" }
+              },
+              "required": ["targetId"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["edits"],
+        "additionalProperties": false
+      }
+    },
+    "add_chunks_batch": {
+      "name": "add_chunks_batch",
+      "description": "Add multiple chunks at once for efficiency",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the new chunk" },
+                "targetId": { "type": "string", "description": "The ID of the existing chunk to position relative to" },
+                "chunk": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "description": "Unique ID for the new chunk" },
+                    "type": { "type": "string", "enum": ["HOOK", "PRODUCT", "CTA"], "description": "Type of chunk" },
+                    "script_text": { "type": "string", "description": "Script text for the new chunk" },
+                    "camera_instruction": { "type": "string", "description": "Camera instruction for the new chunk" }
+                  },
+                  "required": ["id", "type", "script_text", "camera_instruction"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["position", "targetId", "chunk"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["items"],
+        "additionalProperties": false
+      }
+    },
+    "remove_chunks_batch": {
+      "name": "remove_chunks_batch",
+      "description": "Remove multiple chunks at once for efficiency",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "targetIds": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Array of chunk IDs to remove"
+          }
+        },
+        "required": ["targetIds"],
+        "additionalProperties": false
+      }
+    },
+    "move_chunks_batch": {
+      "name": "move_chunks_batch", 
+      "description": "Move multiple chunks at once for efficiency",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "moves": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "targetId": { "type": "string", "description": "The ID of the chunk to move" },
+                "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the moved chunk" },
+                "refId": { "type": "string", "description": "The ID of the chunk to position relative to" }
+              },
+              "required": ["targetId", "position", "refId"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["moves"],
+        "additionalProperties": false
+      }
+    }
+  },
+  
+  "tool_hierarchy": {
+    "core_tools": {
+      "description": "Always available tools for basic conversation",
+      "tools": [
+        {
+          "name": "discover_capabilities",
+          "description": "Discover what tools and instruction modules are available for different tasks",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "task_category": {
+                "type": "string",
+                "description": "Optional: filter capabilities by task type"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "workspace_tools": {
+      "description": "Tools for accessing workspace content",
+      "auto_load_when": ["user mentions workspace", "user asks about content", "user selects references"],
+      "tools": [
+        {
+          "name": "get_available_references",
+          "description": "Get list of available content references (product specs, ads, instructions)"
+        },
+        {
+          "name": "read_reference",
+          "description": "Read specific content reference by ID"
+        }
+      ]
+    },
+    "script_tools": {
+      "description": "Tools for script analysis and editing",
+      "auto_load_when": ["user mentions script", "script analysis needed", "editing requested"],
+      "tools": [
+        {
+          "name": "get_current_script",
+          "description": "Get the current script chunks and metadata"
+        },
+        {
+          "name": "suggest_script_changes", 
+          "description": "Propose changes to the script with detailed explanation"
+        }
+      ]
+    },
+    "instruction_tools": {
+      "description": "Tools for loading detailed instruction modules",
+      "auto_load_when": ["complex task detected", "user asks for detailed help"],
+      "tools": [
+        {
+          "name": "get_available_instructions",
+          "description": "List all available instruction modules and their purposes"
+        },
+        {
+          "name": "load_instructions",
+          "description": "Load specific instruction modules dynamically"
+        }
+      ]
+    }
+  },
+  "display_names": {
+    "get_available_references": "Checking available content",
+    "read_reference": "Reading content reference", 
+    "get_current_script": "Analyzing current script",
+    "suggest_script_changes": "Preparing script suggestions",
+    "get_instructions": "Loading task instructions"
+  },
+  "mock_responses": {
+    "no_api_key": "Mock mode: AI assistant would help with script analysis and suggestions. Add OpenAI API key to enable full functionality.",
+    "responses_api_mock": "Mock mode: Responses API would help analyze your content using tools. Add OpenAI API key to enable.",
+    "thinking": "Mock mode: Analyzing your request...",
+    "streaming_mock": "I would help you improve your script, but I'm in mock mode. Please add your OpenAI API key to enable real functionality.",
+    "tool_status": "🔧 Reading script content"
   }
 }

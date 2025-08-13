@@ -1,0 +1,14 @@
+{
+  "prompt": "can you see the script?",
+  "selectedReferences": [],
+  "script": {
+    "chunks": [
+      {
+        "id": "c1",
+        "type": "HOOK", 
+        "script_text": "Hey! Check this out"
+      }
+    ]
+  },
+  "chatHistory": []
+}
