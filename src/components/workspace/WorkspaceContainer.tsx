@@ -420,6 +420,19 @@ const WorkspaceContainer: React.FC = () => {
           console.log('💾 Saving ad analysis for', nodeId);
           setAdAnalyses(prev => ({ ...prev, [nodeId]: analysis }));
           AdStorage.addProcessedAd(nodeId, analysis);
+          
+          // Update node with reference to analysis and summary for agent access
+          const analysisRef = `video_analysis_${nodeId}`;
+          const summary = `Video Analysis: ${analysis.summary}\nDuration: ${analysis.duration}s\nVisual Style: ${analysis.visualStyle}\nAudio Style: ${analysis.audioStyle}\nChunks: ${analysis.chunks?.length || 0}`;
+          
+          updateNode(nodeId, {
+            data: {
+              ...nodes.find(n => n.id === nodeId)?.data,
+              analysisRef,
+              content: summary,
+              analysisTimestamp: new Date().toISOString()
+            }
+          });
         }}
       />
     );

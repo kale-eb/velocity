@@ -9,7 +9,7 @@
   "api": {
     "timeout": 600,
     "max_concurrent_requests": 10,
-    "openai_model": "gpt-5-mini",
+    "openai_model": "gpt-4o",
     "max_tokens": 8000,
     "temperature": 0.2,
     "max_frames_per_batch": 6,

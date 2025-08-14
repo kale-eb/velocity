@@ -1353,5 +1353,9 @@ app.post('/api/chat/stream', async (req, res) => {
   }
 });
 
+// OpenAI Agents API endpoint
+const { handleAgentsRequest } = require('./agents/endpoint');
+app.post('/api/chat/agents', handleAgentsRequest);
+
 const PORT = process.env.EXPRESS_PORT || 5174;
 app.listen(PORT, () => console.log(`Marketing App server on :${PORT} (mock=${!HAS_KEY})`));

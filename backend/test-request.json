@@ -1,0 +1,16 @@
+{
+  "prompt": "Can you help with script editing?",
+  "script": {
+    "id": "test",
+    "title": "Test Script",
+    "chunks": [
+      {
+        "id": "c1",
+        "type": "HOOK", 
+        "script_text": "Hey there!",
+        "camera_instruction": "Close up"
+      }
+    ]
+  },
+  "workspaceNodes": []
+}

@@ -93,7 +93,7 @@ export default function ChatAssistant({
     autoResize();
 
     try {
-      const response = await fetch('/api/chat/responses', {
+      const response = await fetch('/api/chat/agents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -101,7 +101,8 @@ export default function ChatAssistant({
           selectedReferences: [],
           workspaceNodes: context.selectedNodes || [],
           script: script,
-          chatHistory: toChatHistory()
+          chatHistory: toChatHistory(),
+          videoAnalyses: context.selectedAdAnalyses || {}
         }),
         signal: controller.signal
       });

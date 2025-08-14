@@ -1,0 +1,663 @@
+{
+  "id": "ad_analysis_20231006",
+  "url": "https://www.instagram.com/reels/DNBhZWxyjQS/",
+  "summary": "Complete overview of the entire video content",
+  "visualStyle": "Vibrant and dynamic, with continuous movement and jump cuts focusing on the products.",
+  "audioStyle": "Friendly and conversational tone with clear articulation highlighting product features.",
+  "duration": 91.2,
+  "entities": {
+    "people": [
+      {
+        "id": "person_1",
+        "role": "presenter",
+        "appearance": "long dark hair, wearing a white top",
+        "demographics": "young adult female"
+      }
+    ],
+    "products": [
+      {
+        "id": "product_1",
+        "name": "Canon G7X Mark II",
+        "description": "compact camera with a zoom lens",
+        "category": "camera"
+      },
+      {
+        "id": "product_2",
+        "name": "Panasonic S9",
+        "description": "DSLR, high quality, full frame",
+        "category": "camera"
+      },
+      {
+        "id": "product_3",
+        "name": "Hollyland Mics",
+        "description": "smallest mics, clear audio quality",
+        "category": "microphone"
+      }
+    ],
+    "locations": [
+      {
+        "id": "location_1",
+        "type": "kitchen",
+        "description": "modern kitchen with wooden cabinets and marble countertop",
+        "lighting": "bright natural lighting"
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "id": "chunk_001",
+      "startTime": 0.0,
+      "endTime": 8.17,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Presenter introduces the video and showcases several boxes of equipment on a countertop.",
+        "cameraAngle": "medium shot",
+        "movement": "camera steady with jump cuts",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "I've been making content for over 10 years. Here is all the equipment I swear by. And don't worry, for 31 days of giveaways, I got these all for you!",
+        "tone": "enthusiastic and engaging"
+      }
+    },
+    {
+      "id": "chunk_002",
+      "startTime": 8.17,
+      "endTime": 11.08,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Presenter holds a stack of boxes with a smile.",
+        "cameraAngle": "medium close-up",
+        "movement": "steady",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "Starting off strong, the Canon G7X Mark II.",
+        "tone": "informative"
+      }
+    },
+    {
+      "id": "chunk_003",
+      "startTime": 11.08,
+      "endTime": 12.67,
+      "visual": {
+        "subjects": [
+          "product_1"
+        ],
+        "location": "location_1",
+        "description": "Close-up shot of the Canon G7X Mark II camera.",
+        "cameraAngle": "close-up",
+        "movement": "zoom-in",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "This bad boy has gone viral for the beautiful flash photos it takes, but I've personally",
+        "tone": "admiring"
+      }
+    },
+    {
+      "id": "chunk_004",
+      "startTime": 12.67,
+      "endTime": 14.42,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "product_1"
+        ],
+        "location": "location_1",
+        "description": "The presenter talks while holding the camera.",
+        "cameraAngle": "medium shot",
+        "movement": "slight motion",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "loved it for a strong 8 years because it is such a flattering camera for vlogging.",
+        "tone": "personal and nostalgic"
+      }
+    },
+    {
+      "id": "chunk_005",
+      "startTime": 14.42,
+      "endTime": 16.42,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Presenter takes a selfie with the camera.",
+        "cameraAngle": "medium close-up",
+        "movement": "still",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "That camera may not be cheap, but my favorite tripod is.",
+        "tone": "lighthearted"
+      }
+    },
+    {
+      "id": "chunk_006",
+      "startTime": 16.42,
+      "endTime": 18.83,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Presenter demonstrates the camera.",
+        "cameraAngle": "medium shot",
+        "movement": "stationary with minor movement",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "I've tried almost every other tripod on the market, and I still keep going back to",
+        "tone": "casual"
+      }
+    },
+    {
+      "id": "chunk_007",
+      "startTime": 18.83,
+      "endTime": 21.0,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "cat"
+        ],
+        "location": "location_1",
+        "description": "Presenter engages with a large fluffy cat.",
+        "cameraAngle": "medium close-up",
+        "movement": "static",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "this $20 one-off Amazon.",
+        "tone": "light and conversational"
+      }
+    },
+    {
+      "id": "chunk_008",
+      "startTime": 21.0,
+      "endTime": 23.0,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Presenter blows a kiss to the camera.",
+        "cameraAngle": "medium close-up",
+        "movement": "minimal",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "It's lightweight, extends so far, and most importantly, it fits in all my purses.",
+        "tone": "informative and friendly"
+      }
+    },
+    {
+      "id": "chunk_009",
+      "startTime": 23.0,
+      "endTime": 23.83,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Presenter picks up a box.",
+        "cameraAngle": "medium shot",
+        "movement": "slight movement",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "What more could a girl need?",
+        "tone": "humorous"
+      }
+    },
+    {
+      "id": "chunk_010",
+      "startTime": 23.83,
+      "endTime": 29.67,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "cat"
+        ],
+        "location": "location_1",
+        "description": "Presenter interacts with a cat while discussing products.",
+        "cameraAngle": "wide shot",
+        "movement": "stationary with jump cuts",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "When I want to use a DSLR, my go-to has been this sleeper pick from Panasonic.",
+        "tone": "excited and recommending"
+      }
+    },
+    {
+      "id": "chunk_011",
+      "startTime": 29.67,
+      "endTime": 35.4,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "cat"
+        ],
+        "location": "location_1",
+        "description": "Presenter uses a selfie stick with a camera while a cat observes.",
+        "cameraAngle": "medium shot",
+        "movement": "slight pan",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "It's called the S9, it's high quality, full frame, and it comes in so many pretty",
+        "tone": "informative"
+      }
+    },
+    {
+      "id": "chunk_012",
+      "startTime": 35.4,
+      "endTime": 36.5,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "cat"
+        ],
+        "location": "location_1",
+        "description": "Presenter holds a camera\u81ea\u62cd\u81ea\u62cd with a smile.",
+        "cameraAngle": "close-up",
+        "movement": "stationary",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "colors.",
+        "tone": "appreciative"
+      }
+    },
+    {
+      "id": "chunk_013",
+      "startTime": 36.5,
+      "endTime": 39.83,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "cat"
+        ],
+        "location": "location_1",
+        "description": "Presenter poses with various products.",
+        "cameraAngle": "wide shot",
+        "movement": "static",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "As for filming on your phone, here are my must-have accessories.",
+        "tone": "encouraging"
+      }
+    },
+    {
+      "id": "chunk_014",
+      "startTime": 39.83,
+      "endTime": 42.17,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Presenter unboxes a new product.",
+        "cameraAngle": "medium shot",
+        "movement": "stationary with unpacking actions",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "For crispy audio, the new Hollyland mics are incredible.",
+        "tone": "confident"
+      }
+    },
+    {
+      "id": "chunk_015",
+      "startTime": 42.17,
+      "endTime": 45.33,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Presenter examines the product closely.",
+        "cameraAngle": "medium close-up",
+        "movement": "minimal",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "They're the smallest mics I've ever seen, and you can really hear the difference.",
+        "tone": "impressed"
+      }
+    },
+    {
+      "id": "chunk_016",
+      "startTime": 45.33,
+      "endTime": 47.08,
+      "visual": {
+        "subjects": [
+          "product_2"
+        ],
+        "location": "location_1",
+        "description": "Close-up shot of a pink Panasonic S9 camera.",
+        "cameraAngle": "close-up",
+        "movement": "still",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "Hello!",
+        "tone": "playful"
+      }
+    },
+    {
+      "id": "chunk_017",
+      "startTime": 47.08,
+      "endTime": 49.08,
+      "visual": {
+        "subjects": [
+          "product_2"
+        ],
+        "location": "location_1",
+        "description": "Close-up of the Lumix branding on the camera.",
+        "cameraAngle": "close-up",
+        "movement": "stationary",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "This is my go-to tripod for iPhones.",
+        "tone": "assertive"
+      }
+    },
+    {
+      "id": "chunk_018",
+      "startTime": 49.08,
+      "endTime": 51.25,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "product_3"
+        ],
+        "location": "location_1",
+        "description": "Presenter waves while holding a package.",
+        "cameraAngle": "medium shot",
+        "movement": "slight motion",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "My favorite selfie light is actually not the new Moa.",
+        "tone": "confident"
+      }
+    },
+    {
+      "id": "chunk_019",
+      "startTime": 51.25,
+      "endTime": 53.08,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "cat"
+        ],
+        "location": "location_1",
+        "description": "Presenter holds a camera while cat moves across the frame.",
+        "cameraAngle": "medium shot",
+        "movement": "smooth",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "Sorry Alex Earl.",
+        "tone": "playful"
+      }
+    },
+    {
+      "id": "chunk_020",
+      "startTime": 53.08,
+      "endTime": 54.25,
+      "visual": {
+        "subjects": [
+          "product_3"
+        ],
+        "location": "location_1",
+        "description": "Close-up of Hollyland mic package.",
+        "cameraAngle": "close-up",
+        "movement": "slight zoom",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "I find the Alton light is 10 times better.",
+        "tone": "convincing"
+      }
+    },
+    {
+      "id": "chunk_021",
+      "startTime": 54.25,
+      "endTime": 55.58,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "cat"
+        ],
+        "location": "location_1",
+        "description": "Presenter moves as cat also adjusts position on the counter.",
+        "cameraAngle": "medium shot",
+        "movement": "slow motion",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "It has such a sturdy clip, and there are so many warmth settings and brightness settings.",
+        "tone": "enthusiastic"
+      }
+    },
+    {
+      "id": "chunk_022",
+      "startTime": 55.58,
+      "endTime": 57.25,
+      "visual": {
+        "subjects": [
+          "product_3"
+        ],
+        "location": "location_1",
+        "description": "Close-up of the Hollyland mic opened from the package.",
+        "cameraAngle": "close-up",
+        "movement": "minimal",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "Although I love all this equipment for content creation, the truth is, you can make an entire",
+        "tone": "reflective"
+      }
+    },
+    {
+      "id": "chunk_023",
+      "startTime": 57.25,
+      "endTime": 58.5,
+      "visual": {
+        "subjects": [
+          "product_3"
+        ],
+        "location": "location_1",
+        "description": "Presenter demonstrates the microphone setup.",
+        "cameraAngle": "close-up",
+        "movement": "static",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "career with the phone you're watching this on.",
+        "tone": "motivational"
+      }
+    },
+    {
+      "id": "chunk_024",
+      "startTime": 58.5,
+      "endTime": 60.0,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Text overlay 'without mic' is shown as presenter smiles.",
+        "cameraAngle": "medium shot",
+        "movement": "minimal with static text",
+        "textOverlay": "without mic:"
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "All it takes is a bit of belief and a lot of action.",
+        "tone": "encouraging"
+      }
+    },
+    {
+      "id": "chunk_025",
+      "startTime": 60.0,
+      "endTime": 61.33,
+      "visual": {
+        "subjects": [
+          "person_1"
+        ],
+        "location": "location_1",
+        "description": "Text overlay 'with mic' as presenter waves.",
+        "cameraAngle": "medium shot",
+        "movement": "minimal with static text",
+        "textOverlay": "with mic:"
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "Everything else is just extra.",
+        "tone": "friendly"
+      }
+    },
+    {
+      "id": "chunk_026",
+      "startTime": 61.33,
+      "endTime": 63.58,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "product_2",
+          "product_3"
+        ],
+        "location": "location_1",
+        "description": "Presenter holds different products like a selfie stick.",
+        "cameraAngle": "medium shot",
+        "movement": "slight pan",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "But, if you'd like some help along the way, comment below for a chance to win this gift box.",
+        "tone": "engaging"
+      }
+    },
+    {
+      "id": "chunk_027",
+      "startTime": 63.58,
+      "endTime": 66.08,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "cat",
+          "product_3"
+        ],
+        "location": "location_1",
+        "description": "Presenter interacts with products while a cat stands nearby.",
+        "cameraAngle": "medium shot",
+        "movement": "still",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "person_1",
+        "transcript": "",
+        "tone": "cheerful"
+      }
+    },
+    {
+      "id": "chunk_028",
+      "startTime": 66.08,
+      "endTime": 67.33,
+      "visual": {
+        "subjects": [
+          "product_3"
+        ],
+        "location": "location_1",
+        "description": "Close-up of a product display on a digital screen.",
+        "cameraAngle": "screen capture",
+        "movement": "static",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "",
+        "transcript": "",
+        "tone": "neutral"
+      }
+    },
+    {
+      "id": "chunk_029",
+      "startTime": 67.33,
+      "endTime": 69.5,
+      "visual": {
+        "subjects": [
+          "product_3"
+        ],
+        "location": "location_1",
+        "description": "Product is shown in hand with a plain background.",
+        "cameraAngle": "close-up",
+        "movement": "static",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "",
+        "transcript": "",
+        "tone": "neutral"
+      }
+    },
+    {
+      "id": "chunk_030",
+      "startTime": 69.5,
+      "endTime": 91.2,
+      "visual": {
+        "subjects": [
+          "person_1",
+          "cat",
+          "product_3"
+        ],
+        "location": "location_1",
+        "description": "Presenter shows the product in detail with a final showcase of all products.",
+        "cameraAngle": "wide shot",
+        "movement": "slow zoom out",
+        "textOverlay": ""
+      },
+      "audio": {
+        "speaker": "",
+        "transcript": "",
+        "tone": "neutral"
+      }
+    }
+  ]
+}

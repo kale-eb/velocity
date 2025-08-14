@@ -1619,8 +1619,8 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
               selectedAds: nodes.filter(node => selectedSources.has(node.id) && node.type === 'ad')
                 .map(node => node.data?.url || '').filter(Boolean),
               selectedAdAnalyses: Object.fromEntries(
-                nodes.filter(node => selectedSources.has(node.id) && node.type === 'ad' && node.data?.url && adAnalyses[node.id])
-                  .map(node => [node.data.url, adAnalyses[node.id]])
+                nodes.filter(node => selectedSources.has(node.id) && node.type === 'ad' && adAnalyses[node.id])
+                  .map(node => [node.id, adAnalyses[node.id]])
               )
             }}
           />
