@@ -1,12 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Home, Folder, Settings, Minus, Sun, Moon, Zap, Database, Download, Upload, Trash2 } from 'lucide-react';
-// import NodeBasedWorkspaceFixed from './NodeBasedWorkspaceFixed';
+import { ChevronLeft, ChevronRight, Plus, Home, Folder, Settings, Sun, Moon, Zap, Database, Download, Upload, Trash2 } from 'lucide-react';
 import EnhancedStaticScriptView from '../views/EnhancedStaticScriptView';
-// import ScriptGenerationNode from '../script/nodes/ScriptGenerationNode';
-// import ChatAssistant from '../script/chat/ChatAssistant';
 import { useWorkspaceStore, useUIStore, useProjectStore } from '../../stores';
 import { storage, WorkspaceStorage, AdStorage, ScriptStorage, AutoSave, DataPortability } from '../../utils/localStorage';
-import type { NodeType, Point } from '../../types';
+import type { NodeType } from '../../types';
 
 // API helper functions for script generation
 const apiHelpers = {
@@ -59,7 +56,6 @@ const apiHelpers = {
 const WorkspaceContainer: React.FC = () => {
   // UI Store
   const { 
-    currentView, setCurrentView,
     theme, setTheme,
     sidebarOpen, setSidebarOpen,
     chatOpen, setChatOpen 
@@ -68,17 +64,9 @@ const WorkspaceContainer: React.FC = () => {
   // Workspace Store
   const {
     nodes,
-    connections,
-    zoomLevel,
-    panOffset,
-    canvasBounds,
     addNode,
     updateNode,
     deleteNode,
-    addConnection,
-    removeConnection,
-    setZoomLevel,
-    reorganizeNodes,
     resetWorkspace
   } = useWorkspaceStore();
 
@@ -95,14 +83,10 @@ const WorkspaceContainer: React.FC = () => {
   // Use a ref to prevent double initialization in StrictMode
   const initializationRef = React.useRef(false);
 
-  // COMMENTED OUT: Node-based workspace loading 
   // Simple initialization for static script view only
   React.useEffect(() => {
     if (initializationRef.current) return;
     initializationRef.current = true;
-    
-    // Force static view for MVP
-    setCurrentView('static');
 
     // Load saved script only
     try {
@@ -174,47 +158,19 @@ const WorkspaceContainer: React.FC = () => {
   }, [adAnalyses, isLoading]);
   */
 
-  // Local state for legacy compatibility
+  // Local state
   const [activeTab, setActiveTab] = useState<'Scripting' | 'Video Assembly'>('Scripting');
-  const [zoomLimits, setZoomLimits] = useState({ min: 25, max: 200 });
-
-  const workspaceRef = useRef<HTMLDivElement>(null);
-  const nodeBasedWorkspaceRef = useRef<HTMLDivElement>(null);
 
   const tabs: ('Scripting' | 'Video Assembly')[] = ['Scripting', 'Video Assembly'];
 
-  const handleZoomChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newZoomLevel = parseInt(e.target.value);
-    setZoomLevel(newZoomLevel);
-  }, [setZoomLevel]);
-
-  // Get current nodes/connections based on active view
+  // Get current nodes for static view
   const currentNodes = nodes.filter(node => node.type !== 'scriptGenerator'); // Static view shows all except script generator
-  const currentConnections: any[] = []; // No connections in MVP static view
-  
-  console.log('Current connections being passed to workspace:', {
-    count: currentConnections.length,
-    connections: currentConnections,
-    allStoreConnections: connections,
-    currentView
-  });
-
-  const handleNodesChange = useCallback((newNodes: any[]) => {
-    // This will be handled by individual store actions instead of bulk updates
-    console.log('Nodes changed:', newNodes);
-  }, []);
-
-  const handleConnectionsChange = useCallback((newConnections: any[]) => {
-    // This will be handled by individual store actions instead of bulk updates
-    console.log('Connections changed:', newConnections);
-  }, []);
 
   const handleAddNode = useCallback((nodeType: string, data: any = {}): string | null => {
     console.log('=== HANDLE ADD NODE ===')
     console.log('Node type:', nodeType)
     console.log('Data:', data)
     console.log('Current nodes:', nodes.length)
-    console.log('Current connections:', connections.length)
     // Check node limits
     if (nodeType === 'ad') {
       const adCount = nodes.filter(n => n.type === 'ad').length;
@@ -233,58 +189,13 @@ const WorkspaceContainer: React.FC = () => {
         return null;
       }
     }
-    
-    const scriptGenerator = nodes.find(n => n.type === 'scriptGenerator');
-    
-    // Use provided position from data if available, otherwise calculate
-    let position: Point = { x: 100, y: 100 };
-    if ((data as any).position) {
-      position = (data as any).position as Point;
-      console.log('Using provided position:', position);
-    } else if (scriptGenerator) {
-      // Start near script generator
-      const baseX = scriptGenerator.position.x;
-      const baseY = scriptGenerator.position.y - 120; // Place above script generator
-      
-      // Simple collision detection - find open spot in a grid around script generator
-      const gridSize = 60;
-      let foundSpot = false;
-      
-      for (let radius = 0; radius < 5 && !foundSpot; radius++) {
-        for (let angle = 0; angle < 8 && !foundSpot; angle++) {
-          const testX = baseX + (Math.cos(angle * Math.PI / 4) * radius * gridSize);
-          const testY = baseY + (Math.sin(angle * Math.PI / 4) * radius * gridSize);
-          
-          // Check if this position conflicts with existing nodes
-          const hasConflict = nodes.some(node => {
-            const dx = Math.abs(node.position.x - testX);
-            const dy = Math.abs(node.position.y - testY);
-            return dx < 100 && dy < 80; // Node spacing buffer
-          });
-          
-          if (!hasConflict) {
-            position = { x: testX, y: testY };
-            foundSpot = true;
-          }
-        }
-      }
-      
-      // Fallback if no spot found
-      if (!foundSpot) {
-        position = { x: baseX + Math.random() * 200 - 100, y: baseY + Math.random() * 200 - 100 };
-      }
-    } else {
-      // No script generator, use random position
-      position = { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 };
-    }
 
-    // Use store action to add node (connections disabled in MVP)
-    console.log('Calling addNode with position:', position)
-    const nodeId = addNode(nodeType as NodeType, position);
+    // Use store action to add node (no position needed for static view)
+    const nodeId = addNode(nodeType as NodeType, data);
     console.log('Node added with ID:', nodeId)
     console.log('=== END HANDLE ADD NODE ===')
     return nodeId;
-  }, [nodes, addNode, connections.length]);
+  }, [nodes, addNode]);
 
   const handleUpdateNode = useCallback((nodeId: string, updates: any) => {
     updateNode(nodeId, updates);
@@ -293,22 +204,6 @@ const WorkspaceContainer: React.FC = () => {
   const handleDeleteNode = useCallback((nodeId: string) => {
     deleteNode(nodeId);
   }, [deleteNode]);
-
-  const handleWorkspaceBoundsChange = useCallback((bounds: any) => {
-    if (bounds && bounds.zoomLimits) {
-      setZoomLimits(bounds.zoomLimits);
-      
-      // Adjust current zoom if it's outside new limits
-      setZoomLevel(
-        Math.max(bounds.zoomLimits.min, Math.min(bounds.zoomLimits.max, zoomLevel))
-      );
-    }
-  }, [zoomLevel, setZoomLevel]);
-
-  const handleViewportStateChange = useCallback((viewportState: any) => {
-    // This can be removed as viewport state is now handled by the store
-    console.log('Viewport state changed:', viewportState);
-  }, []);
 
   // Script management functions
   const handleScriptUpdate = useCallback((script: any) => {
@@ -402,7 +297,6 @@ const WorkspaceContainer: React.FC = () => {
   }, [nodes, adAnalyses, isLoading, updateStorageInfo]);
 
   const renderWorkspaceContent = () => {
-    // Always render static view for MVP
     return (
       <EnhancedStaticScriptView 
         nodes={currentNodes} 

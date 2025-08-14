@@ -28,9 +28,7 @@ export interface NodePosition {
 export interface BaseNode {
   id: string;
   type: NodeType;
-  position: NodePosition;
   isSelected?: boolean;
-  isDragging?: boolean;
   data?: any;
 }
 
@@ -206,11 +204,9 @@ export interface Project {
 }
 
 // UI state types
-export type ViewMode = 'graph' | 'static';
 export type Theme = 'light' | 'dark' | 'experimental';
 
 export interface UIState {
-  currentView: ViewMode;
   theme: Theme;
   sidebarOpen: boolean;
   chatOpen: boolean;
