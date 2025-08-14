@@ -4,6 +4,7 @@ const { scriptAgent } = require('./scriptAgent');
 // Ensure dotenv is loaded
 require('dotenv').config();
 
+
 /**
  * OpenAI Agents API endpoint for script editing
  * Supports interleaved tool calling and text generation like Cursor
@@ -75,26 +76,28 @@ async function handleAgentsRequest(req, res) {
     console.log('🔧 Context keys:', Object.keys(context));
     console.log('🧠 Agent name:', scriptAgent.name);
     
-    // Validate that we're using the correct model - fail if not GPT-5-mini
-    if (scriptAgent.model !== 'gpt-5-mini') {
-      throw new Error(`Expected model 'gpt-5-mini' but agent is configured with '${scriptAgent.model}'`);
-    }
-    console.log('✅ Model validation passed: using', scriptAgent.model);
+    // Log the model being used
+    console.log('✅ Using model:', scriptAgent.model);
     
-    // For now, just pass the current prompt to avoid format issues
-    // TODO: Investigate proper chat history format for OpenAI Agents API
+    // Prepare sliding window of last 10 messages for automatic context
+    const recentMessages = chatHistory.slice(-10);
+    const contextPrompt = recentMessages.length > 0 
+      ? `Recent conversation context:\n${recentMessages.map(msg => `${msg.role}: ${msg.content}`).join('\n')}\n\nCurrent request: ${prompt}`
+      : prompt;
+    
     console.log('🗣️ Chat context:', {
       history_count: chatHistory.length,
-      current_prompt: prompt.substring(0, 50) + '...',
-      sample_history: chatHistory.slice(0, 2)
+      recent_messages: recentMessages.length,
+      context_prompt_length: contextPrompt.length,
+      current_prompt: prompt.substring(0, 50) + '...'
     });
     
-    // Run the agent with streaming enabled and current prompt only
-    const stream = await run(scriptAgent, prompt, {
+    // Run the agent with chat history automatically included in the prompt
+    const stream = await run(scriptAgent, contextPrompt, {
       stream: true,
       context: {
         ...context,
-        // Add chat history to context instead of messages
+        // Still pass full chat history for tools that might need it
         chatHistory: chatHistory
       }
     });

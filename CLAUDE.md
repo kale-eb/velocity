@@ -30,8 +30,9 @@ The platform streamlines the entire process from initial concept to final video 
 ## Technology Stack
 - **Frontend**: React 18 + Vite + Tailwind CSS
 - **Backend**: Express.js + Python FastAPI for video processing
-- **AI Integration**: OpenAI GPT-5-mini for script generation and video analysis
-- **Storage**: localStorage for persistence, file upload processing
+- **AI Integration**: OpenAI Agents API (GPT-5) with automatic 10-message context + GPT-4o for video analysis
+- **Conversation Management**: Sliding window context for natural dialogue flow without manual tool calls
+- **Storage**: localStorage for persistence, hybrid storage for workspace data
 - **Icons**: Lucide React, **Connections**: SVG
 - **Code Quality**: ESLint
 

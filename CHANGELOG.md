@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2025-08-14
+
+### Enhanced
+- **Automatic Chat Context**: Agent now automatically receives last 10 messages as context
+  - **Sliding Window**: Eliminates need for agent to explicitly call tools for conversation history
+  - **Natural Flow**: Agent understands references like "that video" or "the microphone" from previous messages
+  - **Improved UX**: More conversational and contextually aware responses
+- **Model Upgrade**: Script agent upgraded from GPT-5-mini to GPT-5 for better performance
+  - **Higher Quality**: Better understanding and more accurate responses
+  - **Cost Trade-off**: $1.25/$10.00 per million tokens vs $0.25/$2.00 (mini)
+- **Concise Response Optimization**: Updated agent instructions to prioritize brevity
+  - **User Preference**: Shorter responses unless detailed analysis is specifically requested
+  - **Suggestion Limits**: Max 3-4 suggestions to avoid overwhelming users
+
+### Improved
+- **Agent Instructions**: Refined prompts for better user experience
+  - **Context Awareness**: Better handling of script chunk continuity
+  - **Response Length**: Explicit guidance to air on the side of conciseness
+  - **Tool Usage**: Clearer boundaries between suggestions and actual script modifications
+
+### Technical Improvements
+- **Model Validation**: Removed hardcoded model validation for flexibility
+- **Context Management**: Simplified context passing without complex caching
+- **Prompt Engineering**: Optimized for natural conversation flow with automatic context injection
+
+## [0.7.0] - 2025-08-14
+
+### Added
+- **OpenAI Agents API Integration**: Complete migration from Responses API to Agents API
+  - **New Endpoint**: `/api/chat/agents` with interleaved tool calling and streaming
+  - **Agent Architecture**: Specialized scriptAgent with Zod-validated tools
+  - **Conversation Context**: Full chat history preservation for natural dialogue flow
+  - **Tool System**: 5 specialized tools for script editing, workspace content, and discovery
+  - **Hybrid Storage**: References for large data (videos), direct storage for instructions
+
+### Enhanced
+- **Video Analysis Access**: Complete JSON data now available to AI assistant
+  - **Full Transcript**: All 30 segments with timestamps and metadata
+  - **Product Detection**: Equipment and product mentions extraction
+  - **Conversation Memory**: Agent maintains context across messages
+- **Agent Instructions**: Simplified prompts leveraging GPT-5-mini intelligence
+  - **Centralized Prompts**: Moved from hardcoded to prompts.json for maintainability
+  - **Reduced Prescriptiveness**: Trust AI to handle workflows vs rigid step-by-step
+  - **Always-On History**: Chat context included in every tool call
+
+### Technical Improvements
+- **Video Processing**: Enhanced with GPT-4o for structured outputs compatibility
+- **Error Handling**: Improved streaming response processing and error recovery
+- **Code Organization**: New `/backend/agents/` directory structure
+- **Documentation**: Added comprehensive OpenAI Agents API reference files
+
+### Fixed
+- **Chat History Bugs**: Resolved conversation context not passing to agent
+- **Video Analysis Storage**: Fixed hybrid storage implementation for workspace nodes
+- **Model Compatibility**: Switched video analysis from GPT-5-mini to GPT-4o
+
 ## [0.6.1] - 2025-08-12
 
 ### Fixed

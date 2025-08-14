@@ -14,7 +14,7 @@ const prompts = require('../config/prompts.json');
  */
 const scriptAgent = new Agent({
   name: 'Script Assistant',
-  model: 'gpt-5-mini', // Use GPT-5-mini for cost efficiency
+  model: 'gpt-5', // Use GPT-5 for better performance
   // Disable model fallbacks - fail if model unavailable
   modelFallbacks: false,
   instructions: prompts.base_system.core,
