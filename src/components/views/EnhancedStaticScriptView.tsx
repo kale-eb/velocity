@@ -69,6 +69,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
   const [showTooltip, setShowTooltip] = useState<{ show: boolean; x: number; y: number; message: string }>({ show: false, x: 0, y: 0, message: '' });
   const [contextMenu, setContextMenu] = useState<{ show: boolean; x: number; y: number; nodeId: string; nodeType: string } | null>(null);
   const [filePreview, setFilePreview] = useState<{ show: boolean; file: any; content: string } | null>(null);
+  const [collapsedShots, setCollapsedShots] = useState<Set<string>>(new Set()); // Track collapsed shot sections
 
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -99,6 +100,16 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
       newExpanded.add(cardId);
     }
     setExpandedCards(newExpanded);
+  };
+
+  const toggleShotsVisibility = (sectionId: string) => {
+    const newCollapsed = new Set(collapsedShots);
+    if (newCollapsed.has(sectionId)) {
+      newCollapsed.delete(sectionId);
+    } else {
+      newCollapsed.add(sectionId);
+    }
+    setCollapsedShots(newCollapsed);
   };
 
   const handleContextMenu = (e: React.MouseEvent, nodeId: string, nodeType: string) => {
@@ -1589,79 +1600,163 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                     {/* Regular shots for non-A_ROLL_WITH_OVERLAY sections */}
                     {section.video_type !== 'A_ROLL_WITH_OVERLAY' && section.shots && section.shots.length > 0 && (
                       <div>
-                        <label className={`block text-sm font-medium mb-2 ${
-                          isDarkMode ? 'text-purple-300' :
-                          isExperimental ? 'text-yellow-300' :
-                          'text-gray-700'
-                        }`}>
-                          Shots ({section.shots.length})
-                        </label>
-                        <div className="space-y-2">
-                          {section.shots.map((shot, shotIndex) => (
-                            <div key={shotIndex} className={`border rounded p-2 ${
-                              isDarkMode ? 'border-purple-500/30 bg-purple-500/10' :
-                              isExperimental ? 'border-yellow-400/30 bg-yellow-400/10' :
-                              'border-gray-200 bg-gray-50'
-                            }`}>
-                              <div className="text-xs font-medium mb-1">Shot {shotIndex + 1}</div>
-                              <div className={`text-xs ${
-                                isDarkMode ? 'text-purple-300' :
-                                isExperimental ? 'text-yellow-300' :
-                                'text-gray-600'
-                              }`}>
-                                <div><strong>Camera:</strong> {shot.camera}</div>
-                              </div>
-                            </div>
-                          ))}
+                        <div className="flex items-center justify-between mb-2">
+                          <label className={`text-sm font-medium ${
+                            isDarkMode ? 'text-purple-300' :
+                            isExperimental ? 'text-yellow-300' :
+                            'text-gray-700'
+                          }`}>
+                            Shots ({section.shots.length})
+                          </label>
+                          <button
+                            onClick={() => toggleShotsVisibility(section.id)}
+                            className={`p-1 rounded hover:bg-opacity-20 transition-colors ${
+                              isDarkMode ? 'hover:bg-purple-400 text-purple-300' :
+                              isExperimental ? 'hover:bg-yellow-400 text-yellow-300' :
+                              'hover:bg-gray-200 text-gray-500'
+                            }`}
+                            title={collapsedShots.has(section.id) ? 'Expand shots' : 'Collapse shots'}
+                          >
+                            {collapsedShots.has(section.id) ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                          </button>
                         </div>
+                        {!collapsedShots.has(section.id) && (
+                          <div className="space-y-2">
+                            {section.shots.map((shot, shotIndex) => (
+                              <div key={shotIndex} className={`border rounded p-2 ${
+                                isDarkMode ? 'border-purple-500/30 bg-purple-500/10' :
+                                isExperimental ? 'border-yellow-400/30 bg-yellow-400/10' :
+                                'border-gray-200 bg-gray-50'
+                              }`}>
+                                <div className="text-xs font-medium mb-1">Shot {shotIndex + 1}</div>
+                                <div className="space-y-1">
+                                  <div className="text-xs font-medium">Camera:</div>
+                                  <textarea
+                                    value={shot.camera}
+                                    onChange={(e) => {
+                                      const sections = localScript.sections.map(s => {
+                                        if (s.id === section.id) {
+                                          const updatedShots = [...s.shots];
+                                          updatedShots[shotIndex] = { ...shot, camera: e.target.value };
+                                          return { ...s, shots: updatedShots };
+                                        }
+                                        return s;
+                                      });
+                                      saveScript({ ...localScript, sections });
+                                    }}
+                                    className={`w-full h-12 p-1 text-xs border rounded resize-none ${
+                                      isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
+                                      isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
+                                      'bg-white border-gray-300 text-gray-900'
+                                    }`}
+                                    placeholder="Camera instruction..."
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                     
                     {/* A-Roll with Overlay Display */}
                     {section.video_type === 'A_ROLL_WITH_OVERLAY' && (section.base_layer || section.overlay_shots?.length > 0) && (
                       <div>
-                        <label className={`block text-sm font-medium mb-2 ${
-                          isDarkMode ? 'text-purple-300' :
-                          isExperimental ? 'text-yellow-300' :
-                          'text-gray-700'
-                        }`}>
-                          A-Roll with Overlay Setup
-                        </label>
-                        <div className="space-y-2">
-                          {section.base_layer && (
-                            <div className={`border rounded p-2 ${
-                              isDarkMode ? 'border-purple-500/30 bg-purple-500/10' :
-                              isExperimental ? 'border-yellow-400/30 bg-yellow-400/10' :
-                              'border-gray-200 bg-gray-50'
-                            }`}>
-                              <div className="text-xs font-medium mb-1">Base Layer (Full Section)</div>
-                              <div className={`text-xs ${
-                                isDarkMode ? 'text-purple-300' :
-                                isExperimental ? 'text-yellow-300' :
-                                'text-gray-600'
-                              }`}>
-                                <div><strong>Camera:</strong> {section.base_layer.camera}</div>
-                              </div>
-                            </div>
-                          )}
-                          {section.overlay_shots?.map((overlay, overlayIndex) => (
-                            <div key={overlayIndex} className={`border rounded p-2 ${
-                              isDarkMode ? 'border-purple-500/30 bg-purple-500/10' :
-                              isExperimental ? 'border-yellow-400/30 bg-yellow-400/10' :
-                              'border-gray-200 bg-gray-50'
-                            }`}>
-                              <div className="text-xs font-medium mb-1">Overlay {overlayIndex + 1}</div>
-                              <div className={`text-xs ${
-                                isDarkMode ? 'text-purple-300' :
-                                isExperimental ? 'text-yellow-300' :
-                                'text-gray-600'
-                              }`}>
-                                <div><strong>Camera:</strong> {overlay.camera}</div>
-                                {overlay.start_time && <div><strong>Start:</strong> {overlay.start_time}</div>}
-                              </div>
-                            </div>
-                          ))}
+                        <div className="flex items-center justify-between mb-2">
+                          <label className={`text-sm font-medium ${
+                            isDarkMode ? 'text-purple-300' :
+                            isExperimental ? 'text-yellow-300' :
+                            'text-gray-700'
+                          }`}>
+                            A-Roll with Overlay Setup
+                          </label>
+                          <button
+                            onClick={() => toggleShotsVisibility(section.id)}
+                            className={`p-1 rounded hover:bg-opacity-20 transition-colors ${
+                              isDarkMode ? 'hover:bg-purple-400 text-purple-300' :
+                              isExperimental ? 'hover:bg-yellow-400 text-yellow-300' :
+                              'hover:bg-gray-200 text-gray-500'
+                            }`}
+                            title={collapsedShots.has(section.id) ? 'Expand shots' : 'Collapse shots'}
+                          >
+                            {collapsedShots.has(section.id) ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                          </button>
                         </div>
+                        {!collapsedShots.has(section.id) && (
+                          <div className="space-y-2">
+                            {section.base_layer && (
+                              <div className={`border rounded p-2 ${
+                                isDarkMode ? 'border-purple-500/30 bg-purple-500/10' :
+                                isExperimental ? 'border-yellow-400/30 bg-yellow-400/10' :
+                                'border-gray-200 bg-gray-50'
+                              }`}>
+                                <div className="text-xs font-medium mb-1">Base Layer (Full Section)</div>
+                                <div className="space-y-1">
+                                  <div className="text-xs font-medium">Camera:</div>
+                                  <textarea
+                                    value={section.base_layer.camera}
+                                    onChange={(e) => {
+                                      const sections = localScript.sections.map(s => {
+                                        if (s.id === section.id) {
+                                          return { ...s, base_layer: { ...s.base_layer, camera: e.target.value } };
+                                        }
+                                        return s;
+                                      });
+                                      saveScript({ ...localScript, sections });
+                                    }}
+                                    className={`w-full h-12 p-1 text-xs border rounded resize-none ${
+                                      isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
+                                      isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
+                                      'bg-white border-gray-300 text-gray-900'
+                                    }`}
+                                    placeholder="Base layer camera instruction..."
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            {section.overlay_shots?.map((overlay, overlayIndex) => (
+                              <div key={overlayIndex} className={`border rounded p-2 ${
+                                isDarkMode ? 'border-purple-500/30 bg-purple-500/10' :
+                                isExperimental ? 'border-yellow-400/30 bg-yellow-400/10' :
+                                'border-gray-200 bg-gray-50'
+                              }`}>
+                                <div className="text-xs font-medium mb-1">Overlay {overlayIndex + 1}</div>
+                                <div className="space-y-1">
+                                  <div className="text-xs font-medium">Camera:</div>
+                                  <textarea
+                                    value={overlay.camera}
+                                    onChange={(e) => {
+                                      const sections = localScript.sections.map(s => {
+                                        if (s.id === section.id) {
+                                          const updatedOverlays = [...(s.overlay_shots || [])];
+                                          updatedOverlays[overlayIndex] = { ...overlay, camera: e.target.value };
+                                          return { ...s, overlay_shots: updatedOverlays };
+                                        }
+                                        return s;
+                                      });
+                                      saveScript({ ...localScript, sections });
+                                    }}
+                                    className={`w-full h-12 p-1 text-xs border rounded resize-none ${
+                                      isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
+                                      isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
+                                      'bg-white border-gray-300 text-gray-900'
+                                    }`}
+                                    placeholder="Overlay camera instruction..."
+                                  />
+                                  {overlay.start_time && (
+                                    <div className={`text-xs mt-1 ${
+                                      isDarkMode ? 'text-purple-300' :
+                                      isExperimental ? 'text-yellow-300' :
+                                      'text-gray-600'
+                                    }`}>
+                                      <strong>Start:</strong> {overlay.start_time}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                     
