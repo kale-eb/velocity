@@ -1588,6 +1588,11 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                             s.id === section.id ? { ...s, script_text: e.target.value } : s
                           );
                           saveScript({ ...localScript, sections });
+                          
+                          // Auto-expand on value change
+                          const target = e.target as HTMLTextAreaElement;
+                          target.style.height = 'auto';
+                          target.style.height = target.scrollHeight + 'px';
                         }}
                         rows={1}
                         style={{
