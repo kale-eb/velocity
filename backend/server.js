@@ -278,22 +278,55 @@ app.post('/api/generateScript', async (req, res) => {
     }
 
     const parsed = await runWithFallback();
+    
+    // Support both new sections format and legacy chunks format
+    const sectionCount = Array.isArray(parsed?.sections) ? parsed.sections.length : 0;
     const chunkCount = Array.isArray(parsed?.chunks) ? parsed.chunks.length : 0;
+    const isNewFormat = sectionCount > 0;
     
     console.log('\n📜 [SCRIPT RESULT]');
     console.log(`📊 Generated script: "${parsed?.title || 'Untitled'}"`)
-    console.log(`🎯 Chunks created: ${chunkCount}`);
-    if (chunkCount > 0) {
-      const chunkTypes = (parsed.chunks || []).reduce((acc, chunk) => {
-        acc[chunk.type] = (acc[chunk.type] || 0) + 1;
+    
+    if (isNewFormat) {
+      console.log(`🎯 Sections created: ${sectionCount}`);
+      
+      // Count total shots across all sections
+      const totalShots = parsed.sections.reduce((total, section) => {
+        const shots = section.shots?.length || 0;
+        const overlays = section.overlay_shots?.length || 0;
+        return total + shots + overlays + (section.base_layer ? 1 : 0);
+      }, 0);
+      console.log(`📸 Total shots: ${totalShots}`);
+      
+      // Break down by video type
+      const videoTypes = (parsed.sections || []).reduce((acc, section) => {
+        acc[section.video_type] = (acc[section.video_type] || 0) + 1;
         return acc;
       }, {});
-      console.log('📋 Chunk breakdown:', chunkTypes);
-      console.log('📝 Sample chunks:');
-      (parsed.chunks || []).slice(0, 3).forEach((chunk, i) => {
-        const preview = (chunk.script_text || '').substring(0, 60) + '...';
-        console.log(`   ${i + 1}. [${chunk.type}] "${preview}"`);
+      console.log('🎬 Video type breakdown:', videoTypes);
+      
+      // Sample sections
+      console.log('📝 Sample sections:');
+      (parsed.sections || []).slice(0, 3).forEach((section, i) => {
+        const preview = (section.script_text || '').substring(0, 60) + '...';
+        console.log(`   ${i + 1}. [${section.type}/${section.video_type}] "${preview}"`);
+        console.log(`       Shots: ${section.shots?.length || 0}`);
       });
+    } else {
+      // Legacy format
+      console.log(`🎯 Chunks created: ${chunkCount}`);
+      if (chunkCount > 0) {
+        const chunkTypes = (parsed.chunks || []).reduce((acc, chunk) => {
+          acc[chunk.type] = (acc[chunk.type] || 0) + 1;
+          return acc;
+        }, {});
+        console.log('📋 Chunk breakdown:', chunkTypes);
+        console.log('📝 Sample chunks:');
+        (parsed.chunks || []).slice(0, 3).forEach((chunk, i) => {
+          const preview = (chunk.script_text || '').substring(0, 60) + '...';
+          console.log(`   ${i + 1}. [${chunk.type}] "${preview}"`);
+        });
+      }
     }
     console.log('✅ [SCRIPT GENERATION] Complete\n');
     
