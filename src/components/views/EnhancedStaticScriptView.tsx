@@ -1629,9 +1629,10 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                 'border-gray-200 bg-gray-50'
                               }`}>
                                 <div className="text-xs font-medium mb-1">Shot {shotIndex + 1}</div>
-                                <div className="space-y-1">
-                                  <div className="text-xs font-medium">Camera:</div>
-                                  <textarea
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium">Camera:</span>
+                                  <input
+                                    type="text"
                                     value={shot.camera}
                                     onChange={(e) => {
                                       const sections = localScript.sections.map(s => {
@@ -1644,7 +1645,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                       });
                                       saveScript({ ...localScript, sections });
                                     }}
-                                    className={`w-full h-12 p-1 text-xs border rounded resize-none ${
+                                    className={`flex-1 px-1 py-0.5 text-xs border rounded ${
                                       isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
                                       isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
                                       'bg-white border-gray-300 text-gray-900'
@@ -1691,9 +1692,10 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                 'border-gray-200 bg-gray-50'
                               }`}>
                                 <div className="text-xs font-medium mb-1">Base Layer (Full Section)</div>
-                                <div className="space-y-1">
-                                  <div className="text-xs font-medium">Camera:</div>
-                                  <textarea
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium">Camera:</span>
+                                  <input
+                                    type="text"
                                     value={section.base_layer.camera}
                                     onChange={(e) => {
                                       const sections = localScript.sections.map(s => {
@@ -1704,7 +1706,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                       });
                                       saveScript({ ...localScript, sections });
                                     }}
-                                    className={`w-full h-12 p-1 text-xs border rounded resize-none ${
+                                    className={`flex-1 px-1 py-0.5 text-xs border rounded ${
                                       isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
                                       isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
                                       'bg-white border-gray-300 text-gray-900'
@@ -1721,9 +1723,10 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                 'border-gray-200 bg-gray-50'
                               }`}>
                                 <div className="text-xs font-medium mb-1">Overlay {overlayIndex + 1}</div>
-                                <div className="space-y-1">
-                                  <div className="text-xs font-medium">Camera:</div>
-                                  <textarea
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium">Camera:</span>
+                                  <input
+                                    type="text"
                                     value={overlay.camera}
                                     onChange={(e) => {
                                       const sections = localScript.sections.map(s => {
@@ -1736,22 +1739,13 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                       });
                                       saveScript({ ...localScript, sections });
                                     }}
-                                    className={`w-full h-12 p-1 text-xs border rounded resize-none ${
+                                    className={`flex-1 px-1 py-0.5 text-xs border rounded ${
                                       isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
                                       isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
                                       'bg-white border-gray-300 text-gray-900'
                                     }`}
                                     placeholder="Overlay camera instruction..."
                                   />
-                                  {overlay.start_time && (
-                                    <div className={`text-xs mt-1 ${
-                                      isDarkMode ? 'text-purple-300' :
-                                      isExperimental ? 'text-yellow-300' :
-                                      'text-gray-600'
-                                    }`}>
-                                      <strong>Start:</strong> {overlay.start_time}
-                                    </div>
-                                  )}
                                 </div>
                               </div>
                             ))}

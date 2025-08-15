@@ -41,6 +41,15 @@ export default function ChatAssistant({
       const mostRecent = loadedConversations[0];
       setCurrentConversationId(mostRecent.id);
       setMessages(mostRecent.messages || []);
+      
+      // Restore action states from messages
+      const restoredActionStates = {};
+      mostRecent.messages?.forEach((msg, index) => {
+        if (msg.actions && msg.actionState) {
+          restoredActionStates[index] = msg.actionState;
+        }
+      });
+      setActionStates(restoredActionStates);
     }
   }, []);
 
@@ -104,6 +113,21 @@ export default function ChatAssistant({
 
   async function sendMessage() {
     if (!prompt.trim() || isDisabled) return;
+
+    // Auto-reject any previous unanswered proposals
+    const updatedActionStates = { ...actionStates };
+    const updatedMessages = [...messages];
+    messages.forEach((msg, index) => {
+      if (msg.actions && !actionStates[index]) {
+        updatedActionStates[index] = 'rejected';
+        updatedMessages[index] = { ...msg, actionState: 'rejected' };
+      }
+    });
+    setActionStates(updatedActionStates);
+    setMessages(updatedMessages);
+    
+    // Clear any pending proposals in the parent
+    onPropose([]);
 
     // Ensure we have a current conversation
     if (!currentConversationId) {
@@ -268,12 +292,28 @@ export default function ChatAssistant({
 
   function applyActions(actions, messageIndex) {
     setActionStates(prev => ({ ...prev, [messageIndex]: 'accepted' }));
+    
+    // Update the message with the action state
+    setMessages(prev => prev.map((msg, idx) => 
+      idx === messageIndex 
+        ? { ...msg, actionState: 'accepted' }
+        : msg
+    ));
+    
     onPropose(actions);
     onApply();
   }
 
   function rejectActions(messageIndex) {
     setActionStates(prev => ({ ...prev, [messageIndex]: 'rejected' }));
+    
+    // Update the message with the action state
+    setMessages(prev => prev.map((msg, idx) => 
+      idx === messageIndex 
+        ? { ...msg, actionState: 'rejected' }
+        : msg
+    ));
+    
     onPropose([]);
   }
 
@@ -301,7 +341,16 @@ export default function ChatAssistant({
     if (conversation) {
       setCurrentConversationId(conversationId);
       setMessages(conversation.messages || []);
-      setActionStates({});
+      
+      // Restore action states from messages
+      const restoredActionStates = {};
+      conversation.messages?.forEach((msg, index) => {
+        if (msg.actions && msg.actionState) {
+          restoredActionStates[index] = msg.actionState;
+        }
+      });
+      setActionStates(restoredActionStates);
+      
       setPrompt('');
       onPropose([]);
       currentMessageRef.current = null;
