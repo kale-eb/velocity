@@ -1589,7 +1589,25 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                           );
                           saveScript({ ...localScript, sections });
                         }}
-                        className={`w-full h-20 p-2 text-sm border rounded resize-none ${
+                        rows={1}
+                        style={{
+                          minHeight: '28px',
+                          height: 'auto',
+                          overflow: 'hidden',
+                          resize: 'none'
+                        }}
+                        ref={(el) => {
+                          if (el) {
+                            el.style.height = 'auto';
+                            el.style.height = el.scrollHeight + 'px';
+                          }
+                        }}
+                        onInput={(e) => {
+                          const target = e.target as HTMLTextAreaElement;
+                          target.style.height = 'auto';
+                          target.style.height = target.scrollHeight + 'px';
+                        }}
+                        className={`w-full p-2 text-sm border rounded ${
                           isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
                           isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
                           'bg-white border-gray-300 text-gray-900'
