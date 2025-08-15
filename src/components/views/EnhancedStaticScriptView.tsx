@@ -23,18 +23,6 @@ import ChatAssistant from '../script/chat/ChatAssistant';
 import { extractTextFromFile, getSupportedFileTypes, getFileTypeDescription } from '../../utils/fileProcessor';
 import { AdStorage } from '../../utils/localStorage';
 
-interface ScriptChunk {
-  id: string;
-  type: 'HOOK' | 'PRODUCT' | 'CTA';
-  script_text: string;
-  camera_instruction: string;
-}
-
-interface Script {
-  id: string;
-  title: string;
-  chunks: ScriptChunk[];
-}
 
 interface EnhancedStaticScriptViewProps {
   nodes?: any[];
@@ -67,11 +55,11 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
 }) => {
   // State for managing expanded cards and script generation
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
-  // Use currentScript from props instead of local state
-  const script = currentScript;
+  // Track local script state that syncs with parent
+  const [localScript, setLocalScript] = useState(currentScript);
   const [pendingActions, setPendingActions] = useState<any[]>([]);
-  const [undoStack, setUndoStack] = useState<Script[]>([]);
-  const [redoStack, setRedoStack] = useState<Script[]>([]);
+  const [undoStack, setUndoStack] = useState<any[]>([]);
+  const [redoStack, setRedoStack] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
   const [chatWidth, setChatWidth] = useState(384);
@@ -87,13 +75,15 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
   const isDarkMode = colorScheme === 'dark';
   const isExperimental = colorScheme === 'experimental';
 
-  // Log when script prop changes
+  // Sync local script with parent prop
   useEffect(() => {
     console.log('📜 EnhancedStaticScriptView: currentScript prop changed:', {
       hasScript: !!currentScript,
-      chunks: currentScript?.chunks?.length || 0,
+      format: 'sections',
+      count: currentScript?.sections?.length || 0,
       title: currentScript?.title || 'No title'
     });
+    setLocalScript(currentScript);
   }, [currentScript]);
 
   // Filter nodes by type
@@ -177,17 +167,22 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
     setSelectedSources(newSelected);
   };
 
-  const saveScript = (nextScript: Script) => {
+  const saveScript = (nextScript: any) => {
     console.log('📜 saveScript called with:', {
-      chunks: nextScript?.chunks?.length || 0,
+      sections: nextScript?.sections?.length || 0,
       title: nextScript?.title || 'No title',
       hasOnScriptUpdate: !!onScriptUpdate
     });
     
-    if (script) {
-      setUndoStack(prev => [...prev.slice(-19), script]); // Keep last 20
+    if (localScript) {
+      setUndoStack(prev => [...prev.slice(-19), localScript]); // Keep last 20
       setRedoStack([]);
     }
+    
+    // Update local state immediately for responsive UI
+    setLocalScript(nextScript);
+    
+    // Also update parent state
     if (onScriptUpdate) {
       console.log('📜 Calling onScriptUpdate...');
       onScriptUpdate(nextScript);
@@ -196,23 +191,19 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
   };
 
   const undo = () => {
-    if (undoStack.length === 0 || !script) return;
+    if (undoStack.length === 0 || !localScript) return;
     const prevScript = undoStack[undoStack.length - 1];
     setUndoStack(prev => prev.slice(0, -1));
-    setRedoStack(prev => [script, ...prev.slice(0, 19)]);
-    if (onScriptUpdate) {
-      onScriptUpdate(prevScript);
-    }
+    setRedoStack(prev => [localScript, ...prev.slice(0, 19)]);
+    saveScript(prevScript);
   };
 
   const redo = () => {
     if (redoStack.length === 0) return;
     const nextScript = redoStack[0];
     setRedoStack(prev => prev.slice(1));
-    setUndoStack(prev => [...prev, script!]);
-    if (onScriptUpdate) {
-      onScriptUpdate(nextScript);
-    }
+    setUndoStack(prev => [...prev, localScript!]);
+    saveScript(nextScript);
   };
 
 
@@ -221,8 +212,8 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
       setIsGenerating(true);
       console.log('🚀 [FRONTEND] Starting script generation...');
       
-      if (script?.chunks && script.chunks.length > 0) {
-        const confirmed = confirm('Regenerate and overwrite existing chunks?');
+      if (localScript?.sections && localScript.sections.length > 0) {
+        const confirmed = confirm('Regenerate and overwrite existing sections?');
         if (!confirmed) return;
       }
 
@@ -303,15 +294,19 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
       console.log('✅ [FRONTEND] Script generation response received:', {
         mock: result.mock,
         hasScript: !!result.script,
-        chunkCount: result.script?.chunks?.length || 0
+        format: 'sections',
+        count: result.script?.sections?.length || 0
       });
       
-      if (result?.script?.chunks) {
+      // Check for new sections format
+      const hasValidScript = result?.script && result.script.sections && result.script.sections.length > 0;
+      
+      if (hasValidScript) {
         console.log('💾 [FRONTEND] Saving generated script...');
         saveScript(result.script);
         console.log('✅ [FRONTEND] Script generation complete!');
       } else {
-        console.error('❌ [FRONTEND] No script chunks in response');
+        console.error('❌ [FRONTEND] No script sections in response');
         alert('Failed to generate script');
       }
     } catch (error) {
@@ -323,94 +318,104 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
   };
 
   const applyActions = (actions: any[]) => {
-    if (!script) return;
+    if (!localScript) return;
     
-    let chunks = [...script.chunks];
+    let sections = [...localScript.sections];
     
     for (const action of actions) {
-      console.log('Applying action:', action);
+      console.log('Applying section action:', action);
       
-      if (action.type === 'rewrite') {
-        chunks = chunks.map(c => 
-          c.id === action.targetId 
-            ? { ...c, script_text: action.script_text ?? c.script_text, camera_instruction: action.camera_instruction ?? c.camera_instruction }
-            : c
-        );
-      } else if (action.type === 'add') {
-        const idx = chunks.findIndex(c => c.id === action.targetId);
-        const newChunk = action.chunk || { 
-          id: `chunk_${Date.now()}`, 
-          type: 'PRODUCT' as const, 
-          script_text: '', 
-          camera_instruction: '' 
+      if (action.type === 'rewrite_section') {
+        sections = sections.map(s => {
+          if (s.id === action.targetId) {
+            const updates: any = {};
+            if (action.script_text !== undefined) updates.script_text = action.script_text;
+            if (action.shots !== undefined) updates.shots = action.shots;
+            return { ...s, ...updates };
+          }
+          return s;
+        });
+      } else if (action.type === 'add_section') {
+        const idx = sections.findIndex(s => s.id === action.targetId);
+        const newSection = action.section || {
+          id: `section_${Date.now()}`,
+          type: 'BODY',
+          script_text: '',
+          video_type: 'B_ROLL',
+          shots: []
         };
         if (idx >= 0) {
           if (action.position === 'before') {
-            chunks.splice(idx, 0, newChunk);
+            sections.splice(idx, 0, newSection);
           } else {
-            chunks.splice(idx + 1, 0, newChunk);
+            sections.splice(idx + 1, 0, newSection);
           }
         } else {
-          chunks.push(newChunk);
+          sections.push(newSection);
         }
-      } else if (action.type === 'remove') {
-        chunks = chunks.filter(c => c.id !== action.targetId);
-      } else if (action.type === 'move') {
-        const fromIdx = chunks.findIndex(c => c.id === action.targetId);
-        const toIdx = chunks.findIndex(c => c.id === action.refId);
+      } else if (action.type === 'remove_section') {
+        sections = sections.filter(s => s.id !== action.targetId);
+      } else if (action.type === 'move_section') {
+        const fromIdx = sections.findIndex(s => s.id === action.targetId);
+        const toIdx = sections.findIndex(s => s.id === action.refId);
         if (fromIdx >= 0 && toIdx >= 0) {
-          const [movedChunk] = chunks.splice(fromIdx, 1);
+          const [movedSection] = sections.splice(fromIdx, 1);
           const insertAt = action.position === 'before' ? toIdx : toIdx + 1;
-          chunks.splice(insertAt, 0, movedChunk);
+          sections.splice(insertAt, 0, movedSection);
         }
-      } else if (action.type === 'rewrite_batch') {
+      } else if (action.type === 'rewrite_sections_batch') {
         const edits = Array.isArray(action.edits) ? action.edits : [];
         for (const edit of edits) {
-          chunks = chunks.map(c => 
-            c.id === edit.targetId 
-              ? { ...c, script_text: edit.script_text ?? c.script_text, camera_instruction: edit.camera_instruction ?? c.camera_instruction }
-              : c
-          );
+          sections = sections.map(s => {
+            if (s.id === edit.targetId) {
+              const updates: any = {};
+              if (edit.script_text !== undefined) updates.script_text = edit.script_text;
+              if (edit.shots !== undefined) updates.shots = edit.shots;
+              return { ...s, ...updates };
+            }
+            return s;
+          });
         }
-      } else if (action.type === 'add_batch') {
+      } else if (action.type === 'add_sections_batch') {
         const items = Array.isArray(action.items) ? action.items : [];
         for (const item of items) {
-          const idx = chunks.findIndex(c => c.id === item.targetId);
-          const newChunk = item.chunk || { 
-            id: `chunk_${Date.now()}_${Math.random()}`, 
-            type: 'PRODUCT' as const, 
-            script_text: '', 
-            camera_instruction: '' 
+          const idx = sections.findIndex(s => s.id === item.targetId);
+          const newSection = item.section || {
+            id: `section_${Date.now()}_${Math.random()}`,
+            type: 'BODY',
+            script_text: '',
+            video_type: 'B_ROLL',
+            shots: []
           };
           if (idx >= 0) {
             if (item.position === 'before') {
-              chunks.splice(idx, 0, newChunk);
+              sections.splice(idx, 0, newSection);
             } else {
-              chunks.splice(idx + 1, 0, newChunk);
+              sections.splice(idx + 1, 0, newSection);
             }
           } else {
-            chunks.push(newChunk);
+            sections.push(newSection);
           }
         }
-      } else if (action.type === 'remove_batch') {
+      } else if (action.type === 'remove_sections_batch') {
         const idsToRemove = new Set(action.targetIds || []);
-        chunks = chunks.filter(c => !idsToRemove.has(c.id));
-      } else if (action.type === 'move_batch') {
+        sections = sections.filter(s => !idsToRemove.has(s.id));
+      } else if (action.type === 'move_sections_batch') {
         const moves = Array.isArray(action.moves) ? action.moves : [];
         for (const move of moves) {
-          const fromIdx = chunks.findIndex(c => c.id === move.targetId);
-          const toIdx = chunks.findIndex(c => c.id === move.refId);
+          const fromIdx = sections.findIndex(s => s.id === move.targetId);
+          const toIdx = sections.findIndex(s => s.id === move.refId);
           if (fromIdx >= 0 && toIdx >= 0) {
-            const [movedChunk] = chunks.splice(fromIdx, 1);
+            const [movedSection] = sections.splice(fromIdx, 1);
             const insertAt = move.position === 'before' ? toIdx : toIdx + 1;
-            chunks.splice(insertAt, 0, movedChunk);
+            sections.splice(insertAt, 0, movedSection);
           }
         }
       }
     }
     
-    console.log('Updated chunks after applying actions:', chunks);
-    saveScript({ ...script, chunks });
+    console.log('Updated sections after applying actions:', sections);
+    saveScript({ ...localScript, sections });
   };
 
   const handleAnalyzeAd = async (nodeId: string, url: string) => {
@@ -764,7 +769,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
             </h2>
             
             {/* Generate Button - only show when no script exists */}
-            {(!script || !script.chunks || script.chunks.length === 0) && (
+            {(!localScript || !localScript.sections || localScript.sections.length === 0) && (
               <button
                 onClick={handleGenerate}
                 disabled={!hasSelectedSources || isGenerating}
@@ -1149,7 +1154,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                     <div className="text-xs opacity-75">
                                       <div className="font-medium mb-1">Analysis Summary:</div>
                                       <div className="text-xs">
-                                        {adAnalyses[ad.id]?.chunks?.length || 'N/A'} chunks analyzed
+                                        {adAnalyses[ad.id]?.chunks?.length || 'N/A'} frames analyzed
                                       </div>
                                     </div>
                                   )}
@@ -1355,7 +1360,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
               Script Editor
             </h1>
             
-            {script && (
+            {localScript && (
               <div className="flex items-center gap-2">
                 <button
                   onClick={undo}
@@ -1389,7 +1394,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
           </div>
           
           {/* Delete Script Button */}
-          {script && script.chunks && script.chunks.length > 0 && (
+          {localScript && localScript.sections && localScript.sections.length > 0 && (
             <button
               onClick={() => {
                 if (window.confirm('Are you sure you want to delete the generated script? This action cannot be undone.')) {
@@ -1434,7 +1439,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
           isExperimental ? 'bg-black experimental-scrollbar' :
           'bg-gray-50 custom-scrollbar'
         }`}>
-          {!script || script.chunks.length === 0 ? (
+          {!localScript || localScript.sections.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
                 <FileText size={48} className={`mx-auto mb-4 ${
@@ -1459,9 +1464,9 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              {script.chunks.map((chunk, index) => (
-                <div key={chunk.id} className={`border-2 rounded-lg p-4 ${
+            <div className="space-y-6">
+              {localScript.sections.map((section, index) => (
+                <div key={section.id} className={`border-2 rounded-lg p-4 ${
                   isDarkMode ? 'bg-black border-purple-400 shadow-lg shadow-purple-500/40' :
                   isExperimental ? 'bg-black border-yellow-400 shadow-lg shadow-yellow-400/40' :
                   'bg-white border-blue-400 shadow-lg shadow-blue-400/20'
@@ -1473,20 +1478,37 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        chunk.type === 'HOOK' 
+                        section.type === 'HOOK' 
                           ? 'bg-green-100 text-green-800'
-                          : chunk.type === 'PRODUCT'
+                          : section.type === 'BODY'
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-purple-100 text-purple-800'
                       }`}>
-                        {chunk.type}
+                        {section.type}
+                      </span>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        section.video_type === 'JUMP_CUTS'
+                          ? 'bg-orange-100 text-orange-800'
+                          : section.video_type === 'B_ROLL'
+                          ? 'bg-cyan-100 text-cyan-800'
+                          : section.video_type === 'A_ROLL_WITH_OVERLAY'
+                          ? 'bg-indigo-100 text-indigo-800'
+                          : 'bg-pink-100 text-pink-800'
+                      }`}>
+                        {section.video_type}
                       </span>
                       <span className={`text-xs ${
                         isDarkMode ? 'text-purple-400/60' :
                         isExperimental ? 'text-yellow-400/60' :
                         'text-gray-500'
                       }`}>
-                        {chunk.id}
+                        {(() => {
+                          const regularShots = section.shots?.length || 0;
+                          const overlayShots = section.overlay_shots?.length || 0;
+                          const baseLayer = section.base_layer ? 1 : 0;
+                          const totalShots = regularShots + overlayShots + baseLayer;
+                          return `${totalShots} shots`;
+                        })()}
                       </span>
                     </div>
                     
@@ -1494,9 +1516,9 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                       {index > 0 && (
                         <button
                           onClick={() => {
-                            const chunks = [...script.chunks];
-                            [chunks[index], chunks[index - 1]] = [chunks[index - 1], chunks[index]];
-                            saveScript({ ...script, chunks });
+                            const sections = [...localScript.sections];
+                            [sections[index], sections[index - 1]] = [sections[index - 1], sections[index]];
+                            saveScript({ ...localScript, sections });
                           }}
                           className={`p-1 rounded hover:bg-gray-200 ${
                             isDarkMode ? 'text-purple-400 hover:bg-purple-500/20' :
@@ -1508,12 +1530,12 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                         </button>
                       )}
                       
-                      {index < script.chunks.length - 1 && (
+                      {index < localScript.sections.length - 1 && (
                         <button
                           onClick={() => {
-                            const chunks = [...script.chunks];
-                            [chunks[index], chunks[index + 1]] = [chunks[index + 1], chunks[index]];
-                            saveScript({ ...script, chunks });
+                            const sections = [...localScript.sections];
+                            [sections[index], sections[index + 1]] = [sections[index + 1], sections[index]];
+                            saveScript({ ...localScript, sections });
                           }}
                           className={`p-1 rounded hover:bg-gray-200 ${
                             isDarkMode ? 'text-purple-400 hover:bg-purple-500/20' :
@@ -1527,9 +1549,9 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                       
                       <button
                         onClick={() => {
-                          if (confirm('Delete this chunk?')) {
-                            const chunks = script.chunks.filter(c => c.id !== chunk.id);
-                            saveScript({ ...script, chunks });
+                          if (confirm('Delete this section?')) {
+                            const sections = localScript.sections.filter(s => s.id !== section.id);
+                            saveScript({ ...localScript, sections });
                           }
                         }}
                         className="p-1 rounded text-red-400 hover:bg-red-50"
@@ -1549,12 +1571,12 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                         Script text
                       </label>
                       <textarea
-                        value={chunk.script_text}
+                        value={section.script_text}
                         onChange={(e) => {
-                          const chunks = script.chunks.map(c =>
-                            c.id === chunk.id ? { ...c, script_text: e.target.value } : c
+                          const sections = localScript.sections.map(s =>
+                            s.id === section.id ? { ...s, script_text: e.target.value } : s
                           );
-                          saveScript({ ...script, chunks });
+                          saveScript({ ...localScript, sections });
                         }}
                         className={`w-full h-20 p-2 text-sm border rounded resize-none ${
                           isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
@@ -1564,29 +1586,96 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                       />
                     </div>
                     
-                    <div>
-                      <label className={`block text-sm font-medium mb-1 ${
-                        isDarkMode ? 'text-purple-300' :
-                        isExperimental ? 'text-yellow-300' :
-                        'text-gray-700'
-                      }`}>
-                        Camera instruction
-                      </label>
-                      <input
-                        value={chunk.camera_instruction}
-                        onChange={(e) => {
-                          const chunks = script.chunks.map(c =>
-                            c.id === chunk.id ? { ...c, camera_instruction: e.target.value } : c
-                          );
-                          saveScript({ ...script, chunks });
-                        }}
-                        className={`w-full p-2 text-sm border rounded ${
-                          isDarkMode ? 'bg-black border-purple-500/20 text-purple-100' :
-                          isExperimental ? 'bg-black border-yellow-400/30 text-yellow-100' :
-                          'bg-white border-gray-300 text-gray-900'
-                        }`}
-                      />
-                    </div>
+                    {section.shots && section.shots.length > 0 && (
+                      <div>
+                        <label className={`block text-sm font-medium mb-2 ${
+                          isDarkMode ? 'text-purple-300' :
+                          isExperimental ? 'text-yellow-300' :
+                          'text-gray-700'
+                        }`}>
+                          Shots ({section.shots.length})
+                        </label>
+                        <div className="space-y-2">
+                          {section.shots.map((shot, shotIndex) => (
+                            <div key={shotIndex} className={`border rounded p-2 ${
+                              isDarkMode ? 'border-purple-500/30 bg-purple-500/10' :
+                              isExperimental ? 'border-yellow-400/30 bg-yellow-400/10' :
+                              'border-gray-200 bg-gray-50'
+                            }`}>
+                              <div className="text-xs font-medium mb-1">Shot {shotIndex + 1}</div>
+                              <div className={`text-xs ${
+                                isDarkMode ? 'text-purple-300' :
+                                isExperimental ? 'text-yellow-300' :
+                                'text-gray-600'
+                              }`}>
+                                <div><strong>Camera:</strong> {shot.camera}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* A-Roll with Overlay Display */}
+                    {section.video_type === 'A_ROLL_WITH_OVERLAY' && (section.base_layer || section.overlay_shots?.length > 0) && (
+                      <div>
+                        <label className={`block text-sm font-medium mb-2 ${
+                          isDarkMode ? 'text-purple-300' :
+                          isExperimental ? 'text-yellow-300' :
+                          'text-gray-700'
+                        }`}>
+                          A-Roll with Overlay Setup
+                        </label>
+                        <div className="space-y-2">
+                          {section.base_layer && (
+                            <div className={`border rounded p-2 ${
+                              isDarkMode ? 'border-purple-500/30 bg-purple-500/10' :
+                              isExperimental ? 'border-yellow-400/30 bg-yellow-400/10' :
+                              'border-gray-200 bg-gray-50'
+                            }`}>
+                              <div className="text-xs font-medium mb-1">Base Layer (Full Section)</div>
+                              <div className={`text-xs ${
+                                isDarkMode ? 'text-purple-300' :
+                                isExperimental ? 'text-yellow-300' :
+                                'text-gray-600'
+                              }`}>
+                                <div><strong>Camera:</strong> {section.base_layer.camera}</div>
+                              </div>
+                            </div>
+                          )}
+                          {section.overlay_shots?.map((overlay, overlayIndex) => (
+                            <div key={overlayIndex} className={`border rounded p-2 ${
+                              isDarkMode ? 'border-purple-500/30 bg-purple-500/10' :
+                              isExperimental ? 'border-yellow-400/30 bg-yellow-400/10' :
+                              'border-gray-200 bg-gray-50'
+                            }`}>
+                              <div className="text-xs font-medium mb-1">Overlay {overlayIndex + 1}</div>
+                              <div className={`text-xs ${
+                                isDarkMode ? 'text-purple-300' :
+                                isExperimental ? 'text-yellow-300' :
+                                'text-gray-600'
+                              }`}>
+                                <div><strong>Camera:</strong> {overlay.camera}</div>
+                                {overlay.start_time && <div><strong>Start:</strong> {overlay.start_time}</div>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Split Screen Layout Display */}
+                    {section.video_type === 'SPLIT_SCREEN' && section.layout && (
+                      <div>
+                        <div className={`text-xs ${
+                          isDarkMode ? 'text-purple-400/70' :
+                          isExperimental ? 'text-yellow-400/70' :
+                          'text-gray-500'
+                        }`}>
+                          <strong>Layout:</strong> {section.layout.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1630,8 +1719,8 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
           />
           
           <ChatAssistant
-            disabled={!script || script.chunks.length === 0}
-            script={script}
+            disabled={!localScript || localScript.sections.length === 0}
+            script={localScript}
             onPropose={setPendingActions}
             onApply={() => {
               applyActions(pendingActions);

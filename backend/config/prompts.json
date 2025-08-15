@@ -19,7 +19,7 @@
       "SECTION STRUCTURE:",
       "Each section represents a coherent thought or idea (typically 1-2 sentences that flow together).",
       "Sections contain multiple camera shots that work together to convey that thought.",
-      "Generate 8-12 sections total for a complete video (not 30-40 individual chunks).",
+      "Generate up to 12 sections total for a complete video.",
       "",
       "Section object structure:",
       "{",
@@ -44,17 +44,25 @@
       "   Use when: Explaining while showing, tutorials, feature demonstrations",
       "   Structure: { base_layer: {camera, extends_full_section: true}, overlay_shots: [{camera, portion, start_time}] }",
       "",
-      "4. SPLIT_SCREEN: Two videos shown simultaneously",
-      "   Use when: Before/after, reactions, comparisons",
-      "   Structure: { main_video: {camera}, secondary_video: {camera}, layout: 'vertical_split'|'pip_corner' }",
+      "4. SPLIT_SCREEN: Two or more videos shown simultaneously (up to 4 videos at a time)",
+      "   Use when: Before/after, reactions, comparisons. Don't overuse this kind of shot, it's not always necessary to have in a video.",
+      "   Structure: { shots: [{camera, portion}], layout: 'vertical_split'|'horizontal_split'|'quad_split'|'pip_corner' }",
+      "   IMPORTANT: SPLIT_SCREEN sections MUST include 2-4 shots in the shots array with camera fields",
       "",
       "SHOT GUIDELINES:",
       "- Each section typically has 2-5 shots",
       "- 'portion' field maps which part of script_text goes with each shot (for backend processing)",
-      "- Use colloquial camera language (e.g., 'selfie angle' not 'high angle medium close-up')",
-      "- Ensure variety in shot types within sections"
+      "- Use colloquial but precise camera language (e.g., 'selfie angle' not 'high angle medium close-up')",
+      "- Ensure variety in shot types within sections",
+      "",
+      "VALIDATION REQUIREMENTS:",
+      "- EVERY section MUST have at least one shot (regular shots, overlay shots, base layer, or main/secondary videos)",
+      "- NO section should ever have zero shots",
+      "- JUMP_CUTS and B_ROLL: Must have 'shots' array with at least 1 item",
+      "- A_ROLL_WITH_OVERLAY: Must have 'base_layer' and optionally 'overlay_shots'",
+      "- SPLIT_SCREEN: Must have 'shots' array with 2-4 camera shots and a layout field"
     ],
-    "userNote": "In order to generate the best script, you will need to use the tools to get the product specs, extra instructions, and the reference ads to understand the style of the ad that the user wants."
+    "userNote": "In order to generate the best script, you will need to use the tools to get the product specs, extra instructions, and the reference ads. REFERENCE ADS are crucial in understanding the style of the ad that the user wants, the tone of the script, and the types of camera shots that are used in the ad."
   },
   
   "video_analysis": {
@@ -84,73 +92,96 @@
         "required": ["urls"]
       }
     },
-    "rewrite_chunk": {
-      "name": "rewrite_chunk",
-      "description": "Edit the script text and/or camera instructions for a single chunk",
+    "rewrite_section": {
+      "name": "rewrite_section",
+      "description": "Edit the script text for a section or modify individual shots within the section",
       "parameters": {
         "type": "object",
         "properties": {
-          "targetId": { "type": "string", "description": "The ID of the chunk to edit" },
-          "script_text": { "type": "string", "description": "New script text (optional if only updating camera instructions)" },
-          "camera_instruction": { "type": "string", "description": "New camera instruction (optional if only updating script text)" }
+          "targetId": { "type": "string", "description": "The ID of the section to edit" },
+          "script_text": { "type": "string", "description": "New script text for the entire section (optional)" },
+          "shots": {
+            "type": "array",
+            "description": "Updated shots for the section (optional)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "camera": { "type": "string", "description": "Camera instruction for this shot" },
+                "portion": { "type": "string", "description": "Script portion for this shot" }
+              },
+              "required": ["camera", "portion"]
+            }
+          }
         },
         "required": ["targetId"],
         "additionalProperties": false
       }
     },
-    "add_chunk": {
-      "name": "add_chunk",
-      "description": "Add a new chunk before or after an existing chunk",
+    "add_section": {
+      "name": "add_section",
+      "description": "Add a new section before or after an existing section",
       "parameters": {
         "type": "object",
         "properties": {
-          "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the new chunk" },
-          "targetId": { "type": "string", "description": "The ID of the existing chunk to position relative to" },
-          "chunk": {
+          "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the new section" },
+          "targetId": { "type": "string", "description": "The ID of the existing section to position relative to" },
+          "section": {
             "type": "object",
             "properties": {
-              "id": { "type": "string", "description": "Unique ID for the new chunk" },
-              "type": { "type": "string", "enum": ["HOOK", "PRODUCT", "CTA"], "description": "Type of chunk" },
-              "script_text": { "type": "string", "description": "Script text for the new chunk" },
-              "camera_instruction": { "type": "string", "description": "Camera instruction for the new chunk" }
+              "id": { "type": "string", "description": "Unique ID for the new section" },
+              "type": { "type": "string", "enum": ["HOOK", "BODY", "CTA"], "description": "Type of section" },
+              "script_text": { "type": "string", "description": "Script text for the section" },
+              "video_type": { "type": "string", "enum": ["JUMP_CUTS", "B_ROLL", "A_ROLL_WITH_OVERLAY", "SPLIT_SCREEN"], "description": "Video production style" },
+              "shots": {
+                "type": "array",
+                "description": "Individual shots within this section",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "camera": { "type": "string", "description": "Camera instruction" },
+                    "portion": { "type": "string", "description": "Script portion" }
+                  },
+                  "required": ["camera", "portion"]
+                }
+              }
             },
-            "required": ["id", "type", "script_text", "camera_instruction"],
+            "required": ["id", "type", "script_text", "video_type"],
             "additionalProperties": false
           }
         },
-        "required": ["position", "targetId", "chunk"],
+        "required": ["position", "targetId", "section"],
         "additionalProperties": false
       }
     },
-    "remove_chunk": {
-      "name": "remove_chunk", 
-      "description": "Delete a chunk from the script",
+    "remove_section": {
+      "name": "remove_section", 
+      "description": "Delete a section from the script",
       "parameters": {
         "type": "object",
         "properties": {
-          "targetId": { "type": "string", "description": "The ID of the chunk to remove" }
+          "targetId": { "type": "string", "description": "The ID of the section to remove" }
         },
         "required": ["targetId"],
         "additionalProperties": false
       }
     },
-    "move_chunk": {
-      "name": "move_chunk",
-      "description": "Move a chunk to a different position in the script",
+    "move_section": {
+      "name": "move_section",
+      "description": "Move a section to a different position in the script",
       "parameters": {
         "type": "object", 
         "properties": {
-          "targetId": { "type": "string", "description": "The ID of the chunk to move" },
-          "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the moved chunk" },
-          "refId": { "type": "string", "description": "The ID of the chunk to position relative to" }
+          "targetId": { "type": "string", "description": "The ID of the section to move" },
+          "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the moved section" },
+          "refId": { "type": "string", "description": "The ID of the section to position relative to" }
         },
         "required": ["targetId", "position", "refId"],
         "additionalProperties": false
       }
     },
-    "rewrite_chunks_batch": {
-      "name": "rewrite_chunks_batch",
-      "description": "Edit multiple chunks at once for efficiency",
+    "rewrite_sections_batch": {
+      "name": "rewrite_sections_batch",
+      "description": "Edit multiple sections at once for efficiency",
       "parameters": {
         "type": "object",
         "properties": {
@@ -159,9 +190,20 @@
             "items": {
               "type": "object",
               "properties": {
-                "targetId": { "type": "string", "description": "The ID of the chunk to edit" },
+                "targetId": { "type": "string", "description": "The ID of the section to edit" },
                 "script_text": { "type": "string", "description": "New script text (optional)" },
-                "camera_instruction": { "type": "string", "description": "New camera instruction (optional)" }
+                "shots": {
+                  "type": "array",
+                  "description": "Updated shots for the section (optional)",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "camera": { "type": "string" },
+                      "portion": { "type": "string" }
+                    },
+                    "required": ["camera", "portion"]
+                  }
+                }
               },
               "required": ["targetId"],
               "additionalProperties": false
@@ -172,9 +214,9 @@
         "additionalProperties": false
       }
     },
-    "add_chunks_batch": {
-      "name": "add_chunks_batch",
-      "description": "Add multiple chunks at once for efficiency",
+    "add_sections_batch": {
+      "name": "add_sections_batch",
+      "description": "Add multiple sections at once for efficiency",
       "parameters": {
         "type": "object",
         "properties": {
@@ -183,21 +225,32 @@
             "items": {
               "type": "object",
               "properties": {
-                "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the new chunk" },
-                "targetId": { "type": "string", "description": "The ID of the existing chunk to position relative to" },
-                "chunk": {
+                "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the new section" },
+                "targetId": { "type": "string", "description": "The ID of the existing section to position relative to" },
+                "section": {
                   "type": "object",
                   "properties": {
-                    "id": { "type": "string", "description": "Unique ID for the new chunk" },
-                    "type": { "type": "string", "enum": ["HOOK", "PRODUCT", "CTA"], "description": "Type of chunk" },
-                    "script_text": { "type": "string", "description": "Script text for the new chunk" },
-                    "camera_instruction": { "type": "string", "description": "Camera instruction for the new chunk" }
+                    "id": { "type": "string", "description": "Unique ID for the new section" },
+                    "type": { "type": "string", "enum": ["HOOK", "BODY", "CTA"], "description": "Type of section" },
+                    "script_text": { "type": "string", "description": "Script text for the section" },
+                    "video_type": { "type": "string", "enum": ["JUMP_CUTS", "B_ROLL", "A_ROLL_WITH_OVERLAY", "SPLIT_SCREEN"], "description": "Video production style" },
+                    "shots": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "camera": { "type": "string" },
+                          "portion": { "type": "string" }
+                        },
+                        "required": ["camera", "portion"]
+                      }
+                    }
                   },
-                  "required": ["id", "type", "script_text", "camera_instruction"],
+                  "required": ["id", "type", "script_text", "video_type"],
                   "additionalProperties": false
                 }
               },
-              "required": ["position", "targetId", "chunk"],
+              "required": ["position", "targetId", "section"],
               "additionalProperties": false
             }
           }
@@ -206,25 +259,25 @@
         "additionalProperties": false
       }
     },
-    "remove_chunks_batch": {
-      "name": "remove_chunks_batch",
-      "description": "Remove multiple chunks at once for efficiency",
+    "remove_sections_batch": {
+      "name": "remove_sections_batch",
+      "description": "Remove multiple sections at once for efficiency",
       "parameters": {
         "type": "object",
         "properties": {
           "targetIds": {
             "type": "array",
             "items": { "type": "string" },
-            "description": "Array of chunk IDs to remove"
+            "description": "Array of section IDs to remove"
           }
         },
         "required": ["targetIds"],
         "additionalProperties": false
       }
     },
-    "move_chunks_batch": {
-      "name": "move_chunks_batch", 
-      "description": "Move multiple chunks at once for efficiency",
+    "move_sections_batch": {
+      "name": "move_sections_batch", 
+      "description": "Move multiple sections at once for efficiency",
       "parameters": {
         "type": "object",
         "properties": {
@@ -233,9 +286,9 @@
             "items": {
               "type": "object",
               "properties": {
-                "targetId": { "type": "string", "description": "The ID of the chunk to move" },
-                "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the moved chunk" },
-                "refId": { "type": "string", "description": "The ID of the chunk to position relative to" }
+                "targetId": { "type": "string", "description": "The ID of the section to move" },
+                "position": { "type": "string", "enum": ["before", "after"], "description": "Where to place the moved section" },
+                "refId": { "type": "string", "description": "The ID of the section to position relative to" }
               },
               "required": ["targetId", "position", "refId"],
               "additionalProperties": false
@@ -287,7 +340,7 @@
       "tools": [
         {
           "name": "get_current_script",
-          "description": "Get the current script chunks and metadata"
+          "description": "Get the current script sections and metadata"
         },
         {
           "name": "suggest_script_changes", 
@@ -321,7 +374,6 @@
     "no_api_key": "Mock mode: AI assistant would help with script analysis and suggestions. Add OpenAI API key to enable full functionality.",
     "responses_api_mock": "Mock mode: Responses API would help analyze your content using tools. Add OpenAI API key to enable.",
     "thinking": "Mock mode: Analyzing your request...",
-    "streaming_mock": "I would help you improve your script, but I'm in mock mode. Please add your OpenAI API key to enable real functionality.",
     "tool_status": "🔧 Reading script content"
   }
 }

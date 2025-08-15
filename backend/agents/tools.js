@@ -23,11 +23,11 @@ const getScriptEditingContext = tool({
 
 /**
  * Current Script Tool
- * Gets the current script chunks and metadata
+ * Gets the current script sections and metadata
  */
 const getCurrentScript = tool({
   name: 'get_current_script',
-  description: 'Get the current script chunks and metadata',
+  description: 'Get the current script sections and metadata',
   parameters: z.object({}),
   async execute(_, runContext) {
     const { script, sendToolStatus } = runContext?.context || {};
@@ -41,12 +41,13 @@ const getCurrentScript = tool({
       script: {
         id: script.id,
         title: script.title,
-        chunks: script.chunks
+        sections: script.sections
       },
       metadata: {
-        chunkCount: script.chunks?.length || 0,
-        types: script.chunks?.map(c => c.type) || [],
-        estimatedDuration: (script.chunks?.length || 0) * 4 // ~4 seconds per chunk
+        sectionCount: script.sections?.length || 0,
+        types: script.sections?.map(s => s.type) || [],
+        videoTypes: script.sections?.map(s => s.video_type) || [],
+        estimatedDuration: (script.sections?.length || 0) * 6 // ~6 seconds per section
       }
     };
   },
@@ -58,21 +59,28 @@ const getCurrentScript = tool({
  */
 const suggestScriptChanges = tool({
   name: 'suggest_script_changes',
-  description: 'ONLY suggest changes to the script - creates interactive UI for user approval. Call this tool with exact parameters: explanation (string) and actions (array of action objects).',
+  description: 'ONLY suggest changes to the script sections - creates interactive UI for user approval. Call this tool with exact parameters: explanation (string) and actions (array of action objects).',
   parameters: z.object({
     explanation: z.string().describe('Clear explanation of why these proposed changes would improve the script'),
     actions: z.array(z.object({
-      type: z.enum(['rewrite', 'add', 'remove', 'move']).describe('Type of modification to make'),
-      targetId: z.string().describe('ID of the chunk to modify or reference point'),
-      script_text: z.string().nullable().optional().describe('New script text (for rewrite/add actions)'),
-      camera_instruction: z.string().nullable().optional().describe('New camera instruction (for rewrite/add actions)'),
-      position: z.enum(['before', 'after']).nullable().optional().describe('Position for add/move actions'),
-      newChunk: z.object({
+      type: z.enum(['rewrite_section', 'add_section', 'remove_section', 'move_section']).describe('Type of modification to make'),
+      targetId: z.string().describe('ID of the section to modify or reference point'),
+      script_text: z.string().nullable().optional().describe('New script text (for rewrite_section actions)'),
+      shots: z.array(z.object({
+        camera: z.string().describe('Camera instruction for this shot'),
+        portion: z.string().describe('Script portion for this shot')
+      })).nullable().optional().describe('Updated shots array (for rewrite_section actions)'),
+      position: z.enum(['before', 'after']).nullable().optional().describe('Position for add_section/move_section actions'),
+      section: z.object({
         id: z.string(),
-        type: z.enum(['HOOK', 'PRODUCT', 'BENEFIT', 'SOCIAL', 'CTA']),
+        type: z.enum(['HOOK', 'BODY', 'CTA']),
         script_text: z.string(),
-        camera_instruction: z.string()
-      }).nullable().optional().describe('Complete new chunk data for add actions')
+        video_type: z.enum(['JUMP_CUTS', 'B_ROLL', 'A_ROLL_WITH_OVERLAY', 'SPLIT_SCREEN']),
+        shots: z.array(z.object({
+          camera: z.string(),
+          portion: z.string()
+        }))
+      }).nullable().optional().describe('Complete new section data for add_section actions')
     }))
   }),
   async execute({ explanation, actions }, runContext) {
@@ -92,9 +100,13 @@ const suggestScriptChanges = tool({
         type: action.type,
         targetId: action.targetId,
         script_text_length: action.script_text?.length || 0,
-        camera_instruction_length: action.camera_instruction?.length || 0,
+        shots_count: action.shots?.length || 0,
         script_preview: action.script_text?.substring(0, 50) || 'EMPTY',
-        camera_preview: action.camera_instruction?.substring(0, 50) || 'EMPTY'
+        section_data: action.section ? {
+          type: action.section.type,
+          video_type: action.section.video_type,
+          shots_count: action.section.shots?.length || 0
+        } : 'NONE'
       });
     });
     

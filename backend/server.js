@@ -67,13 +67,43 @@ function summarizeInputs(inputs = {}, adAnalyses = {}) {
   };
 }
 
-function deterministicChunks(inputs) {
-  const base = [
-    { id: 'c1', type: 'HOOK', script_text: 'Stop scrolling — meet the bottle that keeps up.', camera_instruction: 'Tight face, eye-level, fast cut.' },
-    { id: 'c2', type: 'PRODUCT', script_text: '24h cold, 12h hot, leak-proof, fits cup holders.', camera_instruction: 'Product macro on stainless texture.' },
-    { id: 'c3', type: 'CTA', script_text: 'Hydrate smarter. Shop now.', camera_instruction: 'Logo + hand placing bottle into gym bag.' }
+function deterministicSections(inputs) {
+  const sections = [
+    { 
+      id: 'sec1', 
+      type: 'HOOK', 
+      script_text: 'Stop scrolling — meet the bottle that keeps up with your lifestyle.', 
+      video_type: 'JUMP_CUTS',
+      shots: [
+        { camera: 'Tight face shot, eye level', portion: 'Stop scrolling —' },
+        { camera: 'Quick zoom on bottle', portion: 'meet the bottle that keeps up with your lifestyle.' }
+      ],
+      source: 'single_video'
+    },
+    { 
+      id: 'sec2', 
+      type: 'BODY', 
+      script_text: '24 hours cold, 12 hours hot, completely leak-proof and fits any cup holder.', 
+      video_type: 'B_ROLL',
+      shots: [
+        { camera: 'Product macro on stainless texture', portion: '24 hours cold, 12 hours hot,' },
+        { camera: 'Testing leak-proof seal', portion: 'completely leak-proof' },
+        { camera: 'Bottle sliding into car cup holder', portion: 'and fits any cup holder.' }
+      ],
+      source: 'multiple_videos'
+    },
+    { 
+      id: 'sec3', 
+      type: 'CTA', 
+      script_text: 'Hydrate smarter. Shop now and upgrade your hydration game.', 
+      video_type: 'A_ROLL_WITH_OVERLAY',
+      base_layer: { camera: 'Person holding bottle, direct to camera', extends_full_section: true },
+      overlay_shots: [
+        { camera: 'Logo animation with website URL', portion: 'Shop now', start_time: '50%' }
+      ]
+    }
   ];
-  return { id: `s_${Date.now()}`, title: inputs?.title || 'Generated Script', chunks: base };
+  return { id: `s_${Date.now()}`, title: inputs?.title || 'Generated Script', sections };
 }
 
 function applyActionsServer(script, actions) {
@@ -146,8 +176,8 @@ app.post('/api/generateScript', async (req, res) => {
     console.log('============================================================\n');
 
     if (!HAS_KEY) {
-      console.log('[generateScript] mock mode returning deterministic chunks');
-      return res.json({ mock: true, script: deterministicChunks(inputs) });
+      console.log('[generateScript] mock mode returning deterministic sections');
+      return res.json({ mock: true, script: deterministicSections(inputs) });
     }
 
     // Tool definitions for context retrieval
@@ -305,13 +335,64 @@ app.post('/api/generateScript', async (req, res) => {
       }, {});
       console.log('🎬 Video type breakdown:', videoTypes);
       
-      // Sample sections
-      console.log('📝 Sample sections:');
-      (parsed.sections || []).slice(0, 3).forEach((section, i) => {
-        const preview = (section.script_text || '').substring(0, 60) + '...';
-        console.log(`   ${i + 1}. [${section.type}/${section.video_type}] "${preview}"`);
-        console.log(`       Shots: ${section.shots?.length || 0}`);
+      // DETAILED SECTION ANALYSIS
+      console.log('\n📝 DETAILED SECTION ANALYSIS:');
+      console.log('==========================================');
+      parsed.sections.forEach((section, idx) => {
+        const sectionShots = section.shots?.length || 0;
+        const overlayShots = section.overlay_shots?.length || 0;
+        const baseLayer = section.base_layer ? 1 : 0;
+        const sectionTotal = sectionShots + overlayShots + baseLayer;
+        
+        console.log(`\n${idx + 1}. Section: ${section.id}`);
+        console.log(`   Type: ${section.type} | Video Type: ${section.video_type}`);
+        console.log(`   Script: "${section.script_text || 'EMPTY SCRIPT TEXT'}"`);
+        console.log(`   Total Shots: ${sectionTotal}`);
+        
+        if (section.shots?.length > 0) {
+          console.log(`   Regular Shots (${section.shots.length}):`);
+          section.shots.forEach((shot, shotIdx) => {
+            console.log(`     ${shotIdx + 1}. Camera: "${shot.camera || 'EMPTY'}" | Portion: "${shot.portion || 'EMPTY'}"`);
+          });
+        } else {
+          console.log(`   ❌ NO REGULAR SHOTS`);
+        }
+        
+        if (section.overlay_shots?.length > 0) {
+          console.log(`   Overlay Shots (${section.overlay_shots.length}):`);
+          section.overlay_shots.forEach((shot, shotIdx) => {
+            console.log(`     ${shotIdx + 1}. Camera: "${shot.camera || 'EMPTY'}" | Portion: "${shot.portion || 'EMPTY'}" | Start: ${shot.start_time || 'N/A'}`);
+          });
+        }
+        
+        if (section.base_layer) {
+          console.log(`   Base Layer: "${section.base_layer.camera || 'EMPTY'}" | Full Section: ${section.base_layer.extends_full_section || false}`);
+        }
+        
+        // Validation warnings
+        if (sectionTotal === 0) {
+          console.log(`   🚨 WARNING: NO SHOTS FOUND IN THIS SECTION!`);
+        }
+        if (!section.script_text || section.script_text.trim() === '') {
+          console.log(`   🚨 WARNING: EMPTY SCRIPT TEXT!`);
+        }
       });
+      
+      console.log('==========================================\n');
+      
+      // Overall validation - sections must have at least one shot
+      const emptySections = parsed.sections.filter(s => 
+        (!s.shots || s.shots.length === 0) && 
+        (!s.overlay_shots || s.overlay_shots.length === 0) && 
+        !s.base_layer
+      );
+      
+      if (emptySections.length > 0) {
+        console.log(`❌ SCRIPT VALIDATION FAILED: ${emptySections.length}/${sectionCount} sections have NO SHOTS:`);
+        emptySections.forEach(s => console.log(`   - ${s.id} (${s.type}/${s.video_type}): "${s.script_text?.substring(0, 40)}..."`));
+      } else {
+        console.log(`✅ SCRIPT VALIDATION PASSED: All ${sectionCount} sections have shots`);
+      }
     } else {
       // Legacy format
       console.log(`🎯 Chunks created: ${chunkCount}`);
@@ -345,7 +426,7 @@ app.post('/api/chatActions', async (req, res) => {
     console.log('\n💬 [CHAT ACTIONS] Starting...');
     console.log('📊 Request Summary:', {
       prompt_length: (prompt || '').length,
-      script_chunks: (script?.chunks || []).length,
+      script_sections: script?.sections?.length || 0,
       context_keys: context ? Object.keys(context) : [],
       chat_history_msgs: Array.isArray(chat_history) ? chat_history.length : 0,
       model: CHAT_MODEL
@@ -448,30 +529,30 @@ app.post('/api/chatActions', async (req, res) => {
             const availableAnalyses = payload.filter(p => p.analysis).length;
             console.log(`     ↳ Returning ${availableAnalyses}/${urls.length} ad analyses`);
             followups.push({ role: 'tool', tool_call_id: tc.id, name: fn, content: JSON.stringify({ items: payload }) });
-          } else if (['rewrite_chunk', 'add_chunk', 'remove_chunk', 'move_chunk', 'rewrite_chunks_batch', 'add_chunks_batch', 'remove_chunks_batch', 'move_chunks_batch'].includes(fn)) {
+          } else if (['rewrite_section', 'add_section', 'remove_section', 'move_section', 'rewrite_sections_batch', 'add_sections_batch', 'remove_sections_batch', 'move_sections_batch'].includes(fn)) {
             // Handle script editing tools - these will be collected for final response
             console.log(`     ↳ Converting ${fn} tool call to action`);
             hasScriptEditingTools = true;
             let action;
             
-            if (fn === 'rewrite_chunk') {
-              action = { type: 'rewrite', targetId: args.targetId };
+            if (fn === 'rewrite_section') {
+              action = { type: 'rewrite_section', targetId: args.targetId };
               if (args.script_text !== undefined) action.script_text = args.script_text;
-              if (args.camera_instruction !== undefined) action.camera_instruction = args.camera_instruction;
-            } else if (fn === 'add_chunk') {
-              action = { type: 'add', position: args.position, targetId: args.targetId, chunk: args.chunk };
-            } else if (fn === 'remove_chunk') {
-              action = { type: 'remove', targetId: args.targetId };
-            } else if (fn === 'move_chunk') {
-              action = { type: 'move', targetId: args.targetId, position: args.position, refId: args.refId };
-            } else if (fn === 'rewrite_chunks_batch') {
-              action = { type: 'rewrite_batch', edits: args.edits };
-            } else if (fn === 'add_chunks_batch') {
-              action = { type: 'add_batch', items: args.items };
-            } else if (fn === 'remove_chunks_batch') {
-              action = { type: 'remove_batch', targetIds: args.targetIds };
-            } else if (fn === 'move_chunks_batch') {
-              action = { type: 'move_batch', moves: args.moves };
+              if (args.shots !== undefined) action.shots = args.shots;
+            } else if (fn === 'add_section') {
+              action = { type: 'add_section', position: args.position, targetId: args.targetId, section: args.section };
+            } else if (fn === 'remove_section') {
+              action = { type: 'remove_section', targetId: args.targetId };
+            } else if (fn === 'move_section') {
+              action = { type: 'move_section', targetId: args.targetId, position: args.position, refId: args.refId };
+            } else if (fn === 'rewrite_sections_batch') {
+              action = { type: 'rewrite_sections_batch', edits: args.edits };
+            } else if (fn === 'add_sections_batch') {
+              action = { type: 'add_sections_batch', items: args.items };
+            } else if (fn === 'remove_sections_batch') {
+              action = { type: 'remove_sections_batch', targetIds: args.targetIds };
+            } else if (fn === 'move_sections_batch') {
+              action = { type: 'move_sections_batch', moves: args.moves };
             }
             
             collectedActions.push(action);
@@ -716,7 +797,7 @@ app.post('/api/chat/responses', async (req, res) => {
     console.log('📊 Request Summary:', {
       prompt_length: (prompt || '').length,
       selected_references: selectedReferences.length,
-      script_chunks: script?.chunks?.length || 0,
+      script_sections: script?.sections?.length || 0,
       chat_history: chatHistory.length,
       has_previous_response: !!previousResponseId,
       has_tool_outputs: previousToolOutputs.length,
@@ -1063,8 +1144,8 @@ app.post('/api/chat/responses', async (req, res) => {
   }
 });
 
-// Streaming Chat Endpoint with Agentic Behavior (Legacy)
-app.post('/api/chat/stream', async (req, res) => {
+// DELETED - Legacy streaming endpoint removed (using /api/chat/agents instead)
+/*app.post('/api/chat/stream', async (req, res) => {
   try {
     const { prompt, workspaceNodes = [], script, chatHistory = [] } = req.body || {};
     
@@ -1072,7 +1153,7 @@ app.post('/api/chat/stream', async (req, res) => {
     console.log('📊 Request Summary:', {
       prompt_length: (prompt || '').length,
       workspace_nodes: workspaceNodes.length,
-      script_chunks: script?.chunks?.length || 0,
+      script_sections: script?.sections?.length || 0,
       chat_history: chatHistory.length,
       model: CHAT_MODEL
     });
@@ -1119,8 +1200,8 @@ app.post('/api/chat/stream', async (req, res) => {
       {
         type: 'function', 
         function: {
-          name: 'get_script_content',
-          description: 'Read the current script chunks and their content',
+          name: 'get_current_script',
+          description: 'Get the current script sections and metadata',
           parameters: {
             type: 'object',
             properties: {},
@@ -1295,10 +1376,10 @@ app.post('/api/chat/stream', async (req, res) => {
               }));
               toolResult = JSON.stringify({ nodes: content });
               
-            } else if (toolName === 'get_script_content') {
+            } else if (toolName === 'get_current_script') {
               toolResult = JSON.stringify({
                 script: script || null,
-                chunks: script?.chunks || []
+                sections: script?.sections || []
               });
               
             } else if (toolName === 'suggest_script_changes') {
@@ -1384,7 +1465,7 @@ app.post('/api/chat/stream', async (req, res) => {
     })}\n\n`);
     res.end();
   }
-});
+});*/
 
 // OpenAI Agents API endpoint
 const { handleAgentsRequest } = require('./agents/endpoint');

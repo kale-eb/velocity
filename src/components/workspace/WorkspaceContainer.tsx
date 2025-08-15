@@ -96,8 +96,19 @@ const WorkspaceContainer: React.FC = () => {
         const savedCurrentScript = savedScripts['current_script'] || null;
         
         if (savedCurrentScript) {
-          console.log('📜 WorkspaceContainer: Found saved script with', savedCurrentScript.chunks?.length || 0, 'chunks');
-          setCurrentScript(savedCurrentScript);
+          // Only handle new sections format
+          if (savedCurrentScript.sections && Array.isArray(savedCurrentScript.sections)) {
+            const totalShots = savedCurrentScript.sections.reduce((total: number, section: any) => {
+              const shots = section.shots?.length || 0;
+              const overlays = section.overlay_shots?.length || 0;
+              return total + shots + overlays + (section.base_layer ? 1 : 0);
+            }, 0);
+            console.log('📜 WorkspaceContainer: Found saved script with', savedCurrentScript.sections.length, 'sections,', totalShots, 'total shots');
+            setCurrentScript(savedCurrentScript);
+          } else {
+            console.log('📜 WorkspaceContainer: Ignoring legacy format script');
+            setCurrentScript(null);
+          }
         } else {
           console.log('📜 WorkspaceContainer: No saved script found');
         }

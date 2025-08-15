@@ -16,7 +16,7 @@ async function handleAgentsRequest(req, res) {
     console.log('\n🚀 [AGENTS API] Starting...');
     console.log('📊 Request Summary:', {
       prompt_length: (prompt || '').length,
-      script_chunks: script?.chunks?.length || 0,
+      script_sections: script?.sections?.length || 0,
       workspace_nodes: workspaceNodes.length,
       chat_history: chatHistory.length,
       video_analyses: Object.keys(videoAnalyses || {}).length,
