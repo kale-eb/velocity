@@ -1586,7 +1586,8 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                       />
                     </div>
                     
-                    {section.shots && section.shots.length > 0 && (
+                    {/* Regular shots for non-A_ROLL_WITH_OVERLAY sections */}
+                    {section.video_type !== 'A_ROLL_WITH_OVERLAY' && section.shots && section.shots.length > 0 && (
                       <div>
                         <label className={`block text-sm font-medium mb-2 ${
                           isDarkMode ? 'text-purple-300' :
