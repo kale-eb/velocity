@@ -1440,7 +1440,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
             }`}
           >
             <MessageSquare size={16} />
-            <span className="text-sm">AI Chat</span>
+            <span className="text-sm">Assistant</span>
           </button>
         </div>
 
