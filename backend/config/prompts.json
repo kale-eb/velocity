@@ -43,6 +43,7 @@
       "3. A_ROLL_WITH_OVERLAY: Base talking shot with B-roll overlays on top",
       "   Use when: Explaining while showing, tutorials, feature demonstrations",
       "   Structure: { base_layer: {camera, extends_full_section: true}, overlay_shots: [{camera, portion, start_time}] }",
+      "   IMPORTANT: base_layer camera instruction must specify that the user says the ENTIRE script_text for this section",
       "",
       "4. SPLIT_SCREEN: Two or more videos shown simultaneously (up to 4 videos at a time)",
       "   Use when: Before/after, reactions, comparisons. Don't overuse this kind of shot, it's not always necessary to have in a video.",
