@@ -1,9 +1,11 @@
 const { Agent } = require('@openai/agents');
 const {
   getScriptEditingContext,
+  getWorkspaceHelp,
   getCurrentScript,
   suggestScriptChanges,
-  getWorkspaceContent,
+  listWorkspaceContents,
+  readWorkspaceContent,
   discoverCapabilities
 } = require('./tools');
 const prompts = require('../config/prompts.json');
@@ -21,9 +23,11 @@ const scriptAgent = new Agent({
 
   tools: [
     getScriptEditingContext,
+    getWorkspaceHelp,
     getCurrentScript,
     suggestScriptChanges,
-    getWorkspaceContent,
+    listWorkspaceContents,
+    readWorkspaceContent,
     discoverCapabilities
   ]
 });
