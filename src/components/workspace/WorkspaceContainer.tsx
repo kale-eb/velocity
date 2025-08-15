@@ -88,23 +88,58 @@ const WorkspaceContainer: React.FC = () => {
     if (initializationRef.current) return;
     initializationRef.current = true;
 
-    // Load saved script only
-    try {
-      console.log('🔄 WorkspaceContainer: Loading scripts from localStorage...');
-      const savedScripts = ScriptStorage.loadGeneratedScripts();
-      const savedCurrentScript = savedScripts['current_script'] || null;
-      
-      if (savedCurrentScript) {
-        console.log('📜 WorkspaceContainer: Found saved script with', savedCurrentScript.chunks?.length || 0, 'chunks');
-        setCurrentScript(savedCurrentScript);
-      } else {
-        console.log('📜 WorkspaceContainer: No saved script found');
+    const initializeData = async () => {
+      // Load saved script and ad analyses
+      try {
+        console.log('🔄 WorkspaceContainer: Loading scripts from localStorage...');
+        const savedScripts = ScriptStorage.loadGeneratedScripts();
+        const savedCurrentScript = savedScripts['current_script'] || null;
+        
+        if (savedCurrentScript) {
+          console.log('📜 WorkspaceContainer: Found saved script with', savedCurrentScript.chunks?.length || 0, 'chunks');
+          setCurrentScript(savedCurrentScript);
+        } else {
+          console.log('📜 WorkspaceContainer: No saved script found');
+        }
+
+        // Load analysis data from localStorage for nodes that are marked as analyzed
+        console.log('🔄 WorkspaceContainer: Loading analysis data for analyzed nodes...');
+        console.log('🔍 WorkspaceContainer: All nodes:', nodes.map(n => ({ id: n.id, type: n.type, isAnalyzed: n.data?.isAnalyzed })));
+        const analyzedNodes = nodes.filter(node => node.type === 'ad' && node.data?.isAnalyzed);
+        
+        if (analyzedNodes.length > 0) {
+          console.log('📊 WorkspaceContainer: Found', analyzedNodes.length, 'analyzed nodes, loading from localStorage...');
+          console.log('📊 WorkspaceContainer: Analyzed nodes:', analyzedNodes.map(n => ({ id: n.id, url: n.data?.url, isAnalyzed: n.data?.isAnalyzed })));
+          
+          // Load analysis data from localStorage for each analyzed node
+          const loadedAnalyses = {};
+          const storedProcessedAds = AdStorage.loadProcessedAds();
+          
+          analyzedNodes.forEach(node => {
+            const analysis = storedProcessedAds[node.id];
+            if (analysis) {
+              loadedAnalyses[node.id] = analysis;
+              console.log('📊 WorkspaceContainer: Loaded analysis for node', node.id, 'from localStorage');
+            } else {
+              console.warn('📊 WorkspaceContainer: No analysis found in localStorage for node', node.id);
+            }
+          });
+          
+          if (Object.keys(loadedAnalyses).length > 0) {
+            console.log('📊 WorkspaceContainer: Loaded', Object.keys(loadedAnalyses).length, 'analyses from localStorage');
+            setAdAnalyses(loadedAnalyses);
+          }
+        } else {
+          console.log('📊 WorkspaceContainer: No analyzed nodes found');
+        }
+      } catch (error) {
+        console.error('❌ WorkspaceContainer: Failed to load saved data:', error);
       }
-    } catch (error) {
-      console.error('❌ WorkspaceContainer: Failed to load saved script:', error);
-    }
-    
-    setIsLoading(false);
+      
+      setIsLoading(false);
+    };
+
+    initializeData();
   }, []);
 
   /* COMMENTED OUT NODE WORKSPACE LOADING:
@@ -324,7 +359,8 @@ const WorkspaceContainer: React.FC = () => {
               ...nodes.find(n => n.id === nodeId)?.data,
               analysisRef,
               content: summary,
-              analysisTimestamp: new Date().toISOString()
+              analysisTimestamp: new Date().toISOString(),
+              isAnalyzed: true
             }
           });
         }}

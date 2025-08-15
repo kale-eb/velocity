@@ -40,6 +40,8 @@ export interface AdNode extends BaseNode {
     status: string;
     analysis?: AdAnalysis;
     isAnalyzing?: boolean;
+    isAnalyzed?: boolean;
+    analysisTimestamp?: string;
   };
 }
 

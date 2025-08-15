@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2025-08-15
+
+### 🎯 Major Architecture Simplification: Static-First Approach
+
+### Added
+- **Chat Conversation History System**
+  - **Persistent Storage**: localStorage-based conversation management with 5-conversation limit
+  - **Conversation Switching**: Complete UI for accessing previous chats while creating new ones
+  - **Auto-save Functionality**: Real-time message persistence across browser sessions
+  - **Automatic Titles**: AI-generated conversation titles based on first user message
+  - **History Management**: Oldest conversations automatically removed when limit exceeded
+  - **ChatStorage Class**: New utility class in `localStorage.ts` for conversation CRUD operations
+
+- **Video Analysis State Persistence**
+  - **Backend-Ready Architecture**: Nodes load analysis data directly from backend on project load
+  - **Analyzed State Tracking**: `isAnalyzed` flag persists across browser reloads
+  - **Database Integration Pattern**: Designed for seamless backend transition from localStorage
+  - **Analysis Caching**: Backend serves as single source of truth for processed video data
+  - **Auto-loading**: Analyzed nodes automatically fetch cached data from `/api/getAnalysis`
+
+### Changed
+- **Simplified Architecture**: Removed node-based workspace complexity for MVP focus
+  - **WorkspaceContainer.tsx**: Eliminated visual positioning, connections, drag state (~384 lines removed)
+  - **Primary Interface**: EnhancedStaticScriptView.tsx as main workspace interface
+  - **No Graph View**: Removed NodeBasedWorkspaceFixed.jsx and related visual editor components
+  - **Static-Only**: Focused on traditional three-panel layout (sidebar/editor/chat)
+
+- **Enhanced Chat Assistant**
+  - **Conversation Management**: Up to 5 persistent conversations with automatic cleanup
+  - **Conversation UI**: Dropdown list with message counts, timestamps, and delete buttons
+  - **Session Continuity**: Chat state persists across new chat creation and browser reloads
+  - **Auto-title Generation**: First user message automatically generates conversation titles
+
+### Enhanced
+- **Instagram Video Embedding Fallback**
+  - **X-Frame-Options Handling**: Proper detection of iframe embedding restrictions
+  - **View on Platform Links**: Clean fallback UI when direct embedding is blocked
+  - **Error Messaging**: Clear user feedback for embedded content limitations
+
+- **File Management System**
+  - **Enhanced Preview**: Click-to-preview uploaded files with full-screen modal support
+  - **Improved Processing**: Better error handling and status feedback for file uploads
+  - **Content Integration**: Seamless integration with AI chat for document analysis
+
+### Technical Improvements
+- **State Management Simplification**
+  - **Removed Visual State**: No more viewport, zoom, pan, drag, collision detection
+  - **Essential Data Only**: Focus on nodes, analysis data, scripts, and UI state
+  - **localStorage Patterns**: ChatStorage and ScriptStorage for data persistence
+  - **Backend Integration**: Architecture ready for database migration
+
+- **Component Architecture**
+  - **Type Safety**: Enhanced TypeScript definitions with `isAnalyzed` flag on AdNode
+  - **Clean Interfaces**: Simplified prop passing without complex visual state
+  - **Performance**: Reduced component complexity and unnecessary re-renders
+
+### Fixed
+- **Video Analysis Persistence**: Analyzed videos now maintain their status across browser sessions
+- **Chat Context Loss**: Conversation history properly maintained across new chat sessions
+- **Instagram Embedding**: Graceful fallback for blocked iframe content
+- **Memory Management**: Cleaner component lifecycle without visual editor complexity
+
+### Removed
+- **Node-Based Visual Editor**: Eliminated drag & drop, collision detection, and visual positioning
+- **Graph View**: Removed SVG connections, spline rendering, and visual workspace
+- **Complex State**: Simplified from dual-view management to single static interface
+- **Viewport Management**: No more zoom, pan, or canvas bounds management
+
+### Documentation
+- **Updated CLAUDE.md**: Comprehensive documentation of new architecture and features
+- **Chat System Documentation**: Detailed explanation of conversation management system
+- **Analysis Persistence**: Documentation of backend-ready analysis loading patterns
+- **Simplified Architecture**: Clear explanation of static-first approach and removed complexity
+
+### Development Notes
+- **MVP-Focused**: Streamlined for essential functionality without visual editor overhead
+- **Backend-Ready**: Architecture designed for easy transition to database storage
+- **User Experience**: Improved chat experience with persistent conversation history
+- **Performance**: Reduced complexity leads to faster loading and better responsiveness
+
+**Status: ✅ SIMPLIFIED ARCHITECTURE - Enhanced chat with analysis persistence, ready for production**
+
 ## [0.7.1] - 2025-08-14
 
 ### Enhanced

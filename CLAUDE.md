@@ -8,8 +8,8 @@
 The platform operates through **two main workspaces** that work together:
 
 1. **Script Generation Workspace** - AI-powered script creation and refinement
-   - **Graph View**: Visual node-based editor connecting product specs, ad examples, and instructions into a script generator
-   - **Static View**: Traditional chunk-based script editor with integrated AI assistant
+   - **Enhanced Static View**: Streamlined chunk-based script editor with integrated AI assistant and conversation history
+   - **Node-based Visual Editor**: (Removed for MVP - focused on static interface)
 
 2. **Video Assembly Workspace** - Timeline-based video production from script chunks
    - Modular video creation using hooks, product segments, and CTAs
@@ -22,8 +22,10 @@ The platform operates through **two main workspaces** that work together:
 - **Shared Infrastructure** - Authentication, storage, and AI services
 - **Script Persistence** - Generated scripts persist across browser sessions
 - **File Preview System** - Click to preview uploaded files with full-screen modal
-- **Enhanced Chat UX** - Modern AI chat interface with real-time feedback
+- **Enhanced Chat UX** - Modern AI chat interface with conversation history and real-time feedback
+- **Chat Conversation History** - Persistent storage of up to 5 conversations with automatic title generation
 - **Video Analysis Pipeline** - AI-powered analysis of short-form video ads with frame extraction and OpenAI GPT-5-mini
+- **Analysis State Persistence** - Backend-integrated approach for loading analyzed video data across sessions
 
 The platform streamlines the entire process from initial concept to final video export, making professional marketing content creation accessible and efficient.
 
@@ -39,46 +41,52 @@ The platform streamlines the entire process from initial concept to final video 
 ## Project Structure
 ```
 src/
-├── pages/                          # Main application pages
-│   ├── HomePage.jsx                # Project dashboard (planned)
-│   ├── ContentDatabasePage.jsx     # Content management (planned)
-│   ├── ScriptWorkspacePage.jsx     # Script generation (in development) 
-│   └── VideoWorkspacePage.jsx      # Video assembly (planned)
-│
 ├── components/
-│   ├── layout/                     # App-wide layout components (planned)
-│   ├── script/                     # Script Generation Workspace
-│   │   ├── graph/                  # Graph View (node-based) - current implementation
-│   │   ├── static/                 # Static View (traditional editor) - current implementation  
-│   │   └── shared/                 # Shared script components (planned)
+│   ├── script/                     # Script Generation Components
+│   │   ├── chat/                   # AI Chat Assistant
+│   │   │   └── ChatAssistant.jsx   # Enhanced chat with conversation history
+│   │   └── nodes/                  # Script generation nodes
+│   │       └── ScriptGenerationNode.jsx
+│   ├── views/                      # Main workspace views
+│   │   ├── EnhancedStaticScriptView.tsx  # Primary script editor with file preview
+│   │   └── StaticScriptView.tsx    # Legacy script view
+│   ├── workspace/                  # Workspace management
+│   │   ├── WorkspaceContainer.tsx  # Simplified state coordinator
+│   │   ├── NodeBasedWorkspaceFixed.tsx  # Legacy visual editor (removed)
+│   │   └── NodeBasedWorkspace.jsx  # Legacy workspace (removed)
+│   ├── layout/                     # App-wide layout (planned)
 │   ├── video/                      # Video Assembly Workspace (planned)
-│   │   ├── timeline/               # SVG timeline components
-│   │   ├── preview/                # Video preview components
-│   │   ├── editing/                # Video editing modals
-│   │   └── upload/                 # Video upload components
-│   ├── content/                    # Content Database components (planned)
-│   ├── home/                       # Home page components (planned)
-│   └── ui/                         # Reusable UI components
+│   ├── content/                    # Content Database (planned)
+│   ├── home/                       # Home page (planned)
+│   └── ui/                         # Reusable UI components (planned)
 │
-├── hooks/                          # Custom React hooks (planned)
-├── services/                       # API and external services (planned)
-│   ├── api/                        # API integration
-│   ├── storage/                    # Storage services  
-│   └── auth/                       # Authentication
-├── store/                          # Global state management (planned)
+├── stores/                         # Zustand state management
+│   ├── workspaceStore.ts          # Simplified node management (removed visual positioning)
+│   ├── projectStore.ts            # Project management
+│   ├── scriptStore.ts             # Script generation and editing
+│   └── uiStore.ts                 # UI state management
+│
 ├── utils/                          # Utility functions
-├── types/                          # TypeScript definitions (planned)
-├── styles/                         # Global CSS + Tailwind
-├── App.jsx                         # Main app with routing
-└── main.jsx                        # Entry point
+│   ├── localStorage.ts            # Enhanced persistence with ChatStorage and ScriptStorage
+│   └── fileProcessor.ts           # File upload and processing
+│
+├── types/                          # TypeScript definitions
+│   └── index.ts                   # Core type definitions with isAnalyzed flag
+│
+├── services/                       # External services (planned)
+│   └── database/                  # Database integration (planned)
+├── styles/                        # Global CSS + Tailwind
+├── App.tsx                        # Main app with routing
+└── main.tsx                       # Entry point
 ```
 
 ## Directory Overview
 
 ### Core Implementation (Current)
-- **`components/script/`** - Script Generation Workspace with Graph and Static views
-- **`components/workspace/`** - Legacy workspace components (being migrated)
-- **`components/views/`** - Current view implementations
+- **`components/script/`** - Script Generation Workspace with enhanced chat system
+- **`components/views/`** - EnhancedStaticScriptView as primary interface
+- **`components/workspace/`** - Simplified WorkspaceContainer without visual positioning
+- **`utils/localStorage.ts`** - ChatStorage class for conversation persistence
 - **`styles/`** - Global styling and Tailwind configuration
 
 ### Application Structure (Planned)
@@ -98,36 +106,43 @@ src/
 
 ## Current Architecture
 
-**Bootstrap Flow:** `main.jsx` → `App.jsx` → `WorkspaceContainer.jsx` → view components
+**Bootstrap Flow:** `main.jsx` → `App.jsx` → `WorkspaceContainer.tsx` → `EnhancedStaticScriptView.tsx`
 
 **Data Flow:**
 ```
-WorkspaceContainer (Master State)
-  ├── nodes[] + connections[] (shared workspace data)
-  ├── viewport state (pan/zoom persistence)
-  └── UI state (themes, views, sidebar)
+WorkspaceContainer (Simplified State Manager)
+  ├── nodes[] (content sources only)
+  ├── adAnalyses{} (video analysis data)
+  ├── currentScript (script state)
+  ├── chatConversations[] (persistent history)
+  └── UI state (themes, sidebar)
       ↓
-  Graph View ←→ Static View
-  (Visual Editor)  (Traditional Interface)
+  Enhanced Static View (Primary Interface)
+  (Script Editor + Chat History + File Preview)
 ```
 
 **Migration Target:** Page-based routing with workspace-specific state management and shared component library.
 
 ## Key Features
 
-### Node-Based Workspace
-- **Node Types**: Product Spec, Ad, Script Generator (384×320px), Instructions
-- **Smart Interactions**: Drag & drop with collision detection, radial positioning algorithm
-- **Advanced Features**: Zoom/pan with bounds, undo/redo (20 actions), reorganize with predefined layouts
+### Chat Conversation System
+- **Persistent History**: localStorage-based storage of up to 5 conversations
+- **Conversation Management**: Create new chats, switch between existing conversations, delete old ones
+- **Auto-title Generation**: Automatic conversation titles based on first user message
+- **Real-time Auto-save**: Messages persist immediately across browser sessions
+- **Oldest Auto-removal**: When 5-conversation limit reached, oldest is automatically removed
 
-### Dual Interface Modes
-- **Graph View**: Visual node editor with SVG connections, multi-select, context menus
-- **Static View**: Traditional sidebar with script editor, categorized content, AI chat integration
+### Video Analysis Persistence  
+- **Backend Integration Pattern**: Nodes marked as `isAnalyzed` trigger backend data loading
+- **Analysis State Tracking**: Persistent `analysisTimestamp` and status across reloads
+- **Single Source Architecture**: Backend serves as authoritative source for analysis data
+- **Seamless Transition**: localStorage "fake backend" designed for easy database migration
 
-### State Management
-- **Single Source**: WorkspaceContainer manages master state
-- **View Filtering**: Graph shows all nodes, Static excludes script generator
-- **Persistence**: Viewport state saved across view switches
+### Enhanced Content Management
+- **Static-First Interface**: Streamlined script editor with sidebar content organization
+- **File Preview System**: Click-to-preview uploaded files with full-screen modal support
+- **Video Embedding Fallback**: Instagram/social media iframe restrictions handled with "View on Platform" links
+- **Content Source Nodes**: Product specs, ads, and instructions managed as simplified content nodes
 
 ### Theme System
 Three modes (light/dark/experimental) with dynamic styling and consistent color schemes.
@@ -137,6 +152,7 @@ Three modes (light/dark/experimental) with dynamic styling and consistent color 
 - **CORS-Safe Architecture**: Express → Python raw byte transmission avoiding browser limitations
 - **File Card UI**: Individual file cards with metadata, processing status, and deletion controls
 - **Separated Data Storage**: File metadata for UI, extracted text for AI processing
+- **Instagram Video Fallback**: Proper handling of iframe embedding restrictions with "View on Platform" links
 
 ### Backend Processing Pipeline
 - **Timestamp-First Jump Cut Detection**: Extract timestamps only, then select most significant jump cuts
@@ -148,14 +164,14 @@ Three modes (light/dark/experimental) with dynamic styling and consistent color 
 
 ## Component Overview
 
-### WorkspaceContainer.jsx
-Master state manager handling node lifecycle, view switching, and viewport persistence. Implements radial collision detection for node positioning.
+### WorkspaceContainer.tsx
+Simplified state manager focused on static script view with enhanced chat functionality. Removed node-based workspace complexity while preserving essential UI components. Implements backend analysis data loading for analyzed nodes.
 
-### NodeBasedWorkspaceFixed.jsx  
-Advanced visual editor with drag & drop, coordinate transformations, collision detection, canvas bounds management, and 20-action history system.
+### EnhancedStaticScriptView.tsx
+Primary workspace interface with enhanced chat system, file preview capabilities, and streamlined content management. Features integrated AI assistant with conversation history.
 
-### StaticScriptView.jsx
-Traditional three-panel interface (sidebar/editor/chat) with resizable panels, mock AI chat, and content organization.
+### ChatAssistant.jsx
+Advanced AI chat interface with conversation history management, real-time streaming, and structured action proposals. Supports up to 5 persistent conversations with automatic title generation.
 
 ## Data Models
 
@@ -194,6 +210,20 @@ Traditional three-panel interface (sidebar/editor/chat) with resizable panels, m
 Frontend Upload → Express (multipart) → Python (raw bytes) → PyPDF2 Extraction → 
   ↓
 {uploadedFiles: [...], extractedTexts: [...], content: "combined text"}
+```
+
+**Chat Storage Pattern:**
+```
+User Message → Auto-save to localStorage → Conversation Management → 
+  ↓
+{conversations: [max 5], currentConversationId, messages: [], titles: []}
+```
+
+**Analysis Persistence Flow:**
+```
+Node Analysis → Backend Storage → Project Load → 
+  ↓
+Fetch Analysis Data (if isAnalyzed) → Update Node State → UI Reflects Analyzed Status
 ```
 
 ## Backend Processing Architecture

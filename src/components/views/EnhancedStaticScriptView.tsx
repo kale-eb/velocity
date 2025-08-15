@@ -152,17 +152,20 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
 
   const toggleSourceSelection = (nodeId: string, nodeType: string, event?: React.MouseEvent) => {
     // For ads, only allow selection if analyzed
-    if (nodeType === 'ad' && !adAnalyses[nodeId]) {
-      if (event) {
-        setShowTooltip({ 
-          show: true, 
-          x: event.clientX, 
-          y: event.clientY, 
-          message: 'Ad not analyzed yet. Add a link and analyze it first.' 
-        });
-        setTimeout(() => setShowTooltip({ show: false, x: 0, y: 0, message: '' }), 2000);
+    if (nodeType === 'ad') {
+      const node = nodes.find(n => n.id === nodeId);
+      if (!isAdAnalyzed(nodeId, node)) {
+        if (event) {
+          setShowTooltip({ 
+            show: true, 
+            x: event.clientX, 
+            y: event.clientY, 
+            message: 'Ad not analyzed yet. Add a link and analyze it first.' 
+          });
+          setTimeout(() => setShowTooltip({ show: false, x: 0, y: 0, message: '' }), 2000);
+        }
+        return; // Can't select unanalyzed ads
       }
-      return; // Can't select unanalyzed ads
     }
 
     const newSelected = new Set(selectedSources);
@@ -631,15 +634,22 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
   const selectedCount = selectedSources.size;
   const hasSelectedSources = selectedCount > 0;
 
+  // Helper function to check if an ad is analyzed
+  const isAdAnalyzed = (nodeId: string, node: any) => {
+    // Check both the adAnalyses cache and the node's isAnalyzed flag
+    return adAnalyses[nodeId] || node?.data?.isAnalyzed;
+  };
+
   // Helper function to get embeddable video URL
   const getEmbeddableUrl = (url: string): string | null => {
     try {
-      // Instagram posts and reels
+      // Instagram posts and reels - NOTE: Instagram blocks iframe embedding for most content
       if (url.includes('instagram.com/p/') || url.includes('instagram.com/reel/') || url.includes('instagram.com/reels/')) {
         const postId = url.match(/\/p\/([^\/\?]+)/)?.[1] || 
                       url.match(/\/reel\/([^\/\?]+)/)?.[1] || 
                       url.match(/\/reels\/([^\/\?]+)/)?.[1];
         if (postId) {
+          // Try the embed URL, but it will likely be blocked by Instagram's X-Frame-Options
           return `https://www.instagram.com/p/${postId}/embed/`;
         }
       }
@@ -1111,16 +1121,35 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
                                         title="Ad Video"
+                                        onError={(e) => {
+                                          console.log('Iframe failed to load, likely blocked by platform');
+                                          // Could show fallback UI here
+                                        }}
                                       />
+                                      {/* Fallback for when iframe is blocked */}
+                                      <div className="absolute inset-0 bg-gray-900 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                        <div className="text-center p-4">
+                                          <div className="text-white text-sm mb-2">Video preview not available</div>
+                                          <a 
+                                            href={ad.data.url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-blue-400 hover:text-blue-300 text-xs underline"
+                                          >
+                                            View on {ad.data.url.includes('instagram') ? 'Instagram' : 
+                                                    ad.data.url.includes('tiktok') ? 'TikTok' : 'Platform'}
+                                          </a>
+                                        </div>
+                                      </div>
                                     </div>
                                   )}
                                   
                                   {/* Analysis Summary */}
-                                  {adAnalyses[ad.id] && (
+                                  {isAdAnalyzed(ad.id, ad) && (
                                     <div className="text-xs opacity-75">
                                       <div className="font-medium mb-1">Analysis Summary:</div>
                                       <div className="text-xs">
-                                        {adAnalyses[ad.id].chunks?.length || 0} chunks analyzed
+                                        {adAnalyses[ad.id]?.chunks?.length || 'N/A'} chunks analyzed
                                       </div>
                                     </div>
                                   )}

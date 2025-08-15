@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Square, MessageSquare, Sparkles, Plus } from 'lucide-react';
+import { Send, Square, MessageSquare, Sparkles, Plus, MessageCircle, Trash2 } from 'lucide-react';
+import { ChatStorage } from '../../../utils/localStorage';
 
 export default function ChatAssistant({ 
   disabled, 
@@ -16,6 +17,11 @@ export default function ChatAssistant({
   const [aborter, setAborter] = useState(null);
   const [actionStates, setActionStates] = useState({});
   
+  // Conversation history state
+  const [currentConversationId, setCurrentConversationId] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  const [showConversationList, setShowConversationList] = useState(false);
+  
   const textareaRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputContainerRef = useRef(null);
@@ -25,11 +31,38 @@ export default function ChatAssistant({
   const isDarkMode = colorScheme === 'dark';
   const isExperimental = colorScheme === 'experimental';
 
+  // Initialize conversations on component mount
+  useEffect(() => {
+    const loadedConversations = ChatStorage.loadConversations();
+    setConversations(loadedConversations);
+    
+    // Load the most recent conversation if it exists
+    if (loadedConversations.length > 0) {
+      const mostRecent = loadedConversations[0];
+      setCurrentConversationId(mostRecent.id);
+      setMessages(mostRecent.messages || []);
+    }
+  }, []);
+
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  // Auto-save conversation when messages change
+  useEffect(() => {
+    if (currentConversationId && messages.length > 0) {
+      ChatStorage.updateConversationMessages(currentConversationId, messages);
+      // Update local conversations state
+      setConversations(prev => prev.map(conv => 
+        conv.id === currentConversationId 
+          ? { ...conv, messages, updatedAt: new Date().toISOString() }
+          : conv
+      ));
+    }
+  }, [messages, currentConversationId]);
 
   function summarizeAction(action) {
     if (!action) return 'No change';
@@ -71,6 +104,14 @@ export default function ChatAssistant({
 
   async function sendMessage() {
     if (!prompt.trim() || isDisabled) return;
+
+    // Ensure we have a current conversation
+    if (!currentConversationId) {
+      const newConversation = ChatStorage.createNewConversation();
+      setCurrentConversationId(newConversation.id);
+      const updatedConversations = ChatStorage.loadConversations();
+      setConversations(updatedConversations);
+    }
 
     const userMessage = { role: 'user', content: prompt, timestamp: Date.now() };
     const assistantMessage = { 
@@ -237,13 +278,49 @@ export default function ChatAssistant({
   }
 
   function startNewChat() {
+    // Create a new conversation
+    const newConversation = ChatStorage.createNewConversation();
+    setCurrentConversationId(newConversation.id);
     setMessages([]);
     setActionStates({});
     setPrompt('');
     onPropose([]);
     currentMessageRef.current = null;
+    
+    // Update conversations list
+    const updatedConversations = ChatStorage.loadConversations();
+    setConversations(updatedConversations);
+    
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
+    }
+  }
+
+  function switchToConversation(conversationId) {
+    const conversation = ChatStorage.getConversation(conversationId);
+    if (conversation) {
+      setCurrentConversationId(conversationId);
+      setMessages(conversation.messages || []);
+      setActionStates({});
+      setPrompt('');
+      onPropose([]);
+      currentMessageRef.current = null;
+      setShowConversationList(false);
+    }
+  }
+
+  function deleteConversation(conversationId) {
+    ChatStorage.deleteConversation(conversationId);
+    const updatedConversations = ChatStorage.loadConversations();
+    setConversations(updatedConversations);
+    
+    // If we deleted the current conversation, switch to most recent or create new
+    if (conversationId === currentConversationId) {
+      if (updatedConversations.length > 0) {
+        switchToConversation(updatedConversations[0].id);
+      } else {
+        startNewChat();
+      }
     }
   }
 
@@ -278,28 +355,130 @@ export default function ChatAssistant({
             <span style={{ fontWeight: 600, fontSize: 14 }}>AI Assistant</span>
           </div>
           
-          <button
-            onClick={startNewChat}
-            style={{
-              padding: '6px 8px',
-              backgroundColor: 'transparent',
-              color: 'var(--color-text-secondary)',
-              border: '1px solid var(--color-border-secondary)',
-              borderRadius: 6,
-              fontSize: 12,
-              fontWeight: 500,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4
-            }}
-            title="Start a new chat"
-          >
-            <Plus size={12} />
-            New Chat
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button
+              onClick={() => setShowConversationList(!showConversationList)}
+              style={{
+                padding: '6px 8px',
+                backgroundColor: showConversationList ? 'var(--color-accent-primary)' : 'transparent',
+                color: showConversationList ? 'white' : 'var(--color-text-secondary)',
+                border: `1px solid ${showConversationList ? 'var(--color-accent-primary)' : 'var(--color-border-secondary)'}`,
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 500,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4
+              }}
+              title="View conversation history"
+            >
+              <MessageCircle size={12} />
+              {conversations.length}
+            </button>
+            
+            <button
+              onClick={startNewChat}
+              style={{
+                padding: '6px 8px',
+                backgroundColor: 'transparent',
+                color: 'var(--color-text-secondary)',
+                border: '1px solid var(--color-border-secondary)',
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 500,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4
+              }}
+              title="Start a new chat"
+            >
+              <Plus size={12} />
+              New Chat
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Conversation History List */}
+      {showConversationList && (
+        <div style={{
+          borderBottom: '1px solid var(--color-border-primary)',
+          backgroundColor: 'var(--color-bg-secondary)',
+          maxHeight: '200px',
+          overflowY: 'auto'
+        }}>
+          {conversations.length === 0 ? (
+            <div style={{
+              padding: '12px 16px',
+              textAlign: 'center',
+              color: 'var(--color-text-secondary)',
+              fontSize: 12
+            }}>
+              No previous conversations
+            </div>
+          ) : (
+            conversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                style={{
+                  padding: '8px 16px',
+                  borderBottom: '1px solid var(--color-border-secondary)',
+                  cursor: 'pointer',
+                  backgroundColor: conversation.id === currentConversationId ? 'var(--color-bg-tertiary)' : 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 8
+                }}
+                onClick={() => switchToConversation(conversation.id)}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: 12,
+                    fontWeight: conversation.id === currentConversationId ? 600 : 400,
+                    color: 'var(--color-text-primary)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {conversation.title}
+                  </div>
+                  <div style={{
+                    fontSize: 10,
+                    color: 'var(--color-text-secondary)',
+                    marginTop: 2
+                  }}>
+                    {conversation.messages?.length || 0} messages • {new Date(conversation.updatedAt).toLocaleDateString()}
+                  </div>
+                </div>
+                
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteConversation(conversation.id);
+                  }}
+                  style={{
+                    padding: '2px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: 'var(--color-text-secondary)',
+                    cursor: 'pointer',
+                    borderRadius: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="Delete conversation"
+                >
+                  <Trash2 size={10} />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* Messages */}
       <div style={{

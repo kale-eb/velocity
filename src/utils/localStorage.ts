@@ -11,6 +11,7 @@ interface StorageKeys {
   WORKSPACE_UI_STATE: 'marketing_app_workspace_ui_state';
   GENERATED_SCRIPTS: 'marketing_app_generated_scripts';
   USER_SETTINGS: 'marketing_app_user_settings';
+  CHAT_CONVERSATIONS: 'marketing_app_chat_conversations';
 }
 
 const STORAGE_KEYS: StorageKeys = {
@@ -20,7 +21,8 @@ const STORAGE_KEYS: StorageKeys = {
   WORKSPACE_VIEWPORT: 'marketing_app_workspace_viewport',
   WORKSPACE_UI_STATE: 'marketing_app_workspace_ui_state',
   GENERATED_SCRIPTS: 'marketing_app_generated_scripts',
-  USER_SETTINGS: 'marketing_app_user_settings'
+  USER_SETTINGS: 'marketing_app_user_settings',
+  CHAT_CONVERSATIONS: 'marketing_app_chat_conversations'
 } as const;
 
 // Storage versioning for data migration
@@ -296,6 +298,88 @@ export class SettingsStorage {
   }
 }
 
+export class ChatStorage {
+  static generateConversationId(): string {
+    return `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  static saveConversations(conversations: any[]): boolean {
+    return storage.save('CHAT_CONVERSATIONS', conversations);
+  }
+
+  static loadConversations(): any[] {
+    return storage.load('CHAT_CONVERSATIONS', []);
+  }
+
+  static addConversation(conversation: any): boolean {
+    const conversations = this.loadConversations();
+    
+    // Add new conversation to the beginning
+    const updatedConversations = [conversation, ...conversations];
+    
+    // Keep only the last 5 conversations
+    const limitedConversations = updatedConversations.slice(0, 5);
+    
+    return this.saveConversations(limitedConversations);
+  }
+
+  static updateConversation(conversationId: string, updates: any): boolean {
+    const conversations = this.loadConversations();
+    const updatedConversations = conversations.map(conv => 
+      conv.id === conversationId 
+        ? { ...conv, ...updates, updatedAt: new Date().toISOString() }
+        : conv
+    );
+    
+    return this.saveConversations(updatedConversations);
+  }
+
+  static deleteConversation(conversationId: string): boolean {
+    const conversations = this.loadConversations();
+    const filteredConversations = conversations.filter(conv => conv.id !== conversationId);
+    
+    return this.saveConversations(filteredConversations);
+  }
+
+  static getConversation(conversationId: string): any | null {
+    const conversations = this.loadConversations();
+    return conversations.find(conv => conv.id === conversationId) || null;
+  }
+
+  static createNewConversation(title?: string): any {
+    const newConversation = {
+      id: this.generateConversationId(),
+      title: title || `Chat ${new Date().toLocaleDateString()}`,
+      messages: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    this.addConversation(newConversation);
+    return newConversation;
+  }
+
+  static updateConversationMessages(conversationId: string, messages: any[]): boolean {
+    return this.updateConversation(conversationId, { 
+      messages,
+      title: this.generateTitleFromMessages(messages)
+    });
+  }
+
+  static generateTitleFromMessages(messages: any[]): string {
+    // Generate title from first user message
+    const firstUserMessage = messages.find(msg => msg.role === 'user');
+    if (firstUserMessage && firstUserMessage.content) {
+      const content = firstUserMessage.content.trim();
+      if (content.length > 50) {
+        return content.substring(0, 47) + '...';
+      }
+      return content;
+    }
+    return `Chat ${new Date().toLocaleDateString()}`;
+  }
+}
+
 // Auto-save functionality
 export class AutoSave {
   private static saveTimer: NodeJS.Timeout | null = null;
@@ -338,7 +422,8 @@ export class DataPortability {
       workspace: WorkspaceStorage.loadWorkspace(),
       processedAds: AdStorage.loadProcessedAds(),
       generatedScripts: ScriptStorage.loadGeneratedScripts(),
-      userSettings: SettingsStorage.loadUserSettings()
+      userSettings: SettingsStorage.loadUserSettings(),
+      chatConversations: ChatStorage.loadConversations()
     };
 
     return JSON.stringify(data, null, 2);
@@ -363,6 +448,9 @@ export class DataPortability {
       AdStorage.saveProcessedAds(data.processedAds);
       ScriptStorage.saveGeneratedScripts(data.generatedScripts);
       SettingsStorage.saveUserSettings(data.userSettings);
+      if (data.chatConversations) {
+        ChatStorage.saveConversations(data.chatConversations);
+      }
 
       console.log('📥 Successfully imported all data');
       return true;
