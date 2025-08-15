@@ -1,174 +1,322 @@
 # Marketing App Backend
 
-Backend service for processing and analyzing video advertisements using AI-powered scene detection, audio transcription, and structured analysis.
+Comprehensive backend service for the Short-Form Video Ad Creation Platform, featuring AI-powered video analysis, OpenAI Agents API integration, and intelligent script assistance.
 
-## Features
+## Architecture Overview
 
-- **Scene-based frame extraction** with jump cut detection at 6 FPS
-- **Audio transcription** using OpenAI Whisper
-- **Advertisement analysis** with structured JSON output (hook/body/cta)
-- **Video compression** to base64 format (≤5MB)
-- **90-second video limit** for performance optimization
+The backend serves multiple core functions:
+- **Video Analysis Pipeline**: AI-powered analysis of short-form video ads with frame extraction and content understanding
+- **OpenAI Agents System**: Advanced script editing assistance with tool calling and interleaved conversation
+- **Express.js API Server**: RESTful endpoints for frontend integration
+- **File Processing**: PDF document processing and content extraction
 
 ## Project Structure
 
 ```
 backend/
-├── .env                          # Environment variables (sensitive)
-├── .env.example                  # Environment variables template
-├── requirements.txt              # Python dependencies
-├── config/
-│   ├── settings.py              # Configuration management
-│   ├── app_config.json          # Application settings
-│   └── prompts.json            # AI analysis prompts
-└── ad_processing/
-    ├── __init__.py             # Module exports
-    ├── frame_extractor.py      # Scene-based frame extraction
-    ├── audio_analyzer.py       # Audio transcription
-    ├── ad_analyzer.py          # Advertisement analysis
-    └── video_compressor.py     # Video download & compression
+├── server.js                        # Express.js API server with endpoints
+├── package.json                     # Node.js dependencies and scripts
+├── .env.example                     # Environment variables template
+│
+├── agents/                          # OpenAI Agents API System
+│   ├── endpoint.js                  # Agents API request handler
+│   ├── scriptAgent.js               # Script assistant agent configuration
+│   └── tools.js                     # Agent tools (workspace access, script editing)
+│
+├── config/                          # Configuration Management
+│   ├── app_config.json             # Application settings
+│   └── prompts.json                # AI prompts and script generation instructions
+│
+├── ad_processing/                   # Video Analysis Pipeline (Python)
+│   ├── __init__.py                 # Module exports
+│   ├── frame_extractor.py          # Scene-based frame extraction
+│   ├── audio_analyzer.py           # Audio transcription with OpenAI Whisper
+│   ├── ad_analyzer.py              # Advertisement analysis with GPT-4o
+│   ├── video_compressor.py         # Video download & compression
+│   └── CLAUDE.md                   # Video processing documentation
+│
+├── video_outputs/                   # Processed video analysis results
+│   ├── analysis_*.json             # AI analysis outputs
+│   └── archive/                    # Historical analysis data
+│
+├── process_video.py                 # Complete video processing pipeline
+├── main.py                         # FastAPI video processing server
+└── requirements.txt                # Python dependencies
 ```
 
-## Configuration
+## Core Systems
 
-### Environment Variables (.env)
-Only sensitive information and environment-specific settings:
+### 1. OpenAI Agents API Integration
 
-```bash
-# OpenAI API Configuration
-OPENAI_API_KEY=your_openai_api_key_here
+**Location**: `agents/`
 
-# Environment
-ENVIRONMENT=development
+Advanced AI assistant system for script editing and workspace interaction:
 
-# Server Configuration  
-HOST=localhost
-PORT=8000
-DEBUG=true
+#### Agent Configuration (`scriptAgent.js`)
+- **Model**: GPT-5 for high-quality responses
+- **Specialized Tools**: 7 custom tools for script and workspace management
+- **Instructions**: Concise, focused assistance for video script creation
 
-# Logging
-LOG_LEVEL=INFO
+#### Tools System (`tools.js`)
+- **`getScriptEditingContext`**: Load script system understanding
+- **`getWorkspaceHelp`**: UI and workspace guidance
+- **`getCurrentScript`**: Analyze current script state
+- **`suggestScriptChanges`**: Propose structured script modifications
+- **`listWorkspaceContents`**: Discover available content (metadata only)
+- **`readWorkspaceContent`**: Access specific content by ID
+- **`discoverCapabilities`**: Tool discovery and help system
 
-# File Storage (environment-specific paths)
-TEMP_DIR=/tmp/marketing_app
-OUTPUT_DIR=./outputs
-```
+#### Key Features
+- **Two-Tool Workspace Access**: Discovery + selective content loading
+- **Structured Script Changes**: JSON-formatted proposals with accept/reject workflow
+- **Interleaved Tool Calling**: Natural conversation with tool execution
+- **Content Prioritization**: Focus on user-selected sources while accessing all content
 
-### Application Configuration (config/app_config.json)
-Application settings that can be version controlled:
+### 2. Express.js API Server
 
+**Location**: `server.js`
+
+Main application server handling:
+
+#### Core Endpoints
+- **`/api/chat/agents`**: OpenAI Agents API integration for script assistance
+- **`/api/generateScript`**: Mock script generation (development fallback)
+- **`/api/analyzeAd`**: Video analysis pipeline integration
+- **`/api/getAnalysis`**: Retrieve cached video analysis results
+- **`/process-pdf`**: PDF document processing and text extraction
+
+#### Features
+- **Timeout Management**: Extended timeouts (15 minutes) for video processing
+- **Error Handling**: Comprehensive error responses with debugging information
+- **CORS Support**: Cross-origin requests for frontend integration
+- **File Upload**: Multipart form handling for PDF processing
+
+### 3. Video Analysis Pipeline
+
+**Location**: `ad_processing/`, `process_video.py`
+
+AI-powered video content analysis:
+
+#### Processing Flow
+1. **Video Download**: Multi-platform support (Instagram, TikTok, YouTube)
+2. **Frame Extraction**: Scene-based jump cut detection (~30 frames per video)
+3. **Audio Transcription**: OpenAI Whisper API integration
+4. **AI Analysis**: GPT-4o structured analysis with scene understanding
+5. **JSON Output**: Structured data for frontend consumption
+
+#### Analysis Output
 ```json
 {
-  "video_processing": {
-    "max_video_duration": 90,
-    "max_video_size_mb": 5,
-    "target_frames_per_video": 20,
-    "jump_cut_threshold": 0.60
-  },
-  "api": {
-    "timeout": 300,
-    "openai_model": "gpt-4o",
-    "max_tokens": 4000
-  }
+  "summary": "Video description and style analysis",
+  "chunks": [
+    {
+      "type": "hook|body|cta",
+      "startTime": 0.0,
+      "endTime": 5.2,
+      "visual": {
+        "description": "Scene description",
+        "cameraAngle": "Camera positioning",
+        "lighting": "Lighting analysis",
+        "movement": "Motion description"
+      },
+      "audio": {
+        "transcript": "Spoken content",
+        "tone": "Voice analysis",
+        "backgroundMusic": "Audio elements"
+      }
+    }
+  ]
 }
 ```
 
-## Setup
+### 4. Configuration Management
 
-1. **Clone and navigate to backend:**
+**Location**: `config/`
+
+#### Prompts Configuration (`prompts.json`)
+- **Script Generation**: Instructions for AI script creation
+- **Video Type Guidelines**: JUMP_CUTS, B_ROLL, A_ROLL_WITH_OVERLAY, SPLIT_SCREEN
+- **Camera Instructions**: Natural language direction formatting
+- **Workspace Help**: UI guidance and interaction patterns
+
+#### Application Settings (`app_config.json`)
+- **Video Processing**: Duration limits, frame targets, quality settings
+- **API Configuration**: Model selection, timeout settings
+- **Analysis Parameters**: Jump cut thresholds, processing limits
+
+## Environment Setup
+
+### Prerequisites
+- **Node.js** (v18+)
+- **Python** (3.8+)
+- **OpenAI API Key**
+
+### Installation
+
+1. **Install Node.js dependencies:**
    ```bash
-   cd backend
+   npm install
    ```
 
-2. **Create virtual environment:**
+2. **Set up Python environment:**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies:**
-   ```bash
+   source venv/bin/activate  # Windows: venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
-4. **Set up environment:**
+3. **Configure environment:**
    ```bash
    cp .env.example .env
-   # Edit .env with your OpenAI API key
+   # Add your OpenAI API key to .env
    ```
 
-5. **Test the setup:**
-   ```bash
-   python test_scene_extraction.py
-   ```
+### Environment Variables
+
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL_CHAT=gpt-5
+OPENAI_MODEL_CHAT_ACTIONS=gpt-5-mini
+
+# Server Configuration
+EXPRESS_PORT=5174
+BACKEND_URL=http://localhost:8000
+
+# Video Processing
+USE_CHROME_COOKIES=false
+```
 
 ## Usage
 
-### Frame Extraction
-```python
-from ad_processing import ViralFrameExtractor
+### Development
 
-extractor = ViralFrameExtractor()
-frames = extractor.extract_frames("video.mp4")
+1. **Start Express server:**
+   ```bash
+   npm run dev
+   # or
+   node server.js
+   ```
 
-# Group by scenes
-scenes = extractor.group_frames_by_scenes(frames)
+2. **Start Python video processing server:**
+   ```bash
+   python main.py
+   ```
+
+3. **Test video analysis:**
+   ```bash
+   python process_video.py "https://instagram.com/reel/example"
+   ```
+
+### API Examples
+
+#### Script Assistance (Agents API)
+```javascript
+const response = await fetch('/api/chat/agents', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    prompt: "Help me improve this script",
+    script: { sections: [...] },
+    workspaceNodes: [...],
+    chatHistory: [...]
+  })
+});
 ```
 
-### Advertisement Analysis
-```python
-from ad_processing import AdAnalyzer, AudioExtractor
-
-# Extract audio
-audio_extractor = AudioExtractor()
-audio_data = audio_extractor.extract_audio("video.mp4")
-
-# Analyze advertisement
-analyzer = AdAnalyzer()
-analysis = await analyzer.analyze_advertisement(
-    frames=frames,
-    audio_extraction=audio_data,
-    original_url="https://example.com/video"
-)
+#### Video Analysis
+```javascript
+const response = await fetch('/api/analyzeAd', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    url: "https://instagram.com/reel/example"
+  })
+});
 ```
 
-### Video Compression
-```python
-from ad_processing import VideoCompressor
+## Agent Tools Deep Dive
 
-compressor = VideoCompressor()
-base64_video = compressor.download_and_compress_video("https://example.com/video")
+### Discovery Pattern
+The two-tool workspace system provides efficient content access:
+
+1. **`listWorkspaceContents`**: Browse available content
+   ```json
+   {
+     "contents": [
+       {
+         "id": "node_123",
+         "type": "productSpec",
+         "fileCount": 3,
+         "hasContent": true
+       }
+     ]
+   }
+   ```
+
+2. **`readWorkspaceContent`**: Load specific content
+   ```json
+   {
+     "nodeIds": ["node_123", "node_456"]
+   }
+   ```
+
+### Script Change Proposals
+Structured modifications with user control:
+```json
+{
+  "explanation": "Suggested improvements to hook",
+  "actions": [
+    {
+      "type": "rewrite",
+      "targetId": "section_1",
+      "script_text": "New engaging opening",
+      "shots": [...]
+    }
+  ]
+}
 ```
 
-## Configuration Management
+## Video Processing Configuration
 
-The system uses a two-tier configuration approach:
+### Jump Cut Detection
+- **Threshold**: 0.73 similarity score
+- **Metrics**: 75% perceptual hash + 25% histogram comparison
+- **Target**: ~30 significant frames per video
+- **Scene-based**: Intelligent gap filling with positioning strategy
 
-- **Environment Variables (.env)**: Sensitive data (API keys) and environment-specific settings
-- **Application Config (app_config.json)**: Business logic settings that can be version controlled
+### Analysis Quality
+- **Model**: GPT-4o for structured outputs
+- **Frame Encoding**: Direct in-memory base64 conversion
+- **Audio**: OpenAI Whisper for transcription
+- **Duration**: Support for 60-90 second videos
 
-This separation ensures:
-- Secrets aren't committed to version control
-- Application settings can be easily modified and tracked
-- Different environments can have different configurations
+## Development & Testing
 
-## API Key Management
+### Scripts
+```bash
+npm run dev              # Start Express server in development
+npm run backend:install  # Install Python dependencies
+npm run backend:test     # Test video processing pipeline
+```
 
-All modules consistently handle the OpenAI API key:
-1. Check for explicitly passed key
-2. Fall back to `OPENAI_API_KEY` environment variable
-3. Raise error if neither is provided
+### Debugging
+- **Agent Conversations**: Detailed logging in `/api/chat/agents`
+- **Video Processing**: Frame-by-frame analysis with debug outputs
+- **Tool Execution**: Real-time tool status and result logging
 
-## Dependencies
+## Architecture Benefits
 
-- **FastAPI**: Web framework
-- **OpenAI**: AI processing
-- **OpenCV**: Image processing
-- **yt-dlp**: Video downloading
-- **python-dotenv**: Environment variable loading
+- **Modular Design**: Separate concerns for video, script, and API handling
+- **Scalable Tools**: Easy addition of new agent capabilities
+- **Efficient Content Access**: Discovery + selective loading pattern
+- **Structured AI Responses**: JSON-formatted proposals with user control
+- **Production Ready**: Comprehensive error handling and logging
 
-## Development
+## Future Enhancements
 
-- Run tests: `python test_scene_extraction.py`
-- Check configuration: Validate all settings load correctly
-- Add new configs: Update `app_config.json` and `settings.py`
+- **Database Integration**: Replace localStorage with PostgreSQL/Supabase
+- **Advanced Video Types**: Support for more complex video structures
+- **Collaboration Features**: Multi-user script editing and sharing
+- **Performance Optimization**: Caching and background processing
+- **Analytics Integration**: Usage tracking and performance metrics
