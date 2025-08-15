@@ -1012,7 +1012,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                   isExperimental ? 'text-yellow-300' : 
                   'text-gray-700'
                 }`}>
-                  Ads ({ads.length}/6)
+                  Video References ({ads.length}/6)
                 </h3>
                 <button
                   onClick={handleAddAd}
@@ -1035,7 +1035,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                   isExperimental ? 'text-yellow-400/60' : 
                   'text-gray-500'
                 }`}>
-                  No ads
+                  No video references
                 </p>
               ) : (
                 ads.map(ad => {
@@ -1051,7 +1051,7 @@ const EnhancedStaticScriptView: React.FC<EnhancedStaticScriptViewProps> = ({
                           ? isDarkMode ? 'bg-purple-500/20 border-purple-400 ring-1 ring-purple-400' :
                             isExperimental ? 'bg-yellow-400/20 border-yellow-400 ring-1 ring-yellow-400' :
                             'bg-blue-50 border-blue-300 ring-1 ring-blue-300'
-                          : isDarkMode ? 'bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/15' : 
+                          : isDarkMode ? 'bg-purple-500/10 border-purple-500/40 hover:bg-purple-500/15' : 
                             isExperimental ? 'bg-yellow-400/10 border-yellow-400/20 hover:bg-yellow-400/15' : 
                             'bg-gray-100 border-gray-200 hover:bg-gray-150'
                       }`}
