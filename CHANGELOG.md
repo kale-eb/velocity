@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2025-08-15
+
+### 🔧 UI Improvements & Auto-Expansion Fix
+
+### Fixed
+- **Script Text Auto-Expansion**: Script text boxes now properly expand to encompass wrapped text
+  - Fixed auto-expansion for programmatic value changes (AI suggestions, loaded content)
+  - Added height recalculation on `onChange` events, not just user input
+  - Ensures consistent textarea sizing across all content sources
+
+### Enhanced
+- **User Experience**: Script text inputs now maintain proper height for all content updates
+  - Works with AI-generated content, loaded scripts, and manual typing
+  - Prevents text overflow and improves readability
+  - Maintains single-line compact appearance for short content
+
+## [0.9.0] - 2025-08-15
+
+### 🧹 Major Codebase Cleanup: Legacy Code Removal
+
+### Removed
+- **Legacy Components** (No longer in use)
+  - `src/utils/scriptConverter.ts` - Old chunk-to-section converter (obsolete with sections-only format)
+  - `src/components/workspace/WorkspaceContainerSimple.tsx` - Unused simplified workspace
+  - `src/components/workspace/NodeBasedWorkspace.tsx` - Legacy node-based editor (replaced by Fixed version)
+  - `src/components/views/StaticScriptView.tsx` - Old static view (replaced by EnhancedStaticScriptView)
+  - `backend/tools/` directory - Unused legacy tool system (replaced by agents system)
+
+- **Legacy Code Blocks**
+  - Removed commented-out streaming endpoint (`/api/chat/stream`) from `backend/server.js`
+  - Cleaned up chunk references in backend where sections are now used
+  - Removed unused chunk-related functions in `backend/server.js`
+
+### Changed
+- **Backend Simplification**
+  - Unified to use sections format throughout
+  - Removed dual format support (chunks vs sections)
+  - Cleaned up legacy mock data and test files
+
+- **Type Definitions**
+  - Removed unused legacy types from `src/types/index.ts`
+  - Cleaned up chunk-related interfaces
+  - Simplified script type definitions
+
+### Technical Debt Addressed
+- Removed ~2000+ lines of unused legacy code
+- Eliminated confusion between old and new implementations
+- Improved maintainability with single, clear implementation path
+- Reduced bundle size by removing dead code
+
 ## [0.8.0] - 2025-08-15
 
 ### 🎯 Major Architecture Simplification: Static-First Approach

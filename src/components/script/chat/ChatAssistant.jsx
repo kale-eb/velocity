@@ -164,10 +164,10 @@ export default function ChatAssistant({
         body: JSON.stringify({
           prompt: prompt,
           selectedReferences: [],
-          workspaceNodes: context.selectedNodes || [],
+          workspaceNodes: context.allNodes || [],
           script: script,
           chatHistory: toChatHistory(),
-          videoAnalyses: context.selectedAdAnalyses || {}
+          videoAnalyses: context.allAdAnalyses || {}
         }),
         signal: controller.signal
       });
@@ -321,7 +321,14 @@ export default function ChatAssistant({
     // Create a new conversation
     const newConversation = ChatStorage.createNewConversation();
     setCurrentConversationId(newConversation.id);
-    setMessages([]);
+    
+    // Add welcome message explaining the workspace
+    const welcomeMessage = {
+      role: 'assistant',
+      content: `Hi! I'm your script assistant. I can help you improve your short-form video scripts.\n\n**How the workspace works:**\n• **Click items in the sidebar** to highlight them for my focus\n• I can access all your content (product specs, video references, instructions) but prioritize selected sources\n• Ask me to analyze, edit, or suggest improvements to your script\n• I can propose specific changes that you can accept or reject\n\nWhat would you like to work on today?`
+    };
+    
+    setMessages([welcomeMessage]);
     setActionStates({});
     setPrompt('');
     onPropose([]);

@@ -24,6 +24,8 @@ The platform operates through **two main workspaces** that work together:
 - **File Preview System** - Click to preview uploaded files with full-screen modal
 - **Enhanced Chat UX** - Modern AI chat interface with conversation history and real-time feedback
 - **Chat Conversation History** - Persistent storage of up to 5 conversations with automatic title generation
+- **Persistent Chat Proposals** - AI suggestions and user responses persist across page reloads
+- **Auto-expanding UI** - Script text boxes and camera inputs automatically resize to fit content
 - **Video Analysis Pipeline** - AI-powered analysis of short-form video ads with frame extraction and OpenAI GPT-5-mini
 - **Analysis State Persistence** - Backend-integrated approach for loading analyzed video data across sessions
 
@@ -38,22 +40,19 @@ The platform streamlines the entire process from initial concept to final video 
 - **Icons**: Lucide React, **Connections**: SVG
 - **Code Quality**: ESLint
 
-## Project Structure
+## Project Structure (v0.9.0 - Post-Cleanup)
 ```
 src/
 ├── components/
 │   ├── script/                     # Script Generation Components
 │   │   ├── chat/                   # AI Chat Assistant
-│   │   │   └── ChatAssistant.jsx   # Enhanced chat with conversation history
+│   │   │   └── ChatAssistant.jsx   # Enhanced chat with persistent proposals
 │   │   └── nodes/                  # Script generation nodes
 │   │       └── ScriptGenerationNode.jsx
 │   ├── views/                      # Main workspace views
-│   │   ├── EnhancedStaticScriptView.tsx  # Primary script editor with file preview
-│   │   └── StaticScriptView.tsx    # Legacy script view
+│   │   └── EnhancedStaticScriptView.tsx  # Primary script editor with collapsible shots
 │   ├── workspace/                  # Workspace management
-│   │   ├── WorkspaceContainer.tsx  # Simplified state coordinator
-│   │   ├── NodeBasedWorkspaceFixed.tsx  # Legacy visual editor (removed)
-│   │   └── NodeBasedWorkspace.jsx  # Legacy workspace (removed)
+│   │   └── WorkspaceContainer.tsx  # Simplified state coordinator
 │   ├── layout/                     # App-wide layout (planned)
 │   ├── video/                      # Video Assembly Workspace (planned)
 │   ├── content/                    # Content Database (planned)
@@ -152,6 +151,7 @@ Three modes (light/dark/experimental) with dynamic styling and consistent color 
 - **CORS-Safe Architecture**: Express → Python raw byte transmission avoiding browser limitations
 - **File Card UI**: Individual file cards with metadata, processing status, and deletion controls
 - **Separated Data Storage**: File metadata for UI, extracted text for AI processing
+- **File Preview System**: Click-to-preview uploaded files with full-screen modal support
 - **Instagram Video Fallback**: Proper handling of iframe embedding restrictions with "View on Platform" links
 
 ### Backend Processing Pipeline

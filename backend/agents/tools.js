@@ -22,6 +22,26 @@ const getScriptEditingContext = tool({
 });
 
 /**
+ * Workspace Help Tool
+ * Loads information about how the UI and workspace features work
+ */
+const getWorkspaceHelp = tool({
+  name: 'get_workspace_help',
+  description: 'Load help information about workspace UI, content sources, selection system, and how users interact with the interface',
+  parameters: z.object({}),
+  async execute(_, runContext) {
+    const { sendToolStatus } = runContext?.context || {};
+    sendToolStatus?.('Loading workspace UI guide');
+    
+    return {
+      guide: prompts.workspace_help.content,
+      title: prompts.workspace_help.title,
+      loaded: true
+    };
+  },
+});
+
+/**
  * Current Script Tool
  * Gets the current script sections and metadata
  */
@@ -233,6 +253,130 @@ URL: ${node.data?.url || 'N/A'}`;
 });
 
 /**
+ * Workspace Discovery Tool
+ * Lists available workspace content without accessing full content
+ */
+const listWorkspaceContents = tool({
+  name: 'list_workspace_contents',
+  description: 'Discover what content exists in the workspace (product specs, video references, instructions) without reading the full content',
+  parameters: z.object({
+    types: z.array(z.enum(['productSpec', 'ad', 'instructions'])).nullable().optional().describe('Filter by node types')
+  }),
+  async execute({ types }, runContext) {
+    const { workspaceNodes, sendToolStatus } = runContext?.context || {};
+    sendToolStatus?.('Discovering workspace contents');
+    
+    if (!workspaceNodes || workspaceNodes.length === 0) {
+      return { 
+        contents: [],
+        message: 'No workspace content available'
+      };
+    }
+    
+    let filteredNodes = workspaceNodes;
+    if (types && types.length > 0) {
+      filteredNodes = workspaceNodes.filter(node => types.includes(node.type));
+    }
+    
+    const contents = filteredNodes.map(node => {
+      const summary = {
+        id: node.id,
+        type: node.type,
+        status: 'available'
+      };
+      
+      // Add type-specific metadata
+      if (node.type === 'productSpec') {
+        summary.fileCount = node.data?.uploadedFiles?.length || 0;
+        summary.hasContent = !!(node.data?.content?.length);
+      } else if (node.type === 'ad') {
+        summary.url = node.data?.url || null;
+        summary.isAnalyzed = !!(node.data?.analysisRef || runContext?.context?.videoAnalyses?.[node.id]);
+      } else if (node.type === 'instructions') {
+        summary.hasContent = !!(node.data?.content?.length);
+        summary.preview = node.data?.content?.substring(0, 100) || '';
+      }
+      
+      return summary;
+    });
+    
+    return { 
+      contents,
+      totalCount: contents.length,
+      byType: contents.reduce((acc, item) => {
+        acc[item.type] = (acc[item.type] || 0) + 1;
+        return acc;
+      }, {}),
+      message: `Found ${contents.length} workspace items`
+    };
+  },
+});
+
+/**
+ * Workspace Content Access Tool  
+ * Read specific workspace content by ID
+ */
+const readWorkspaceContent = tool({
+  name: 'read_workspace_content',
+  description: 'Read the full content of specific workspace items by their IDs',
+  parameters: z.object({
+    nodeIds: z.array(z.string()).describe('Array of node IDs to read content from')
+  }),
+  async execute({ nodeIds }, runContext) {
+    const { workspaceNodes, videoAnalyses, sendToolStatus } = runContext?.context || {};
+    sendToolStatus?.(`Reading content from ${nodeIds.length} workspace items`);
+    
+    if (!workspaceNodes || workspaceNodes.length === 0) {
+      return { 
+        contents: [],
+        message: 'No workspace content available'
+      };
+    }
+    
+    const requestedNodes = workspaceNodes.filter(node => nodeIds.includes(node.id));
+    
+    if (requestedNodes.length === 0) {
+      return {
+        contents: [],
+        message: `No nodes found with IDs: ${nodeIds.join(', ')}`
+      };
+    }
+    
+    const contents = requestedNodes.map(node => {
+      let resolvedContent = node.data?.content || '';
+      
+      // For video nodes, resolve the analysis
+      if (node.type === 'ad') {
+        const analysis = videoAnalyses?.[node.id];
+        if (analysis) {
+          resolvedContent = `COMPLETE VIDEO ANALYSIS JSON:
+${JSON.stringify(analysis, null, 2)}
+
+URL: ${node.data?.url || 'N/A'}`;
+        }
+      }
+      
+      return {
+        id: node.id,
+        type: node.type,
+        content: resolvedContent,
+        metadata: {
+          fileCount: node.data?.uploadedFiles?.length || 0,
+          url: node.data?.url || null,
+          isAnalyzed: node.type === 'ad' ? !!(videoAnalyses?.[node.id]) : undefined
+        }
+      };
+    });
+    
+    return { 
+      contents,
+      readCount: contents.length,
+      message: `Read content from ${contents.length} workspace items`
+    };
+  },
+});
+
+/**
  * Discovery Tool
  * Discover available capabilities and tools
  */
@@ -275,8 +419,10 @@ const discoverCapabilities = tool({
 
 module.exports = {
   getScriptEditingContext,
+  getWorkspaceHelp,
   getCurrentScript,
   suggestScriptChanges,
-  getWorkspaceContent,
+  listWorkspaceContents,
+  readWorkspaceContent,
   discoverCapabilities
 };
