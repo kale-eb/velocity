@@ -1,9 +1,10 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Theme, UIState } from '../types'
+import { ViewMode, Theme, UIState } from '../types'
 
 interface UIStore extends UIState {
   // Actions
+  setCurrentView: (view: ViewMode) => void
   setTheme: (theme: Theme) => void
   toggleSidebar: () => void
   setSidebarOpen: (open: boolean) => void
@@ -20,6 +21,7 @@ export const useUIStore = create<UIStore>()(
   persist(
     (set, get) => ({
       // Initial state
+      currentView: 'graph',
       theme: 'light',
       sidebarOpen: true,
       chatOpen: false,
@@ -27,6 +29,9 @@ export const useUIStore = create<UIStore>()(
       error: null,
 
       // Actions
+      setCurrentView: (view: ViewMode) => {
+        set({ currentView: view })
+      },
 
       setTheme: (theme: Theme) => {
         set({ theme })
@@ -73,6 +78,7 @@ export const useUIStore = create<UIStore>()(
 
       resetUI: () => {
         set({
+          currentView: 'graph',
           theme: 'light',
           sidebarOpen: true,
           chatOpen: false,
@@ -84,6 +90,7 @@ export const useUIStore = create<UIStore>()(
     {
       name: 'ui-storage',
       partialize: (state) => ({
+        currentView: state.currentView,
         theme: state.theme,
         sidebarOpen: state.sidebarOpen
       })

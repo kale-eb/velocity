@@ -28,7 +28,9 @@ export interface NodePosition {
 export interface BaseNode {
   id: string;
   type: NodeType;
+  position: NodePosition;
   isSelected?: boolean;
+  isDragging?: boolean;
   data?: any;
 }
 
@@ -40,8 +42,6 @@ export interface AdNode extends BaseNode {
     status: string;
     analysis?: AdAnalysis;
     isAnalyzing?: boolean;
-    isAnalyzed?: boolean;
-    analysisTimestamp?: string;
   };
 }
 
@@ -133,62 +133,12 @@ export interface WorkspaceState {
   };
 }
 
-// Script types - NEW SECTION-BASED STRUCTURE
-export type VideoType = 'JUMP_CUTS' | 'B_ROLL' | 'A_ROLL_WITH_OVERLAY' | 'SPLIT_SCREEN';
-export type SectionType = 'HOOK' | 'BODY' | 'CTA';
-export type LayoutType = 'vertical_split' | 'horizontal_split' | 'pip_corner' | 'pip_bottom';
-
-export interface Shot {
-  camera: string;           // Camera instruction
-  portion: string;          // Text portion this shot covers
-  timestamp?: number;       // For JUMP_CUTS: cut point in source video
-  start_time?: number;      // For OVERLAY: when overlay appears
-  duration?: number;        // For OVERLAY: how long overlay shows
-}
-
-export interface BaseLayer {
-  camera: string;
-  extends_full_section: boolean;
-}
-
-export interface ScriptSection {
-  id: string;
-  type: SectionType;
-  script_text: string;       // The coherent thought/sentence
-  video_type: VideoType;
-  
-  // For JUMP_CUTS and B_ROLL
-  shots?: Shot[];
-  source?: 'single_video' | 'multiple_videos';
-  
-  // For A_ROLL_WITH_OVERLAY
-  base_layer?: BaseLayer;
-  overlay_shots?: Shot[];
-  
-  // For SPLIT_SCREEN
-  main_video?: { camera: string };
-  secondary_video?: { camera: string };
-  layout?: LayoutType;
-}
-
-export interface Script {
-  id: string;
-  title: string;
-  sections: ScriptSection[];  // Changed from chunks to sections
-  projectId?: string;
-  status?: 'draft' | 'generated' | 'editing' | 'final';
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-// Legacy chunk structure (for backward compatibility)
+// Script types
 export interface ScriptChunk {
   id: string;
-  type: 'hook' | 'body' | 'cta' | 'HOOK' | 'BODY' | 'CTA';
-  script_text?: string;
-  camera_instruction?: string;
-  versions?: ScriptVersion[];
-  selectedVersion?: number;
+  type: 'hook' | 'body' | 'cta';
+  versions: ScriptVersion[];
+  selectedVersion: number;
   metadata?: {
     cameraDirection?: string;
     visualNotes?: string;
@@ -203,15 +153,13 @@ export interface ScriptVersion {
   updatedAt: Date;
 }
 
-// Support both old and new formats during migration
-export interface LegacyScript {
+export interface Script {
   id: string;
-  title?: string;
-  projectId?: string;
+  projectId: string;
   chunks: ScriptChunk[];
-  status?: 'draft' | 'generated' | 'editing' | 'final';
-  createdAt?: Date;
-  updatedAt?: Date;
+  status: 'draft' | 'generated' | 'editing' | 'final';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Ad analysis types
@@ -258,9 +206,11 @@ export interface Project {
 }
 
 // UI state types
+export type ViewMode = 'graph' | 'static' | 'assets';
 export type Theme = 'light' | 'dark' | 'experimental';
 
 export interface UIState {
+  currentView: ViewMode;
   theme: Theme;
   sidebarOpen: boolean;
   chatOpen: boolean;

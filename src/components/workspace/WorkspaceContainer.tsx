@@ -1,61 +1,67 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Home, Folder, Settings, Sun, Moon, Zap, Database, Download, Upload, Trash2 } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Plus, Home, Folder, Settings, Sun, Moon, Zap, Database, Download, Upload, Trash2, Film } from 'lucide-react';
+import NodeBasedWorkspaceFixed from './legacy/NodeBasedWorkspaceFixed';
 import EnhancedStaticScriptView from '../views/EnhancedStaticScriptView';
-import { useWorkspaceStore, useUIStore, useProjectStore } from '../../stores';
-import { storage, WorkspaceStorage, AdStorage, ScriptStorage, AutoSave, DataPortability } from '../../utils/localStorage';
-import type { NodeType } from '../../types';
+import VideoWorkflowUI from '../workflow/VideoWorkflowUI';
+import AssetsView from '../views/AssetsView';
+// import ScriptGenerationNode from '../script/nodes/ScriptGenerationNode';
+// import ChatAssistant from '../script/chat/ChatAssistant';
+import { useWorkspaceStore, useUIStore } from '../../stores';
+import { storage, ScriptStorage, DataPortability } from '../../utils/localStorage';
+import type { NodeType, Point } from '../../types';
 
 // API helper functions for script generation
-const apiHelpers = {
-  async generateScript(inputs: any, adAnalyses: any = {}) {
-    try {
-      const response = await fetch('/api/generateScript', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inputs, adAnalyses })
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error('Script generation failed:', error);
-      throw error;
-    }
-  },
+// const apiHelpers = {
+//   async generateScript(inputs: any, adAnalyses: any = {}) {
+//     try {
+//       const response = await fetch('/api/generateScript', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ inputs, adAnalyses })
+//       });
+//       if (!response.ok) throw new Error(`HTTP ${response.status}`);
+//       return await response.json();
+//     } catch (error) {
+//       console.error('Script generation failed:', error);
+//       throw error;
+//     }
+//   },
 
-  async chatActions(data: any) {
-    try {
-      const response = await fetch('/api/chatActions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error('Chat actions failed:', error);
-      throw error;
-    }
-  },
+//   async chatActions(data: any) {
+//     try {
+//       const response = await fetch('/api/chatActions', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(data)
+//       });
+//       if (!response.ok) throw new Error(`HTTP ${response.status}`);
+//       return await response.json();
+//     } catch (error) {
+//       console.error('Chat actions failed:', error);
+//       throw error;
+//     }
+//   },
 
-  async analyzeAd(url: string, contentDescription?: string) {
-    try {
-      const response = await fetch('/api/analyzeAd', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, content_description: contentDescription })
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error('Ad analysis failed:', error);
-      throw error;
-    }
-  }
-};
+//   async analyzeAd(url: string, contentDescription?: string) {
+//     try {
+//       const response = await fetch('/api/analyzeAd', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ url, content_description: contentDescription })
+//       });
+//       if (!response.ok) throw new Error(`HTTP ${response.status}`);
+//       return await response.json();
+//     } catch (error) {
+//       console.error('Ad analysis failed:', error);
+//       throw error;
+//     }
+//   }
+// };
 
 const WorkspaceContainer: React.FC = () => {
   // UI Store
   const { 
+    currentView, setCurrentView,
     theme, setTheme,
     sidebarOpen, setSidebarOpen,
     chatOpen, setChatOpen 
@@ -64,93 +70,52 @@ const WorkspaceContainer: React.FC = () => {
   // Workspace Store
   const {
     nodes,
+    connections,
+    zoomLevel,
     addNode,
     updateNode,
-    deleteNode,
-    resetWorkspace
+    deleteNode
   } = useWorkspaceStore();
 
   // Project Store
-  const { currentProjectId, createProject } = useProjectStore();
+  // const { currentProjectId, createProject } = useProjectStore();
 
   // State for tracking loaded data
-  const [adAnalyses, setAdAnalyses] = React.useState<Record<string, any>>({});
+  const [adAnalyses] = React.useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = React.useState(true);
   const [storageInfo, setStorageInfo] = React.useState({ totalSize: 0, itemCount: 0, items: {} });
-  const [showDataManagement, setShowDataManagement] = React.useState(false);
+  // const [showDataManagement, setShowDataManagement] = React.useState(false);
   const [currentScript, setCurrentScript] = React.useState<any>(null);
   
   // Use a ref to prevent double initialization in StrictMode
   const initializationRef = React.useRef(false);
 
+  // COMMENTED OUT: Node-based workspace loading 
   // Simple initialization for static script view only
   React.useEffect(() => {
     if (initializationRef.current) return;
     initializationRef.current = true;
+    
+    // Start with Marketing Campaign A tabs by default
+    setCurrentView('static');
 
-    const initializeData = async () => {
-      // Load saved script and ad analyses
-      try {
-        console.log('🔄 WorkspaceContainer: Loading scripts from localStorage...');
-        const savedScripts = ScriptStorage.loadGeneratedScripts();
-        const savedCurrentScript = savedScripts['current_script'] || null;
-        
-        if (savedCurrentScript) {
-          // Only handle new sections format
-          if (savedCurrentScript.sections && Array.isArray(savedCurrentScript.sections)) {
-            const totalShots = savedCurrentScript.sections.reduce((total: number, section: any) => {
-              const shots = section.shots?.length || 0;
-              const overlays = section.overlay_shots?.length || 0;
-              return total + shots + overlays + (section.base_layer ? 1 : 0);
-            }, 0);
-            console.log('📜 WorkspaceContainer: Found saved script with', savedCurrentScript.sections.length, 'sections,', totalShots, 'total shots');
-            setCurrentScript(savedCurrentScript);
-          } else {
-            console.log('📜 WorkspaceContainer: Ignoring legacy format script');
-            setCurrentScript(null);
-          }
-        } else {
-          console.log('📜 WorkspaceContainer: No saved script found');
-        }
-
-        // Load analysis data from localStorage for nodes that are marked as analyzed
-        console.log('🔄 WorkspaceContainer: Loading analysis data for analyzed nodes...');
-        console.log('🔍 WorkspaceContainer: All nodes:', nodes.map(n => ({ id: n.id, type: n.type, isAnalyzed: n.data?.isAnalyzed })));
-        const analyzedNodes = nodes.filter(node => node.type === 'ad' && node.data?.isAnalyzed);
-        
-        if (analyzedNodes.length > 0) {
-          console.log('📊 WorkspaceContainer: Found', analyzedNodes.length, 'analyzed nodes, loading from localStorage...');
-          console.log('📊 WorkspaceContainer: Analyzed nodes:', analyzedNodes.map(n => ({ id: n.id, url: n.data?.url, isAnalyzed: n.data?.isAnalyzed })));
-          
-          // Load analysis data from localStorage for each analyzed node
-          const loadedAnalyses = {};
-          const storedProcessedAds = AdStorage.loadProcessedAds();
-          
-          analyzedNodes.forEach(node => {
-            const analysis = storedProcessedAds[node.id];
-            if (analysis) {
-              loadedAnalyses[node.id] = analysis;
-              console.log('📊 WorkspaceContainer: Loaded analysis for node', node.id, 'from localStorage');
-            } else {
-              console.warn('📊 WorkspaceContainer: No analysis found in localStorage for node', node.id);
-            }
-          });
-          
-          if (Object.keys(loadedAnalyses).length > 0) {
-            console.log('📊 WorkspaceContainer: Loaded', Object.keys(loadedAnalyses).length, 'analyses from localStorage');
-            setAdAnalyses(loadedAnalyses);
-          }
-        } else {
-          console.log('📊 WorkspaceContainer: No analyzed nodes found');
-        }
-      } catch (error) {
-        console.error('❌ WorkspaceContainer: Failed to load saved data:', error);
-      }
+    // Load saved script only
+    try {
+      console.log('🔄 WorkspaceContainer: Loading scripts from localStorage...');
+      const savedScripts = ScriptStorage.loadGeneratedScripts();
+      const savedCurrentScript = savedScripts['current_script'] || null;
       
-      setIsLoading(false);
-    };
-
-    initializeData();
+      if (savedCurrentScript) {
+        console.log('📜 WorkspaceContainer: Found saved script with', savedCurrentScript.chunks?.length || 0, 'chunks');
+        setCurrentScript(savedCurrentScript);
+      } else {
+        console.log('📜 WorkspaceContainer: No saved script found');
+      }
+    } catch (error) {
+      console.error('❌ WorkspaceContainer: Failed to load saved script:', error);
+    }
+    
+    setIsLoading(false);
   }, []);
 
   /* COMMENTED OUT NODE WORKSPACE LOADING:
@@ -204,19 +169,47 @@ const WorkspaceContainer: React.FC = () => {
   }, [adAnalyses, isLoading]);
   */
 
-  // Local state
-  const [activeTab, setActiveTab] = useState<'Scripting' | 'Video Assembly'>('Scripting');
+  // Local state for legacy compatibility
+  const [activeTab, setActiveTab] = useState<'Scripting' | 'Modern Workflow'>('Modern Workflow');
+  // const [zoomLimits, setZoomLimits] = useState({ min: 25, max: 200 });
 
-  const tabs: ('Scripting' | 'Video Assembly')[] = ['Scripting', 'Video Assembly'];
+  // const workspaceRef = useRef<HTMLDivElement>(null);
+  // const nodeBasedWorkspaceRef = useRef<HTMLDivElement>(null);
 
-  // Get current nodes for static view
+  const tabs: ('Scripting' | 'Modern Workflow')[] = ['Modern Workflow', 'Scripting'];
+
+  // const handleZoomChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const newZoomLevel = parseInt(e.target.value);
+  //   setZoomLevel(newZoomLevel);
+  // }, [setZoomLevel]);
+
+  // Get current nodes/connections based on active view
   const currentNodes = nodes.filter(node => node.type !== 'scriptGenerator'); // Static view shows all except script generator
+  const currentConnections: any[] = []; // No connections in MVP static view
+  
+  console.log('Current connections being passed to workspace:', {
+    count: currentConnections.length,
+    connections: currentConnections,
+    allStoreConnections: connections,
+    currentView
+  });
+
+  // const handleNodesChange = useCallback((newNodes: any[]) => {
+  //   // This will be handled by individual store actions instead of bulk updates
+  //   console.log('Nodes changed:', newNodes);
+  // }, []);
+
+  // const handleConnectionsChange = useCallback((newConnections: any[]) => {
+  //   // This will be handled by individual store actions instead of bulk updates
+  //   console.log('Connections changed:', newConnections);
+  // }, []);
 
   const handleAddNode = useCallback((nodeType: string, data: any = {}): string | null => {
     console.log('=== HANDLE ADD NODE ===')
     console.log('Node type:', nodeType)
     console.log('Data:', data)
     console.log('Current nodes:', nodes.length)
+    console.log('Current connections:', connections.length)
     // Check node limits
     if (nodeType === 'ad') {
       const adCount = nodes.filter(n => n.type === 'ad').length;
@@ -235,13 +228,58 @@ const WorkspaceContainer: React.FC = () => {
         return null;
       }
     }
+    
+    const scriptGenerator = nodes.find(n => n.type === 'scriptGenerator');
+    
+    // Use provided position from data if available, otherwise calculate
+    let position: Point = { x: 100, y: 100 };
+    if ((data as any).position) {
+      position = (data as any).position as Point;
+      console.log('Using provided position:', position);
+    } else if (scriptGenerator) {
+      // Start near script generator
+      const baseX = scriptGenerator.position.x;
+      const baseY = scriptGenerator.position.y - 120; // Place above script generator
+      
+      // Simple collision detection - find open spot in a grid around script generator
+      const gridSize = 60;
+      let foundSpot = false;
+      
+      for (let radius = 0; radius < 5 && !foundSpot; radius++) {
+        for (let angle = 0; angle < 8 && !foundSpot; angle++) {
+          const testX = baseX + (Math.cos(angle * Math.PI / 4) * radius * gridSize);
+          const testY = baseY + (Math.sin(angle * Math.PI / 4) * radius * gridSize);
+          
+          // Check if this position conflicts with existing nodes
+          const hasConflict = nodes.some(node => {
+            const dx = Math.abs(node.position.x - testX);
+            const dy = Math.abs(node.position.y - testY);
+            return dx < 100 && dy < 80; // Node spacing buffer
+          });
+          
+          if (!hasConflict) {
+            position = { x: testX, y: testY };
+            foundSpot = true;
+          }
+        }
+      }
+      
+      // Fallback if no spot found
+      if (!foundSpot) {
+        position = { x: baseX + Math.random() * 200 - 100, y: baseY + Math.random() * 200 - 100 };
+      }
+    } else {
+      // No script generator, use random position
+      position = { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 };
+    }
 
-    // Use store action to add node (no position needed for static view)
-    const nodeId = addNode(nodeType as NodeType, data);
+    // Use store action to add node (connections disabled in MVP)
+    console.log('Calling addNode with position:', position)
+    const nodeId = addNode(nodeType as NodeType, position);
     console.log('Node added with ID:', nodeId)
     console.log('=== END HANDLE ADD NODE ===')
     return nodeId;
-  }, [nodes, addNode]);
+  }, [nodes, addNode, connections.length]);
 
   const handleUpdateNode = useCallback((nodeId: string, updates: any) => {
     updateNode(nodeId, updates);
@@ -250,6 +288,22 @@ const WorkspaceContainer: React.FC = () => {
   const handleDeleteNode = useCallback((nodeId: string) => {
     deleteNode(nodeId);
   }, [deleteNode]);
+
+  // const handleWorkspaceBoundsChange = useCallback((bounds: any) => {
+  //   if (bounds && bounds.zoomLimits) {
+  //     setZoomLimits(bounds.zoomLimits);
+  //     
+  //     // Adjust current zoom if it's outside new limits
+  //     setZoomLevel(
+  //       Math.max(bounds.zoomLimits.min, Math.min(bounds.zoomLimits.max, zoomLevel))
+  //     );
+  //   }
+  // }, [zoomLevel, setZoomLevel]);
+
+  // const handleViewportStateChange = useCallback((viewportState: any) => {
+  //   // This can be removed as viewport state is now handled by the store
+  //   console.log('Viewport state changed:', viewportState);
+  // }, []);
 
   // Script management functions
   const handleScriptUpdate = useCallback((script: any) => {
@@ -343,39 +397,83 @@ const WorkspaceContainer: React.FC = () => {
   }, [nodes, adAnalyses, isLoading, updateStorageInfo]);
 
   const renderWorkspaceContent = () => {
+    // If assets view is selected, show assets directly (no tabs)
+    if (currentView === 'assets') {
+      return <AssetsView theme={theme} />;
+    }
+
+    // If projects view is selected, show project selection
+    if (currentView === 'projects') {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-gray-400 space-y-6 p-8">
+          <Folder className="w-20 h-20 text-gray-500" />
+          <div className="text-center space-y-4">
+            <h3 className="text-2xl font-medium text-gray-300 mb-2">Projects</h3>
+            <p className="text-sm text-gray-500 max-w-md">Select or create a project to access Modern Workflow and Scripting tools</p>
+            
+            {/* Temporary buttons for demo - replace with actual project list */}
+            <div className="space-y-3 mt-8">
+              <button 
+                onClick={() => setCurrentView('static')}
+                className={`px-6 py-3 rounded-xl transition-all duration-200 font-medium ${
+                  isDarkMode 
+                    ? 'bg-purple-600/80 hover:bg-purple-600 text-white border border-purple-500/30' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+              >
+                Open Sample Project
+              </button>
+              <div>
+                <button 
+                  className={`px-6 py-3 rounded-xl transition-all duration-200 font-medium ${
+                    isDarkMode 
+                      ? 'bg-gray-600/40 hover:bg-gray-600/60 border border-gray-500/30 text-gray-300' 
+                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  }`}
+                >
+                  + Create New Project
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Only show project tabs if currentView is 'static' (when a project is selected)
+    if (currentView === 'static') {
+      if (activeTab === 'Modern Workflow') {
+        return <VideoWorkflowUI theme={theme} />;
+      }
+
+      if (activeTab === 'Scripting') {
+        return (
+          <EnhancedStaticScriptView 
+            nodes={currentNodes} 
+            colorScheme={theme}
+            onAddNode={handleAddNode}
+            onUpdateNode={handleUpdateNode}
+            onDeleteNode={handleDeleteNode}
+            chatExpanded={chatOpen}
+            onToggleChat={toggleChat}
+            adAnalyses={adAnalyses}
+            currentScript={currentScript}
+            onScriptUpdate={handleScriptUpdate}
+            onScriptClear={handleScriptClear}
+          />
+        );
+      }
+    }
+
+    // Default fallback
     return (
-      <EnhancedStaticScriptView 
-        nodes={currentNodes} 
-        colorScheme={theme}
-        onAddNode={handleAddNode}
-        onUpdateNode={handleUpdateNode}
-        onDeleteNode={handleDeleteNode}
-        chatExpanded={chatOpen}
-        onToggleChat={toggleChat}
-        adAnalyses={adAnalyses}
-        currentScript={currentScript}
-        onScriptUpdate={handleScriptUpdate}
-        onScriptClear={handleScriptClear}
-        onAdAnalyzed={(nodeId: string, analysis: any) => {
-          console.log('💾 Saving ad analysis for', nodeId);
-          setAdAnalyses(prev => ({ ...prev, [nodeId]: analysis }));
-          AdStorage.addProcessedAd(nodeId, analysis);
-          
-          // Update node with reference to analysis and summary for agent access
-          const analysisRef = `video_analysis_${nodeId}`;
-          const summary = `Video Analysis: ${analysis.summary}\nDuration: ${analysis.duration}s\nVisual Style: ${analysis.visualStyle}\nAudio Style: ${analysis.audioStyle}\nChunks: ${analysis.chunks?.length || 0}`;
-          
-          updateNode(nodeId, {
-            data: {
-              ...nodes.find(n => n.id === nodeId)?.data,
-              analysisRef,
-              content: summary,
-              analysisTimestamp: new Date().toISOString(),
-              isAnalyzed: true
-            }
-          });
-        }}
-      />
+      <div className="flex flex-col items-center justify-center h-full text-gray-400 space-y-4">
+        <Folder className="w-16 h-16 text-gray-500" />
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-300 mb-2">Welcome</h3>
+          <p className="text-sm">Navigate using the sidebar to get started</p>
+        </div>
+      </div>
     );
   };
 
@@ -454,6 +552,36 @@ const WorkspaceContainer: React.FC = () => {
                         }`} />
                         Projects
                       </button>
+                      <button 
+                        onClick={() => setCurrentView('assets')}
+                        className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg transition-all group ${
+                          currentView === 'assets'
+                            ? isDarkMode 
+                              ? 'bg-purple-500/20 text-purple-100 border border-purple-500/30' 
+                              : isExperimental
+                                ? 'bg-yellow-400/20 text-yellow-100 border border-yellow-400/30'
+                                : 'bg-gray-200 text-gray-900'
+                            : isDarkMode 
+                              ? 'text-purple-200 hover:bg-purple-500/10 hover:text-purple-100' 
+                              : isExperimental 
+                                ? 'text-yellow-200 hover:bg-yellow-400/10 hover:text-yellow-100' 
+                                : 'text-gray-700 hover:bg-gray-100'
+                        }`}>
+                        <Database size={16} className={`mr-3 transition-colors ${
+                          currentView === 'assets'
+                            ? isDarkMode 
+                              ? 'text-purple-300' 
+                              : isExperimental
+                                ? 'text-yellow-300'
+                                : 'text-gray-700'
+                            : isDarkMode 
+                              ? 'text-purple-400 group-hover:text-purple-300' 
+                              : isExperimental 
+                                ? 'text-yellow-400 group-hover:text-yellow-300' 
+                                : 'text-gray-500'
+                        }`} />
+                        Assets
+                      </button>
                       <button className={`w-full flex items-center px-3 py-2.5 text-sm rounded-lg transition-all group ${
                         isDarkMode ? 'text-purple-200 hover:bg-purple-500/10 hover:text-purple-100' : 
                         isExperimental ? 'text-yellow-200 hover:bg-yellow-400/10 hover:text-yellow-100' : 
@@ -479,13 +607,19 @@ const WorkspaceContainer: React.FC = () => {
                       Recent Projects
                     </h3>
                     <div className="space-y-2">
-                      <div className={`px-3 py-2.5 text-sm rounded-lg border transition-all ${
-                        isDarkMode ? 'text-purple-100 bg-purple-500/10 border-purple-500/30' : 
-                        isExperimental ? 'text-yellow-100 bg-yellow-400/10 border-yellow-400/30' : 
-                        'text-gray-700 bg-blue-50 border-blue-200'
-                      }`}>
+                      <button 
+                        onClick={() => setCurrentView('static')}
+                        className={`w-full px-3 py-2.5 text-sm rounded-lg border transition-all cursor-pointer ${
+                          currentView === 'static'
+                            ? isDarkMode ? 'text-purple-100 bg-purple-500/10 border-purple-500/30' : 
+                              isExperimental ? 'text-yellow-100 bg-yellow-400/10 border-yellow-400/30' : 
+                              'text-gray-700 bg-blue-50 border-blue-200'
+                            : isDarkMode ? 'text-purple-200/80 hover:bg-purple-500/10 hover:text-purple-100 border-purple-500/20 hover:border-purple-500/30' : 
+                              isExperimental ? 'text-yellow-200/80 hover:bg-yellow-400/10 hover:text-yellow-100 border-yellow-400/20 hover:border-yellow-400/30' : 
+                              'text-gray-700 hover:bg-gray-100 border-gray-200 hover:border-gray-300'
+                        }`}>
                         Marketing Campaign A
-                      </div>
+                      </button>
                       <div className={`px-3 py-2.5 text-sm rounded-lg cursor-pointer transition-all ${
                         isDarkMode ? 'text-purple-200/80 hover:bg-purple-500/10 hover:text-purple-100' : 
                         isExperimental ? 'text-yellow-200/80 hover:bg-yellow-400/10 hover:text-yellow-100' : 
@@ -642,35 +776,37 @@ const WorkspaceContainer: React.FC = () => {
 
         {/* Workspace Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Workspace Header with Tabs (view toggle hidden for MVP) */}
-          <div className={`h-12 flex items-center px-4 flex-shrink-0 border-b ${
-            isDarkMode ? 'bg-black border-purple-500/20' : 
-            isExperimental ? 'bg-black/90 border-yellow-400/30' : 
-            'bg-white border-gray-200'
-          }`}>
-            <div className="flex items-center space-x-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 ${
-                    activeTab === tab
-                      ? isDarkMode ? 'bg-purple-500/20 text-purple-100 border-b-2 border-purple-400 shadow-lg shadow-purple-500/10' : isExperimental ? 'bg-yellow-400/20 text-yellow-300 border-b-2 border-yellow-400' : 'bg-blue-500 text-white border-b-2 border-blue-500'
-                      : isDarkMode ? 'text-purple-400/70 hover:text-purple-200 hover:bg-purple-500/10 hover:shadow-md hover:shadow-purple-500/5' : isExperimental ? 'text-yellow-400/60 hover:text-yellow-300 hover:bg-yellow-400/10' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  {tab}
+          {/* Workspace Header with Tabs - Only show when a project is selected */}
+          {currentView === 'static' && (
+            <div className={`h-12 flex items-center px-4 flex-shrink-0 border-b ${
+              isDarkMode ? 'bg-black border-purple-500/20' : 
+              isExperimental ? 'bg-black/90 border-yellow-400/30' : 
+              'bg-white border-gray-200'
+            }`}>
+              <div className="flex items-center space-x-1">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all duration-200 ${
+                      activeTab === tab
+                        ? isDarkMode ? 'bg-purple-500/20 text-purple-100 border-b-2 border-purple-400 shadow-lg shadow-purple-500/10' : isExperimental ? 'bg-yellow-400/20 text-yellow-300 border-b-2 border-yellow-400' : 'bg-blue-500 text-white border-b-2 border-blue-500'
+                        : isDarkMode ? 'text-purple-400/70 hover:text-purple-200 hover:bg-purple-500/10 hover:shadow-md hover:shadow-purple-500/5' : isExperimental ? 'text-yellow-400/60 hover:text-yellow-300 hover:bg-yellow-400/10' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+                <button className={`ml-2 p-2 rounded transition-colors ${
+                  isDarkMode ? 'text-purple-400 hover:text-purple-200 hover:bg-purple-500/10' : 
+                  isExperimental ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/10' : 
+                  'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                }`}>
+                  <Plus size={16} />
                 </button>
-              ))}
-              <button className={`ml-2 p-2 rounded transition-colors ${
-                isDarkMode ? 'text-purple-400 hover:text-purple-200 hover:bg-purple-500/10' : 
-                isExperimental ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/10' : 
-                'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-              }`}>
-                <Plus size={16} />
-              </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Workspace Area */}
           <div className="flex-1 relative overflow-hidden">
